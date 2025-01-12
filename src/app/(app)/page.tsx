@@ -27,6 +27,15 @@ export default function Home() {
       >
         Create Chat
       </button>
+      <button
+        type="button"
+        onClick={() => {
+          localStorage.clear();
+          window.location.reload();
+        }}
+      >
+        Clear Local Storage
+      </button>
     </div>
   );
 }
