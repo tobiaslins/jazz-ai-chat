@@ -3,60 +3,60 @@ import { Chat, ChatMessage, ListOfChatMessages } from "../../(app)/schema";
 import { Account, co, CoMap, Group, Profile } from "jazz-tools";
 import { streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { WebSocket } from "ws";
+// import { WebSocket } from "ws";
 
-const send = WebSocket.prototype.send;
-WebSocket.prototype.send = function (...args) {
-  console.log("send", ...args);
-  return send.apply(this, args);
-};
+// const send = WebSocket.prototype.send;
+// WebSocket.prototype.send = function (...args) {
+//   console.log("send", ...args);
+//   return send.apply(this, args);
+// };
 
-const addEventListener = WebSocket.prototype.addEventListener;
-// biome-ignore lint/suspicious/noExplicitAny: <explanation>
-WebSocket.prototype.addEventListener = function (...args: any[]) {
-  if (args[0] === "open") {
-    this.addEventListener("message", (msg) => {
-      console.log("message", msg.data);
-    });
-  }
-  // @ts-expect-error
-  return addEventListener.apply(this, args);
-};
+// const addEventListener = WebSocket.prototype.addEventListener;
+// // biome-ignore lint/suspicious/noExplicitAny: <explanation>
+// WebSocket.prototype.addEventListener = function (...args: any[]) {
+//   if (args[0] === "open") {
+//     this.addEventListener("message", (msg) => {
+//       console.log("message", msg.data);
+//     });
+//   }
+//   // @ts-expect-error
+//   return addEventListener.apply(this, args);
+// };
 
 let worker: Account | undefined;
 
-class BackendWorker extends CoMap {
-  test = co.string;
-}
-class PublicProfile extends Profile {}
+// class BackendWorker extends CoMap {
+//   test = co.string;
+// }
+// class PublicProfile extends Profile {}
 
-class WorkerAccount extends Account {
-  root = co.ref(BackendWorker);
-  profile = co.ref(PublicProfile);
+// class WorkerAccount extends Account {
+//   root = co.ref(BackendWorker);
+//   profile = co.ref(PublicProfile);
 
-  migrate(creationProps?: { name: string }): void {
-    console.log("Migrating", creationProps);
+//   migrate(creationProps?: { name: string }): void {
+//     console.log("Migrating", creationProps);
 
-    if (!this._refs.profile) {
-      console.log("here we go");
+//     if (!this._refs.profile) {
+//       console.log("here we go");
 
-      const group = Group.create({ owner: this });
+//       const group = Group.create({ owner: this });
 
-      group.addMember("everyone", "writer");
+//       group.addMember("everyone", "writer");
 
-      this.profile = PublicProfile.create(
-        {
-          name: creationProps?.name ?? "Test",
-        },
-        {
-          owner: group,
-        }
-      );
+//       this.profile = PublicProfile.create(
+//         {
+//           name: creationProps?.name ?? "Test",
+//         },
+//         {
+//           owner: group,
+//         }
+//       );
 
-      console.log("created public state", this.profile);
-    }
-  }
-}
+//       console.log("created public state", this.profile);
+//     }
+//   }
+// }
 
 export async function POST(req: Request) {
   if (!worker) {
@@ -64,9 +64,9 @@ export async function POST(req: Request) {
       console.log("Starting worker");
       const w = await startWorker({
         syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat",
-        AccountSchema: WorkerAccount,
-        accountID: process.env.JAZZ_WORKER_ACCOUNT,
-        accountSecret: process.env.JAZZ_WORKER_SECRET,
+        // AccountSchema: WorkerAccount,
+        // accountID: process.env.JAZZ_WORKER_ACCOUNT,
+        // accountSecret: process.env.JAZZ_WORKER_SECRET,
       });
 
       console.log("Worker started");
