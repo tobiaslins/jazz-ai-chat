@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.18",
+    "@types/ws": "^8.5.13",
     "ai": "^4.0.33",
     "bufferutil": "^4.0.9",
     "framer-motion": "^11.17.0",
@@ -21,7 +22,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-markdown": "^9.0.3",
-    "ws": "^8.18.0"
+    "ws": "8.14.2"
   },
   "devDependencies": {
     "@types/node": "^20",
@@ -35,7 +36,8 @@
     "patchedDependencies": {
       "jazz-react-core": "patches/jazz-react-core.patch",
       "jazz-tools": "patches/jazz-tools.patch",
-      "jazz-nodejs": "patches/jazz-nodejs.patch"
+      "jazz-nodejs": "patches/jazz-nodejs.patch",
+      "cojson": "patches/cojson.patch"
     }
   }
 }

@@ -5,6 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
+  cojson:
+    hash: 7twvxfrvnyhvungvahzyeyr52a
+    path: patches/cojson.patch
   jazz-nodejs:
     hash: 5cf3kdftkpghbxjva5mrdmybje
     path: patches/jazz-nodejs.patch
@@ -22,6 +25,9 @@ importers:
       '@ai-sdk/openai':
         specifier: ^1.0.18
         version: 1.0.18(zod@3.24.1)
+      '@types/ws':
+        specifier: ^8.5.13
+        version: 8.5.13
       ai:
         specifier: ^4.0.33
         version: 4.0.33(react@19.0.0)(zod@3.24.1)
@@ -56,8 +62,8 @@ importers:
         specifier: ^9.0.3
         version: 9.0.3(@types/react@19.0.4)(react@19.0.0)
       ws:
-        specifier: ^8.18.0
-        version: 8.18.0(bufferutil@4.0.9)
+        specifier: 8.14.2
+        version: 8.14.2(bufferutil@4.0.9)
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -397,6 +403,9 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
+
+  '@types/ws@8.5.13':
+    resolution: {integrity: sha512-osM/gWBTPKgHV8XkTunnegTRIsvF6owmf5w+JtAfOw472dptdm0dlGv4xCt6GwQRcC2XVOvvRE/0bAoQcL2QkA==}
 
   '@ungap/structured-clone@1.2.1':
     resolution: {integrity: sha512-fEzPV3hSkSMltkw152tJKNARhOupqbH96MZWyRjNaYZOMIzbrTeQDG+MTc6Mr2pgzFQzFxAfmhGDNP5QK++2ZA==}
@@ -1232,8 +1241,8 @@ packages:
     resolution: {integrity: sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ==}
     engines: {node: '>=12'}
 
-  ws@8.18.0:
-    resolution: {integrity: sha512-8VbfWfHLbbwu3+N6OKsOMpBdT4kXPDDB9cJk2bJ6mh9ucxdlnNvH1e+roYkKmN9Nxw2yjz7VzeO9oOz2zJ04Pw==}
+  ws@8.14.2:
+    resolution: {integrity: sha512-wEBG1ftX4jcglPxgFCMJmZ2PLtSbJ2Peg6TmpJFTbe9GZYOQCDPdMYu/Tm0/bGZkw8paZnJY45J4K2PZrLYq8g==}
     engines: {node: '>=10.0.0'}
     peerDependencies:
       bufferutil: ^4.0.1
@@ -1525,6 +1534,10 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
+  '@types/ws@8.5.13':
+    dependencies:
+      '@types/node': 20.17.12
+
   '@ungap/structured-clone@1.2.1': {}
 
   ai@4.0.33(react@19.0.0)(zod@3.24.1):
@@ -1613,19 +1626,19 @@ snapshots:
 
   cojson-storage-indexeddb@0.9.0:
     dependencies:
-      cojson: 0.9.0
+      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
       cojson-storage: 0.9.0
 
   cojson-storage@0.9.0:
     dependencies:
-      cojson: 0.9.0
+      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
 
   cojson-transport-ws@0.9.0:
     dependencies:
-      cojson: 0.9.0
+      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
       typescript: 5.6.3
 
-  cojson@0.9.0:
+  cojson@0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a):
     dependencies:
       '@hazae41/berith': 1.2.6
       '@noble/ciphers': 0.1.4
@@ -1837,7 +1850,7 @@ snapshots:
   jazz-browser@0.9.1:
     dependencies:
       '@scure/bip39': 1.5.1
-      cojson: 0.9.0
+      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
       cojson-storage-indexeddb: 0.9.0
       cojson-transport-ws: 0.9.0
       jazz-tools: 0.9.1(patch_hash=twybrmefgfqc6x4s22t7wmu5gm)
@@ -1845,17 +1858,17 @@ snapshots:
 
   jazz-nodejs@0.9.1(patch_hash=5cf3kdftkpghbxjva5mrdmybje)(bufferutil@4.0.9):
     dependencies:
-      cojson: 0.9.0
+      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
       cojson-transport-ws: 0.9.0
       jazz-tools: 0.9.1(patch_hash=twybrmefgfqc6x4s22t7wmu5gm)
-      ws: 8.18.0(bufferutil@4.0.9)
+      ws: 8.14.2(bufferutil@4.0.9)
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
   jazz-react-core@0.8.47(patch_hash=b4xza2x7nmexilnsb55iq7oho4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
-      cojson: 0.9.0
+      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
       jazz-tools: 0.9.1(patch_hash=twybrmefgfqc6x4s22t7wmu5gm)
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
@@ -1863,7 +1876,7 @@ snapshots:
   jazz-react@0.9.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@scure/bip39': 1.5.1
-      cojson: 0.9.0
+      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
       jazz-browser: 0.9.1
       jazz-react-core: 0.8.47(patch_hash=b4xza2x7nmexilnsb55iq7oho4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       jazz-tools: 0.9.1(patch_hash=twybrmefgfqc6x4s22t7wmu5gm)
@@ -1872,7 +1885,7 @@ snapshots:
 
   jazz-tools@0.9.1(patch_hash=twybrmefgfqc6x4s22t7wmu5gm):
     dependencies:
-      cojson: 0.9.0
+      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
 
   jiti@1.21.7: {}
 
@@ -2549,7 +2562,7 @@ snapshots:
       string-width: 5.1.2
       strip-ansi: 7.1.0
 
-  ws@8.18.0(bufferutil@4.0.9):
+  ws@8.14.2(bufferutil@4.0.9):
     optionalDependencies:
       bufferutil: 4.0.9
 
