@@ -1,10 +1,43 @@
 import { startWorker } from "jazz-nodejs";
 import { Chat, ChatMessage, ListOfChatMessages } from "../../(app)/schema";
-import { Account, Group } from "jazz-tools";
+import { Account, co, CoMap, Group, Profile } from "jazz-tools";
 import { streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 
 let worker: Account | undefined;
+
+export class BackendWorker extends CoMap {
+  test = co.string;
+}
+export class PublicProfile extends Profile {}
+
+export class WorkerAccount extends Account {
+  root = co.ref(BackendWorker);
+  profile = co.ref(PublicProfile);
+
+  migrate(creationProps?: { name: string }): void {
+    console.log("Migrating", creationProps);
+
+    if (!this._refs.profile) {
+      console.log("here we go");
+
+      const group = Group.create({ owner: this });
+
+      group.addMember("everyone", "writer");
+
+      this.profile = PublicProfile.create(
+        {
+          name: creationProps?.name ?? "Test",
+        },
+        {
+          owner: group,
+        }
+      );
+
+      console.log("created public state", this.profile);
+    }
+  }
+}
 
 export async function POST(req: Request) {
   if (!worker) {
@@ -12,6 +45,7 @@ export async function POST(req: Request) {
       console.log("Starting worker");
       const w = await startWorker({
         syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat",
+        AccountSchema: WorkerAccount,
       });
       console.log("Worker started");
       worker = w.worker;
