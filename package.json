@@ -34,8 +34,8 @@
   "pnpm": {
     "patchedDependencies": {
       "jazz-react-core": "patches/jazz-react-core.patch",
-      "jazz-nodejs": "patches/jazz-nodejs.patch",
-      "jazz-tools": "patches/jazz-tools.patch"
+      "jazz-tools": "patches/jazz-tools.patch",
+      "jazz-nodejs": "patches/jazz-nodejs.patch"
     }
   }
 }
