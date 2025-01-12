@@ -3,6 +3,25 @@ import { Chat, ChatMessage, ListOfChatMessages } from "../../(app)/schema";
 import { Account, co, CoMap, Group, Profile } from "jazz-tools";
 import { streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { WebSocket } from "ws";
+
+const send = WebSocket.prototype.send;
+WebSocket.prototype.send = function (...args) {
+  console.log("send", ...args);
+  return send.apply(this, args);
+};
+
+const addEventListener = WebSocket.prototype.addEventListener;
+// biome-ignore lint/suspicious/noExplicitAny: <explanation>
+WebSocket.prototype.addEventListener = function (...args: any[]) {
+  if (args[0] === "open") {
+    this.addEventListener("message", (msg) => {
+      console.log("message", msg.data);
+    });
+  }
+  // @ts-expect-error
+  return addEventListener.apply(this, args);
+};
 
 let worker: Account | undefined;
 
