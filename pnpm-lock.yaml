@@ -4,6 +4,11 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+patchedDependencies:
+  jazz-react-core:
+    hash: b4xza2x7nmexilnsb55iq7oho4
+    path: patches/jazz-react-core.patch
+
 importers:
 
   .:
@@ -44,6 +49,9 @@ importers:
       react-markdown:
         specifier: ^9.0.3
         version: 9.0.3(@types/react@19.0.4)(react@19.0.0)
+      ws:
+        specifier: ^8.18.0
+        version: 8.18.0(bufferutil@4.0.9)
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -1839,7 +1847,7 @@ snapshots:
       - bufferutil
       - utf-8-validate
 
-  jazz-react-core@0.8.47(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  jazz-react-core@0.8.47(patch_hash=b4xza2x7nmexilnsb55iq7oho4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       cojson: 0.9.0
       jazz-tools: 0.9.1
@@ -1851,7 +1859,7 @@ snapshots:
       '@scure/bip39': 1.5.1
       cojson: 0.9.0
       jazz-browser: 0.9.1
-      jazz-react-core: 0.8.47(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      jazz-react-core: 0.8.47(patch_hash=b4xza2x7nmexilnsb55iq7oho4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       jazz-tools: 0.9.1
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
