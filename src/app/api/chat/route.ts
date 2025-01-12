@@ -44,8 +44,7 @@ export async function POST(req: Request) {
     try {
       console.log("Starting worker");
       const w = await startWorker({
-        syncServer:
-          "wss://demo.piesocket.com/v3/channel_123?api_key=VCXCEuvhGcBDP7XhiJJUDvR1e1D3eiVjgZ9VRiaV&notify_self",
+        syncServer: "wss://thick-hedgehog-24.deno.dev",
         AccountSchema: WorkerAccount,
         accountID: process.env.JAZZ_WORKER_ACCOUNT,
         accountSecret: process.env.JAZZ_WORKER_SECRET,
