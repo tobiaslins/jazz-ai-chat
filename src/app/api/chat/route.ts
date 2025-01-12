@@ -8,9 +8,11 @@ let worker: Account | undefined;
 
 export async function POST(req: Request) {
   if (!worker) {
+    console.log("Starting worker");
     const w = await startWorker({
       syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat",
     });
+    console.log("Worker started");
     worker = w.worker;
   }
 
