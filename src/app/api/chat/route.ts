@@ -4,11 +4,16 @@ import { Account, Group } from "jazz-tools";
 import { streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 
-const { worker } = await startWorker({
-  syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat",
-});
+let worker: Account | undefined;
 
 export async function POST(req: Request) {
+  if (!worker) {
+    const w = await startWorker({
+      syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat",
+    });
+    worker = w.worker;
+  }
+
   const { userId, chatId } = await req.json();
   const account = await Account.load(userId, worker, {});
 
