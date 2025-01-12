@@ -1,8 +1,8 @@
 diff --git a/dist/index.js b/dist/index.js
-index 1c713cb99aecc6fb5a883444a2cb968edd605583..169f7bc7fc00ec0552284e48b529d52438606605 100644
+index 1c713cb99aecc6fb5a883444a2cb968edd605583..ba1870841f381f3e0b4f1440579bca61d43519a2 100644
 --- a/dist/index.js
 +++ b/dist/index.js
-@@ -1,56 +1,69 @@
+@@ -1,56 +1,67 @@
  import { WasmCrypto } from "cojson";
 -import { Account, Inbox, createJazzContext, fixedCredentialsAuth, randomSessionProvider, } from "jazz-tools";
 +import {
@@ -109,9 +109,7 @@ index 1c713cb99aecc6fb5a883444a2cb968edd605583..169f7bc7fc00ec0552284e48b529d524
 +    context.done();
 +  }
 +  const inboxPublicApi = {
-+    subscribe: () => {
-+      console.log("subscribe");
-+    },
++    subscribe: {},
 +  };
 +  return {
 +    worker: context.account,
@@ -123,7 +121,7 @@ index 1c713cb99aecc6fb5a883444a2cb968edd605583..169f7bc7fc00ec0552284e48b529d524
  }
  //# sourceMappingURL=index.js.map
 diff --git a/src/index.ts b/src/index.ts
-index 6db667b74d09e6c2f01c84138bbae6016184d616..cacc6e08eb61a8111f08a85c53f362d8e1398f78 100644
+index 6db667b74d09e6c2f01c84138bbae6016184d616..38c2e00aa31270858835f267e9a06918e2f4a06a 100644
 --- a/src/index.ts
 +++ b/src/index.ts
 @@ -19,7 +19,7 @@ type WorkerOptions<Acc extends Account> = {
@@ -152,3 +150,12 @@ index 6db667b74d09e6c2f01c84138bbae6016184d616..cacc6e08eb61a8111f08a85c53f362d8
  
    async function done() {
      await context.account.waitForAllCoValuesSync();
+@@ -75,7 +76,7 @@ export async function startWorker<Acc extends Account>(
+   }
+ 
+   const inboxPublicApi = {
+-    subscribe: inbox.subscribe.bind(inbox) as Inbox["subscribe"],
++    subscribe: {},
+   };
+ 
+   return {
