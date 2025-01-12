@@ -8,12 +8,17 @@ let worker: Account | undefined;
 
 export async function POST(req: Request) {
   if (!worker) {
-    console.log("Starting worker");
-    const w = await startWorker({
-      syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat",
-    });
-    console.log("Worker started");
-    worker = w.worker;
+    try {
+      console.log("Starting worker");
+      const w = await startWorker({
+        syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat",
+      });
+      console.log("Worker started");
+      worker = w.worker;
+    } catch (e) {
+      console.error("Error starting worker", e);
+      return new Response("Error starting worker", { status: 500 });
+    }
   }
 
   const { userId, chatId } = await req.json();
