@@ -5,18 +5,9 @@ settings:
   excludeLinksFromLockfile: false
 
 patchedDependencies:
-  cojson:
-    hash: 7twvxfrvnyhvungvahzyeyr52a
-    path: patches/cojson.patch
   jazz-nodejs:
-    hash: 5cf3kdftkpghbxjva5mrdmybje
+    hash: 4dbo7clvnwaxspwwi46epjsn2e
     path: patches/jazz-nodejs.patch
-  jazz-react-core:
-    hash: b4xza2x7nmexilnsb55iq7oho4
-    path: patches/jazz-react-core.patch
-  jazz-tools:
-    hash: twybrmefgfqc6x4s22t7wmu5gm
-    path: patches/jazz-tools.patch
 
 importers:
 
@@ -39,13 +30,13 @@ importers:
         version: 11.17.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       jazz-nodejs:
         specifier: ^0.9.1
-        version: 0.9.1(patch_hash=5cf3kdftkpghbxjva5mrdmybje)(bufferutil@4.0.9)
+        version: 0.9.1(patch_hash=4dbo7clvnwaxspwwi46epjsn2e)(bufferutil@4.0.9)
       jazz-react:
         specifier: ^0.9.1
         version: 0.9.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       jazz-tools:
         specifier: ^0.9.1
-        version: 0.9.1(patch_hash=twybrmefgfqc6x4s22t7wmu5gm)
+        version: 0.9.1
       lucide-react:
         specifier: ^0.471.0
         version: 0.471.0(react@19.0.0)
@@ -1626,19 +1617,19 @@ snapshots:
 
   cojson-storage-indexeddb@0.9.0:
     dependencies:
-      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
+      cojson: 0.9.0
       cojson-storage: 0.9.0
 
   cojson-storage@0.9.0:
     dependencies:
-      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
+      cojson: 0.9.0
 
   cojson-transport-ws@0.9.0:
     dependencies:
-      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
+      cojson: 0.9.0
       typescript: 5.6.3
 
-  cojson@0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a):
+  cojson@0.9.0:
     dependencies:
       '@hazae41/berith': 1.2.6
       '@noble/ciphers': 0.1.4
@@ -1850,42 +1841,42 @@ snapshots:
   jazz-browser@0.9.1:
     dependencies:
       '@scure/bip39': 1.5.1
-      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
+      cojson: 0.9.0
       cojson-storage-indexeddb: 0.9.0
       cojson-transport-ws: 0.9.0
-      jazz-tools: 0.9.1(patch_hash=twybrmefgfqc6x4s22t7wmu5gm)
+      jazz-tools: 0.9.1
       typescript: 5.6.3
 
-  jazz-nodejs@0.9.1(patch_hash=5cf3kdftkpghbxjva5mrdmybje)(bufferutil@4.0.9):
+  jazz-nodejs@0.9.1(patch_hash=4dbo7clvnwaxspwwi46epjsn2e)(bufferutil@4.0.9):
     dependencies:
-      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
+      cojson: 0.9.0
       cojson-transport-ws: 0.9.0
-      jazz-tools: 0.9.1(patch_hash=twybrmefgfqc6x4s22t7wmu5gm)
+      jazz-tools: 0.9.1
       ws: 8.14.2(bufferutil@4.0.9)
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
 
-  jazz-react-core@0.8.47(patch_hash=b4xza2x7nmexilnsb55iq7oho4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  jazz-react-core@0.8.47(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
-      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
-      jazz-tools: 0.9.1(patch_hash=twybrmefgfqc6x4s22t7wmu5gm)
+      cojson: 0.9.0
+      jazz-tools: 0.9.1
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
   jazz-react@0.9.1(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@scure/bip39': 1.5.1
-      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
+      cojson: 0.9.0
       jazz-browser: 0.9.1
-      jazz-react-core: 0.8.47(patch_hash=b4xza2x7nmexilnsb55iq7oho4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      jazz-tools: 0.9.1(patch_hash=twybrmefgfqc6x4s22t7wmu5gm)
+      jazz-react-core: 0.8.47(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      jazz-tools: 0.9.1
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
-  jazz-tools@0.9.1(patch_hash=twybrmefgfqc6x4s22t7wmu5gm):
+  jazz-tools@0.9.1:
     dependencies:
-      cojson: 0.9.0(patch_hash=7twvxfrvnyhvungvahzyeyr52a)
+      cojson: 0.9.0
 
   jiti@1.21.7: {}
 

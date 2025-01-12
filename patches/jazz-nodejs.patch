@@ -1,70 +1,154 @@
-diff --git a/dist/webSocketWithReconnection.js b/dist/webSocketWithReconnection.js
-index 587b18776c9be6a9db4892c87500f22f3a9a2dc3..94608397a9126be24be3b2da7899fd8f39e60898 100644
---- a/dist/webSocketWithReconnection.js
-+++ b/dist/webSocketWithReconnection.js
-@@ -1,35 +1,38 @@
- import { createWebSocketPeer } from "cojson-transport-ws";
- import { WebSocket } from "ws";
- export function webSocketWithReconnection(peer, addPeer) {
--    let done = false;
--    const wsPeer = createWebSocketPeer({
--        websocket: new WebSocket(peer),
-+  let done = false;
-+  console.log("before createWebSocketPeer");
-+  const wsPeer = createWebSocketPeer({
-+    websocket: new WebSocket(peer),
-+    id: "upstream",
-+    role: "server",
-+    onClose: handleClose,
-+  });
-+  console.log("after createWebSocketPeer");
-+  let timer;
-+  function handleClose() {
-+    console.log("before handleClose");
-+    if (done) return;
-+    clearTimeout(timer);
-+    timer = setTimeout(() => {
-+      console.log(new Date(), "Reconnecting to upstream " + peer);
-+      const wsPeer = createWebSocketPeer({
-         id: "upstream",
-+        websocket: new WebSocket(peer),
-         role: "server",
-         onClose: handleClose,
+diff --git a/dist/index.js b/dist/index.js
+index 1c713cb99aecc6fb5a883444a2cb968edd605583..169f7bc7fc00ec0552284e48b529d52438606605 100644
+--- a/dist/index.js
++++ b/dist/index.js
+@@ -1,56 +1,69 @@
+ import { WasmCrypto } from "cojson";
+-import { Account, Inbox, createJazzContext, fixedCredentialsAuth, randomSessionProvider, } from "jazz-tools";
++import {
++  Account,
++  Inbox,
++  createJazzContext,
++  fixedCredentialsAuth,
++  randomSessionProvider,
++} from "jazz-tools";
+ import { webSocketWithReconnection } from "./webSocketWithReconnection.js";
+ /** @category Context Creation */
+ export async function startWorker(options) {
+-    const { accountID = process.env.JAZZ_WORKER_ACCOUNT, accountSecret = process.env.JAZZ_WORKER_SECRET, syncServer = "wss://cloud.jazz.tools", AccountSchema = Account, } = options;
+-    let node = undefined;
+-    const wsPeer = webSocketWithReconnection(syncServer, (peer) => {
+-        node?.syncManager.addPeer(peer);
 -    });
--    let timer;
--    function handleClose() {
--        if (done)
--            return;
--        clearTimeout(timer);
--        timer = setTimeout(() => {
--            console.log(new Date(), "Reconnecting to upstream " + peer);
--            const wsPeer = createWebSocketPeer({
--                id: "upstream",
--                websocket: new WebSocket(peer),
--                role: "server",
--                onClose: handleClose,
--            });
--            addPeer(wsPeer);
--        }, 1000);
+-    if (!accountID) {
+-        throw new Error("No accountID provided");
 -    }
--    return {
--        peer: wsPeer,
--        done: () => {
--            done = true;
--            clearTimeout(timer);
--        },
+-    if (!accountSecret) {
+-        throw new Error("No accountSecret provided");
+-    }
+-    if (!accountID.startsWith("co_")) {
+-        throw new Error("Invalid accountID");
+-    }
+-    if (!accountSecret?.startsWith("sealerSecret_")) {
+-        throw new Error("Invalid accountSecret");
+-    }
+-    const context = await createJazzContext({
+-        auth: fixedCredentialsAuth({
+-            accountID: accountID,
+-            secret: accountSecret,
+-        }),
+-        AccountSchema,
+-        // TODO: locked sessions similar to browser
+-        sessionProvider: randomSessionProvider,
+-        peersToLoadFrom: [wsPeer.peer],
+-        crypto: await WasmCrypto.create(),
+-    });
+-    const account = context.account;
+-    node = account._raw.core.node;
+-    if (!account._refs.profile?.id) {
+-        throw new Error("Account has no profile");
+-    }
+-    const inbox = await Inbox.load(account);
+-    async function done() {
+-        await context.account.waitForAllCoValuesSync();
+-        wsPeer.done();
+-        context.done();
+-    }
+-    const inboxPublicApi = {
+-        subscribe: inbox.subscribe.bind(inbox),
 -    };
-+      });
-+      addPeer(wsPeer);
-+      console.log("after addPeer");
-+    }, 1000);
+-    return {
+-        worker: context.account,
+-        experimental: {
+-            inbox: inboxPublicApi,
+-        },
+-        done,
+-    };
++  const {
++    accountID = process.env.JAZZ_WORKER_ACCOUNT,
++    accountSecret = process.env.JAZZ_WORKER_SECRET,
++    syncServer = "wss://cloud.jazz.tools",
++    AccountSchema = Account,
++  } = options;
++  let node = undefined;
++  const wsPeer = webSocketWithReconnection(syncServer, (peer) => {
++    node?.syncManager.addPeer(peer);
++  });
++  if (!accountID) {
++    throw new Error("No accountID provided");
 +  }
-+  return {
-+    peer: wsPeer,
-+    done: () => {
-+      done = true;
-+      clearTimeout(timer);
++  if (!accountSecret) {
++    throw new Error("No accountSecret provided");
++  }
++  if (!accountID.startsWith("co_")) {
++    throw new Error("Invalid accountID");
++  }
++  if (!accountSecret?.startsWith("sealerSecret_")) {
++    throw new Error("Invalid accountSecret");
++  }
++  const context = await createJazzContext({
++    auth: fixedCredentialsAuth({
++      accountID: accountID,
++      secret: accountSecret,
++    }),
++    AccountSchema,
++    // TODO: locked sessions similar to browser
++    sessionProvider: randomSessionProvider,
++    peersToLoadFrom: [wsPeer.peer],
++    crypto: await WasmCrypto.create(),
++  });
++  const account = context.account;
++  node = account._raw.core.node;
++  if (!account._refs.profile?.id) {
++    throw new Error("Account has no profile");
++  }
++  // const inbox = await Inbox.load(account);
++  async function done() {
++    await context.account.waitForAllCoValuesSync();
++    wsPeer.done();
++    context.done();
++  }
++  const inboxPublicApi = {
++    subscribe: () => {
++      console.log("subscribe");
 +    },
 +  };
++  return {
++    worker: context.account,
++    experimental: {
++      inbox: inboxPublicApi,
++    },
++    done,
++  };
  }
- //# sourceMappingURL=webSocketWithReconnection.js.map
+ //# sourceMappingURL=index.js.map
+diff --git a/src/index.ts b/src/index.ts
+index 6db667b74d09e6c2f01c84138bbae6016184d616..cacc6e08eb61a8111f08a85c53f362d8e1398f78 100644
+--- a/src/index.ts
++++ b/src/index.ts
+@@ -19,7 +19,7 @@ type WorkerOptions<Acc extends Account> = {
+ 
+ /** @category Context Creation */
+ export async function startWorker<Acc extends Account>(
+-  options: WorkerOptions<Acc>,
++  options: WorkerOptions<Acc>
+ ) {
+   const {
+     accountID = process.env.JAZZ_WORKER_ACCOUNT,
+@@ -57,6 +57,7 @@ export async function startWorker<Acc extends Account>(
+     peersToLoadFrom: [wsPeer.peer],
+     crypto: await WasmCrypto.create(),
+   });
++  console.log("context created", context);
+ 
+   const account = context.account as Acc;
+   node = account._raw.core.node;
+@@ -65,7 +66,7 @@ export async function startWorker<Acc extends Account>(
+     throw new Error("Account has no profile");
+   }
+ 
+-  const inbox = await Inbox.load(account);
++  // const inbox = await Inbox.load(account);
+ 
+   async function done() {
+     await context.account.waitForAllCoValuesSync();
