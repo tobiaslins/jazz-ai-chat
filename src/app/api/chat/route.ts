@@ -6,12 +6,12 @@ import { openai } from "@ai-sdk/openai";
 
 let worker: Account | undefined;
 
-export class BackendWorker extends CoMap {
+class BackendWorker extends CoMap {
   test = co.string;
 }
-export class PublicProfile extends Profile {}
+class PublicProfile extends Profile {}
 
-export class WorkerAccount extends Account {
+class WorkerAccount extends Account {
   root = co.ref(BackendWorker);
   profile = co.ref(PublicProfile);
 
