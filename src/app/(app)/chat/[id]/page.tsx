@@ -11,6 +11,7 @@ import { useParams } from "next/navigation";
 import Markdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { toast } from "react-hot-toast";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function ChatPage() {
@@ -78,11 +79,21 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
 
   return (
     <div className="flex-1 flex flex-col h-screen bg-gray-100">
-      <header className="bg-white shadow-sm p-4">
+      <header className="bg-white shadow-sm p-4 flex justify-between items-center">
         {/* <SidebarTrigger /> */}
         <h1 className="text-2xl font-bold text-gray-800">
           {chat?.name || "Chat"}
         </h1>
+        <Button
+          variant="outline"
+          onClick={() => {
+            chat._owner.castAs(Group).addMember("everyone", "reader");
+            navigator.clipboard.writeText(window.location.href);
+            toast.success("Copied to clipboard");
+          }}
+        >
+          Share
+        </Button>
       </header>
       <div className="flex-1 overflow-y-auto p-4 space-y-4">
         <AnimatePresence>

@@ -36,7 +36,7 @@ export async function POST(req: Request) {
     const group = Group.create({
       owner: worker,
     });
-    group.addMember(account, "writer");
+    group.addMember(account, "admin");
 
     chat = Chat.create(
       {
