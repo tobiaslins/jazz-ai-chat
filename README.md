@@ -1,7 +1,7 @@
 ## AI Chat using Jazz as storage/streaming
 
 The schema:
-```
+```ts
 import { co, CoMap, CoList } from "jazz-tools";
 
 export class ChatMessage extends CoMap {
