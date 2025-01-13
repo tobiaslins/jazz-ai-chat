@@ -1,20 +1,22 @@
 "use client";
 
 import { useAccount } from "jazz-react";
-
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
   const router = useRouter();
   const { me } = useAccount();
+  const [loading, setLoading] = useState(false)
 
   const createChat = async () => {
+    setLoading(true)
     const response = await fetch("/api/chat", {
       method: "POST",
       body: JSON.stringify({ userId: me.id }),
     });
     const { chatId } = await response.json();
-    console.log(chatId);
+
     router.push(`/chat/${chatId}`);
   };
 
@@ -22,20 +24,13 @@ export default function Home() {
     <div className="flex flex-col items-center justify-center h-screen">
       <button
         className="bg-blue-500 text-white px-4 py-2 rounded-md"
+        disabled={loading}
         type="button"
         onClick={createChat}
       >
         Create Chat
       </button>
-      <button
-        type="button"
-        onClick={() => {
-          localStorage.clear();
-          window.location.reload();
-        }}
-      >
-        Clear Local Storage
-      </button>
+    
     </div>
   );
 }
