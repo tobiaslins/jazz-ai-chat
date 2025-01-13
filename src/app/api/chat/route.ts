@@ -3,6 +3,7 @@ import { Chat, ChatMessage, ListOfChatMessages } from "../../(app)/schema";
 import { Account, co, CoMap, Group, Profile } from "jazz-tools";
 import { generateText, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { after } from "next/server";
 
 let worker: Account | undefined;
 
@@ -47,6 +48,10 @@ export async function POST(req: Request) {
       },
       { owner: group }
     );
+
+    after(async () => {
+      await worker?.waitForAllCoValuesSync();
+    });
 
     return Response.json({
       chatId: chat?.id,
@@ -99,6 +104,10 @@ export async function POST(req: Request) {
   }
 
   chatMessage.content = tmpContent;
+
+  after(async () => {
+    await worker?.waitForAllCoValuesSync();
+  });
 
   return Response.json({
     chatId: chat?.id,
