@@ -1,7 +1,7 @@
 import { startWorker } from "jazz-nodejs";
 import { Chat, ChatMessage, ListOfChatMessages } from "../../(app)/schema";
 import { Account, co, CoMap, Group, Profile } from "jazz-tools";
-import { streamText } from "ai";
+import { generateText, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 
 let worker: Account | undefined;
@@ -43,7 +43,7 @@ export async function POST(req: Request) {
         messages: ListOfChatMessages.create([], {
           owner: group,
         }),
-        name: "Test",
+        name: "Unnamed",
       },
       { owner: group }
     );
@@ -60,8 +60,19 @@ export async function POST(req: Request) {
     return new Response("Chat not found", { status: 404 });
   }
 
+  if (chat.name === "Unnamed" || chat.name === "Test") {
+    // Generate a name for the chat
+    const test = await generateText({
+      model: openai("gpt-4o-mini"),
+      prompt: `Generate a name for this AI chat. Only answer with the name. The current messages are: ${chat?.messages
+        ?.map((message) => message?.content)
+        .join("\n")}`,
+    });
+    chat.name = test.text;
+  }
+
   const result = streamText({
-    model: openai("gpt-4o"),
+    model: openai("gpt-4o-mini"),
     messages:
       chat?.messages?.map((message) => ({
         role: "user",

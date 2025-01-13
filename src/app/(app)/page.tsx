@@ -1,36 +1,23 @@
 "use client";
 
-import { useAccount } from "jazz-react";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { clsx } from "clsx";
+import { useCreateChat } from "./hooks";
 
 export default function Home() {
-  const router = useRouter();
-  const { me } = useAccount();
-  const [loading, setLoading] = useState(false)
-
-  const createChat = async () => {
-    setLoading(true)
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      body: JSON.stringify({ userId: me.id }),
-    });
-    const { chatId } = await response.json();
-
-    router.push(`/chat/${chatId}`);
-  };
+  const { createChat, loading } = useCreateChat();
 
   return (
     <div className="flex flex-col items-center justify-center h-screen">
       <button
-        className="bg-blue-500 text-white px-4 py-2 rounded-md"
+        className={clsx("bg-blue-500 text-white px-4 py-2 rounded-md", {
+          "opacity-50 cursor-not-allowed": loading,
+        })}
         disabled={loading}
         type="button"
         onClick={createChat}
       >
-        Create Chat
+        {loading ? "Creating Chat..." : "Create Chat"}
       </button>
-    
     </div>
   );
 }

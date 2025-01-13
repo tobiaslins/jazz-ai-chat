@@ -9,6 +9,9 @@ import { AnimatePresence } from "framer-motion";
 import { Loader2, Send } from "lucide-react";
 import { useParams } from "next/navigation";
 import Markdown from "react-markdown";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { SidebarTrigger } from "@/components/ui/sidebar";
 
 export default function ChatPage() {
   const { id } = useParams();
@@ -74,8 +77,9 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
   );
 
   return (
-    <div className="flex flex-col h-screen bg-gray-100">
+    <div className="flex-1 flex flex-col h-screen bg-gray-100">
       <header className="bg-white shadow-sm p-4">
+        {/* <SidebarTrigger /> */}
         <h1 className="text-2xl font-bold text-gray-800">
           {chat?.name || "Chat"}
         </h1>
@@ -85,9 +89,9 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
           {orderedMessages?.map((message, index) => (
             <motion.div
               key={message?.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
               className={`flex ${
                 message?.role === "user" ? "justify-end" : "justify-start"
@@ -112,25 +116,21 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
       </div>
       <form onSubmit={sendMessage} className="bg-white p-4 shadow-lg">
         <div className="flex items-center space-x-2">
-          <input
-            className="flex-1 border border-gray-300 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          <Input
             type="text"
+            autoFocus
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type your message..."
             disabled={isLoading}
           />
-          <button
-            type="submit"
-            className="bg-blue-500 text-white rounded-full p-2 hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors duration-200"
-            disabled={isLoading}
-          >
+          <Button type="submit" disabled={isLoading}>
             {isLoading ? (
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
               <Send className="w-6 h-6" />
             )}
-          </button>
+          </Button>
         </div>
       </form>
     </div>
