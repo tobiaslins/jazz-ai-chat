@@ -1,8 +1,8 @@
 "use client";
 
 import { useAccount, useCoState } from "jazz-react";
-import { Chat, ChatMessage } from "../../schema";
-import { CoPlainText, Group, type ID } from "jazz-tools";
+import { Chat, ChatMessage, ListOfChatMessages } from "../../schema";
+import { Account, CoPlainText, Group, type ID } from "jazz-tools";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
   const { id } = useParams();
@@ -26,6 +27,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -33,6 +35,39 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(scrollToBottom, [chat?.messages]);
+
+  async function createChat() {
+    const group = Group.create({
+      owner: me,
+    });
+    const worker = await Account.load(
+      "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
+      me,
+      {}
+    );
+    if (!worker) return;
+    group.addMember(worker, "writer");
+
+    const chat = await Chat.create(
+      {
+        messages: ListOfChatMessages.create([], { owner: group }),
+        name: "Unnamed",
+      },
+      {
+        owner: group,
+      }
+    );
+
+    me?.root?.chats?.push(chat);
+    router.push(`/chat/${chat.id}`);
+  }
+
+  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
+  useEffect(() => {
+    if ((chatId as string) === "new") {
+      createChat();
+    }
+  }, [chatId]);
 
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
@@ -52,7 +87,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
     chat.messages?.push(chatMessage);
     setMessage("");
 
-    await me.waitForAllCoValuesSync();
+    await chatMessage.waitForSync();
 
     try {
       await fetch("/api/chat", {
@@ -73,11 +108,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
     }
   }
 
-  if (!chat) {
-    return <div>Loading...</div>;
-  }
-
-  const orderedMessages = chat.messages?.toSorted(
+  const orderedMessages = chat?.messages?.toSorted(
     (a, b) =>
       a?._edits.role?.madeAt?.getTime() - b?._edits.role?.madeAt?.getTime()
   );
@@ -92,7 +123,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
         <Button
           variant="outline"
           onClick={() => {
-            chat._owner.castAs(Group).addMember("everyone", "reader");
+            chat?._owner.castAs(Group).addMember("everyone", "reader");
             navigator.clipboard.writeText(window.location.href);
             toast.success("Copied to clipboard");
           }}

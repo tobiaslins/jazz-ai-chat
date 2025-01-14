@@ -31,32 +31,6 @@ export async function POST(req: Request) {
 
   let chat: Chat | undefined;
 
-  if (!chatId) {
-    console.log("Creating new chat");
-    // Create a new chat
-    const group = Group.create({
-      owner: worker,
-    });
-    group.addMember(account, "admin");
-
-    chat = Chat.create(
-      {
-        messages: ListOfChatMessages.create([], {
-          owner: group,
-        }),
-        name: "Unnamed",
-      },
-      { owner: group }
-    );
-
-    after(async () => {
-      await worker?.waitForAllCoValuesSync();
-    });
-
-    return Response.json({
-      chatId: chat?.id,
-    });
-  }
   // Load an existing chat
   chat = await Chat.load(chatId, worker, { messages: [{ text: [] }] });
 
@@ -101,7 +75,7 @@ export async function POST(req: Request) {
   }
 
   after(async () => {
-    await worker?.waitForAllCoValuesSync();
+    await worker?.waitForAllCoValuesSync({ timeout: 5000 });
   });
 
   return Response.json({

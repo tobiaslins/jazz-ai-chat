@@ -1,30 +1,41 @@
 import { useAccount } from "jazz-react";
-import { Chat } from "./schema";
+import { Chat, ListOfChatMessages } from "./schema";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import type { ID } from "jazz-tools";
+import { Account } from "jazz-tools";
+import { Group } from "jazz-tools";
 
 export function useCreateChat() {
   const router = useRouter();
   const { me } = useAccount();
   const [loading, setLoading] = useState(false);
 
-  const createChat = async () => {
-    setLoading(true);
-    const response = await fetch("/api/chat", {
-      method: "POST",
-      body: JSON.stringify({ userId: me.id }),
+  async function createChat() {
+    const group = Group.create({
+      owner: me,
     });
-    const { chatId } = await response.json();
+    const worker = await Account.load(
+      "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
+      me,
+      {}
+    );
+    if (!worker) return;
+    group.addMember(worker, "writer");
 
-    const loaded = await me?.ensureLoaded({ root: { chats: [] } });
+    const chat = await Chat.create(
+      {
+        messages: ListOfChatMessages.create([], { owner: group }),
+        name: "Unnamed",
+      },
+      {
+        owner: group,
+      }
+    );
 
-    const loadChat = await Chat.load(chatId, me, {});
-    console.log("loadChat", loadChat);
-    if (!loadChat) return;
-    loaded?.root.chats?.push(loadChat);
-
-    router.push(`/chat/${chatId}`);
-  };
+    me?.root?.chats?.push(chat);
+    router.push(`/chat/${chat.id}`);
+  }
 
   return { createChat, loading };
 }

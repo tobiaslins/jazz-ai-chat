@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useAccount } from "jazz-react";
 import { useRouter } from "next/navigation";
-import { useCreateChat } from "../../hooks";
+import { useCreateChat } from "../hooks";
 
 export default function ChatLayout({
   children,
@@ -31,11 +31,16 @@ export default function ChatLayout({
   const { createChat, loading } = useCreateChat();
 
   const recentChats =
-    me?.root?.chats?.map((chat) => ({
-      id: chat?.id,
-      title: chat?.name,
-      date: chat?._edits?.name?.madeAt?.toLocaleDateString(),
-    })) || [];
+    me?.root?.chats
+      ?.map((chat) => ({
+        id: chat?.id,
+        title: chat?.name,
+        created: chat?._edits?.name?.madeAt,
+        date: chat?._edits?.name?.madeAt?.toLocaleDateString(),
+      }))
+      .toSorted((a, b) => {
+        return b.created.getTime() - a.created.getTime();
+      }) || [];
 
   return (
     <SidebarProvider>
