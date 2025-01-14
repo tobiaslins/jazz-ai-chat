@@ -1,7 +1,8 @@
-import { co, CoMap, CoList, Account, Group } from "jazz-tools";
+import { co, CoMap, CoList, Account, CoPlainText } from "jazz-tools";
 
 export class ChatMessage extends CoMap {
   content = co.string;
+  text = co.ref(CoPlainText);
   role = co.literal("user", "system");
 }
 

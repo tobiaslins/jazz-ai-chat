@@ -2,7 +2,7 @@
 
 import { useAccount, useCoState } from "jazz-react";
 import { Chat, ChatMessage } from "../../schema";
-import { Group, type ID } from "jazz-tools";
+import { CoPlainText, Group, type ID } from "jazz-tools";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
@@ -39,8 +39,13 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
     if (!chat || !message.trim()) return;
 
     setIsLoading(true);
+
     const chatMessage = ChatMessage.create(
-      { content: message, role: "user" },
+      {
+        content: message, // TODO: remove
+        role: "user",
+        text: CoPlainText.create(message, { owner: chat._owner }),
+      },
       { owner: chat._owner }
     );
 
@@ -115,7 +120,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
                     : "bg-white text-gray-800"
                 }`}
               >
-                <Markdown>{message?.content}</Markdown>
+                <Markdown>{message?.text?.toString()}</Markdown>
                 <span className="text-xs mt-1 block opacity-75">
                   {message._edits.content.by?.profile?.name}
                 </span>

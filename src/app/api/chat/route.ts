@@ -1,6 +1,6 @@
 import { startWorker } from "jazz-nodejs";
 import { Chat, ChatMessage, ListOfChatMessages } from "../../(app)/schema";
-import { Account, co, CoMap, Group, Profile } from "jazz-tools";
+import { Account, co, CoMap, CoPlainText, Group, Profile } from "jazz-tools";
 import { generateText, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { after } from "next/server";
@@ -57,10 +57,9 @@ export async function POST(req: Request) {
       chatId: chat?.id,
     });
   }
-
   // Load an existing chat
+  chat = await Chat.load(chatId, worker, { messages: [{ text: [] }] });
 
-  chat = await Chat.load(chatId, worker, { messages: [{}] });
   if (!chat) {
     return new Response("Chat not found", { status: 404 });
   }
@@ -81,29 +80,25 @@ export async function POST(req: Request) {
     messages:
       chat?.messages?.map((message) => ({
         role: "user",
-        content: message?.content ?? "",
+        content: message?.text?.toString() ?? "",
       })) ?? [],
   });
 
   const chatMessage = ChatMessage.create(
-    { content: "", role: "system" },
+    {
+      content: "",
+      text: CoPlainText.create("", { owner: chat._owner }),
+      role: "system",
+    },
     { owner: chat._owner }
   );
   chat.messages?.push(chatMessage);
 
-  let lastUpdate = Date.now();
-  let tmpContent = "";
+  let currentText = "";
   for await (const textPart of result.textStream) {
-    tmpContent = tmpContent + textPart;
-    const now = Date.now();
-    if (now - lastUpdate >= 500) {
-      chatMessage.content = tmpContent;
-
-      lastUpdate = now;
-    }
+    chatMessage.text?.insertAfter(currentText.length, textPart);
+    currentText = currentText + textPart;
   }
-
-  chatMessage.content = tmpContent;
 
   after(async () => {
     await worker?.waitForAllCoValuesSync();
