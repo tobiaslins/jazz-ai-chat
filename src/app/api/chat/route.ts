@@ -32,7 +32,7 @@ export async function POST(req: Request) {
   let chat: Chat | undefined;
 
   // Load an existing chat
-  chat = await Chat.load(chatId, worker, { messages: [{ text: [] }] });
+  chat = await Chat.load(chatId, worker, { messages: [] });
   console.log("Chat loaded");
   if (!chat) {
     return new Response("Chat not found", { status: 404 });
