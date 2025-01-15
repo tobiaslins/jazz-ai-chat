@@ -47,7 +47,8 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
     );
 
     if (!worker) return;
-    group.addMember(worker, "admin");
+
+    group.addMember(worker, "writer");
 
     const list = ListOfChatMessages.create([], { owner: group });
     const chat = await Chat.create(
@@ -60,14 +61,15 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
       }
     );
 
-    await me.waitForAllCoValuesSync();
+    await chat.waitForSync();
+
     me?.root?.chats?.push(chat);
     router.push(`/chat/${chat.id}`);
   }
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(() => {
-    if ((chatId as string) === "new") {
+    if ((chatId as string) === "new" && me) {
       createChat();
     }
   }, [chatId]);
