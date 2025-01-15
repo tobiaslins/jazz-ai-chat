@@ -24,7 +24,7 @@ export async function POST(req: Request) {
 
   const { userId, chatId } = await req.json();
   const account = await Account.load(userId, worker, {});
-
+  console.log("Account loaded");
   if (!account) {
     return new Response("Account not found", { status: 404 });
   }
@@ -33,7 +33,7 @@ export async function POST(req: Request) {
 
   // Load an existing chat
   chat = await Chat.load(chatId, worker, { messages: [{ text: [] }] });
-
+  console.log("Chat loaded");
   if (!chat) {
     return new Response("Chat not found", { status: 404 });
   }
