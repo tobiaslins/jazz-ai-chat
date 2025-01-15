@@ -46,7 +46,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
       {}
     );
     if (!worker) return;
-    group.addMember(worker, "writer");
+    group.addMember(worker, "admin");
 
     const list = ListOfChatMessages.create([], { owner: group });
     const chat = await Chat.create(
