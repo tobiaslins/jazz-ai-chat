@@ -12,12 +12,9 @@ export function useCreateChat() {
   const [loading, setLoading] = useState(false);
 
   async function createChat() {
-    const group = Group.create({
-      owner: me,
-    });
+    const group = Group.create();
     const worker = await Account.load(
       "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
-      me,
       {}
     );
     if (!worker) return;
