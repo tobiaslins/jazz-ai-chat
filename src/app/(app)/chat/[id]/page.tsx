@@ -48,9 +48,10 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
     if (!worker) return;
     group.addMember(worker, "writer");
 
+    const list = ListOfChatMessages.create([], { owner: group });
     const chat = await Chat.create(
       {
-        messages: ListOfChatMessages.create([], { owner: group }),
+        messages: list,
         name: "Unnamed",
       },
       {
@@ -59,6 +60,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
     );
 
     await Promise.all([
+      list.waitForSync(),
       chat.waitForSync(),
       group.waitForSync(),
       me.waitForAllCoValuesSync(),
