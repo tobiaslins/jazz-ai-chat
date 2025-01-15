@@ -61,7 +61,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
     await Promise.all([
       chat.waitForSync(),
       group.waitForSync(),
-      me.waitForSync(),
+      me.waitForAllCoValuesSync(),
     ]);
 
     me?.root?.chats?.push(chat);
