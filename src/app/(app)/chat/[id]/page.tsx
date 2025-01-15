@@ -58,7 +58,11 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
       }
     );
 
-    await me.waitForAllCoValuesSync();
+    await Promise.all([
+      chat.waitForSync(),
+      group.waitForSync(),
+      me.waitForSync(),
+    ]);
 
     me?.root?.chats?.push(chat);
     router.push(`/chat/${chat.id}`);
