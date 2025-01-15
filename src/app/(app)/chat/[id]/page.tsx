@@ -174,7 +174,6 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type your message..."
-            disabled={isLoading}
           />
           <Button type="submit" disabled={isLoading}>
             {isLoading ? (
