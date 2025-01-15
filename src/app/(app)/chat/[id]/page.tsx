@@ -162,7 +162,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
               >
                 <Markdown>{message?.text?.toString()}</Markdown>
                 <span className="text-xs mt-1 block opacity-75">
-                  {message._edits.content.by?.profile?.name}
+                  {message?._edits.text?.by?.profile?.name}
                 </span>
               </div>
             </motion.div>
