@@ -11,7 +11,7 @@ export async function POST(req: Request) {
   if (!worker) {
     try {
       const w = await startWorker({
-        syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat",
+        syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat-worker",
       });
 
       console.log("Worker started");
