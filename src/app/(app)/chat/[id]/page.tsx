@@ -41,7 +41,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
       owner: me,
     });
     const worker = await Account.load(
-      "co_zokmTDy98n4Gp6kDnWscZC7Gxv" as ID<Account>,
+      "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
       me,
       {}
     );
