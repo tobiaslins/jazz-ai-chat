@@ -1,7 +1,7 @@
 "use client";
 
 import { useAccount, useCoState } from "jazz-react";
-import { Chat, ChatMessage, ListOfChatMessages } from "../../schema";
+import { Chat, ChatMessage, ListOfChatMessages, Reactions } from "../../schema";
 import { Account, CoPlainText, Group, type ID } from "jazz-tools";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
@@ -22,7 +22,9 @@ export default function ChatPage() {
 }
 
 function RenderChat({ chatId }: { chatId: ID<Chat> }) {
-  const chat = useCoState(Chat, chatId, { messages: [{}] });
+  const chat = useCoState(Chat, chatId, {
+    messages: [{ text: [], reactions: [] }],
+  });
   const { me } = useAccount();
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -85,6 +87,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
         content: message, // TODO: remove
         role: "user",
         text: CoPlainText.create(message, { owner: chat._owner }),
+        reactions: Reactions.create([], { owner: chat._owner }),
       },
       { owner: chat._owner }
     );
@@ -94,12 +97,15 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
 
     await chatMessage.waitForSync();
 
+    // sendMessageToWorker(chatMessage);
+
     try {
       await fetch("/api/chat", {
         method: "POST",
         body: JSON.stringify({
           chatId,
           userId: me?.id,
+          lastMessageId: chatMessage?.id,
         }),
       })
         .then((res) => res.json())
@@ -160,6 +166,16 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
                 <span className="text-xs mt-1 block opacity-75">
                   {message?._edits.text?.by?.profile?.name}
                 </span>
+                {Object.entries(message?.reactions?.perSession ?? {}).map(
+                  ([sessionId, reaction]) => (
+                    <span
+                      key={sessionId}
+                      className="text-xs mt-1 block opacity-75"
+                    >
+                      {reaction.value}
+                    </span>
+                  )
+                )}
               </div>
             </motion.div>
           ))}
@@ -175,7 +191,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type your message..."
           />
-          <Button type="submit" disabled={isLoading}>
+          <Button type="submit">
             {isLoading ? (
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (

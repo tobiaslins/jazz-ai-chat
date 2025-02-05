@@ -1,9 +1,13 @@
-import { co, CoMap, CoList, Account, CoPlainText } from "jazz-tools";
+import { co, CoMap, CoList, Account, CoPlainText, CoFeed } from "jazz-tools";
+
+export class Reactions extends CoFeed.Of(co.string) {}
 
 export class ChatMessage extends CoMap {
   content = co.string;
   text = co.ref(CoPlainText);
-  role = co.literal("user", "system");
+  role = co.literal("user", "system", "assistant");
+
+  reactions = co.optional.ref(Reactions);
 }
 
 export class ListOfChatMessages extends CoList.Of(co.ref(ChatMessage)) {}
