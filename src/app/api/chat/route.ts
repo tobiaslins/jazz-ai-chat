@@ -97,9 +97,25 @@ export async function POST(req: Request) {
   chat.messages?.push(chatMessage);
 
   let currentText = "";
+  let lastUpdateTime = 0;
+  let pendingText = "";
+  const THROTTLE_TIME = 250;
+  
   for await (const textPart of result.textStream) {
-    chatMessage.text?.insertAfter(currentText.length, textPart);
-    currentText = currentText + textPart;
+    pendingText += textPart;
+    const now = Date.now();
+    
+    if (now - lastUpdateTime >= THROTTLE_TIME) {
+      chatMessage.text?.insertAfter(currentText.length, pendingText);
+      currentText += pendingText;
+      pendingText = "";
+      lastUpdateTime = now;
+    }
+  }
+  // Make sure any remaining text gets inserted
+  if (pendingText) {
+    chatMessage.text?.insertAfter(currentText.length, pendingText);
+    currentText += pendingText;
   }
 
   after(async () => {
