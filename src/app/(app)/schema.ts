@@ -37,8 +37,8 @@ export class ChatAccount extends Account {
       );
       console.log("created root");
     }
-    const res = await this.root?.ensureLoaded({ chats: [] });
-    console.log("res", res);
-    console.log("this.root", this.root);
+    // const res = await this.root?.ensureLoaded({ resolve: { chats: { $each: true } } });
+    // console.log("res", res);
+    // console.log("this.root", this.root);
   }
 }
