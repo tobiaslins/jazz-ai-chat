@@ -1,6 +1,6 @@
 "use client";
 
-import { JazzProvider, useOnboardingAuth } from "jazz-react";
+import { JazzProvider, useDemoAuth } from "jazz-react";
 import { ChatAccount } from "./schema";
 
 export default function RootLayout({
@@ -12,13 +12,12 @@ export default function RootLayout({
 }
 
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
-  const [auth] = useOnboardingAuth();
+
   return (
     <>
       <JazzProvider
-        auth={auth}
+        sync={{ peer: "wss://cloud.jazz.tools/?key=me@tobi.sh" }}
         AccountSchema={ChatAccount}
-        peer="wss://cloud.jazz.tools/?key=me@tobi.sh"
       >
         {children}
       </JazzProvider>

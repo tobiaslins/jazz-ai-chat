@@ -27,7 +27,7 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { me } = useAccount({ root: { chats: [{}] } });
+  const { me } = useAccount({ resolve: { root: { chats: { $each: true } } } });
   const { createChat, loading } = useCreateChat();
 
   const recentChats =

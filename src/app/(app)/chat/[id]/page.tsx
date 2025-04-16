@@ -23,7 +23,9 @@ export default function ChatPage() {
 
 function RenderChat({ chatId }: { chatId: ID<Chat> }) {
   const chat = useCoState(Chat, chatId, {
-    messages: [{ text: [], reactions: [] }],
+    resolve: {
+      messages: { $each: { text: true, reactions: true } }
+    }
   });
   const { me } = useAccount();
   const [message, setMessage] = useState("");
@@ -44,8 +46,10 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
     });
     const worker = await Account.load(
       "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
-      me,
-      {}
+      {
+        loadAs: me,
+      }
+
     );
 
     if (!worker) return;
@@ -151,16 +155,14 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.3 }}
-              className={`flex ${
-                message?.role === "user" ? "justify-end" : "justify-start"
-              }`}
+              className={`flex ${message?.role === "user" ? "justify-end" : "justify-start"
+                }`}
             >
               <div
-                className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-3 ${
-                  message?.role === "user"
-                    ? "bg-blue-500 text-white"
-                    : "bg-white text-gray-800"
-                }`}
+                className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-3 ${message?.role === "user"
+                  ? "bg-blue-500 text-white"
+                  : "bg-white text-gray-800"
+                  }`}
               >
                 <Markdown>{message?.text?.toString()}</Markdown>
                 <span className="text-xs mt-1 block opacity-75">

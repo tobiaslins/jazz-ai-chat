@@ -28,18 +28,21 @@ export async function POST(req: Request) {
   }
 
   const { userId, chatId } = await req.json();
-  const account = await Account.load(userId, worker, {});
+  const account = await Account.load(userId, {loadAs: worker});
   console.log("Account loaded");
   if (!account) {
     return new Response("Account not found", { status: 404 });
   }
 
-  let chat: Chat | undefined;
+  let chat: Chat | null;
 
   // Load an existing chat
 
-  chat = await Chat.load(chatId, worker, {
-    messages: [{ text: [], reactions: [] }],
+  chat = await Chat.load(chatId,  {
+    loadAs: worker,
+    resolve: {
+      messages: {$each: {text: true, reactions: true}}
+    }
   });
 
   if (!chat) {
