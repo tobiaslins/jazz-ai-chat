@@ -32,40 +32,16 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
   const [isFirstRender, setIsFirstRender] = useState(true);
-  const [isScrolledToBottom, setIsScrolledToBottom] = useState(true);
 
   const scrollToBottom = () => {
-    if (isFirstRender || isScrolledToBottom) {
-      messagesEndRef.current?.scrollIntoView({
-        behavior: isFirstRender ? "instant" : "smooth",
-      });
+    messagesEndRef.current?.scrollIntoView({
+      behavior: isFirstRender ? "instant" : "smooth",
+    });
 
-      if (isFirstRender && (chat?.messages?.length ?? 0) > 0) {
-        setIsFirstRender(false);
-      }
+    if (isFirstRender && (chat?.messages?.length ?? 0) > 0) {
+      setIsFirstRender(false);
     }
   };
-
-  // Check if user is scrolled to bottom
-  useEffect(() => {
-    const handleScroll = () => {
-      if (!messagesEndRef.current) return;
-
-      const container = messagesEndRef.current.parentElement;
-      if (!container) return;
-
-      const isAtBottom =
-        container.scrollHeight - container.scrollTop <=
-        container.clientHeight + 100; // 100px threshold
-      setIsScrolledToBottom(isAtBottom);
-    };
-
-    const container = messagesEndRef.current?.parentElement;
-    if (container) {
-      container.addEventListener("scroll", handleScroll);
-      return () => container.removeEventListener("scroll", handleScroll);
-    }
-  }, []);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(scrollToBottom, [chat?.messages]);
