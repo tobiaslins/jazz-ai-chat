@@ -12,7 +12,6 @@ import Markdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
-import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useRouter } from "next/navigation";
 
 export default function ChatPage() {
@@ -24,17 +23,28 @@ export default function ChatPage() {
 function RenderChat({ chatId }: { chatId: ID<Chat> }) {
   const chat = useCoState(Chat, chatId, {
     resolve: {
-      messages: { $each: { text: true, reactions: true } }
-    }
+      messages: { $each: { text: true, reactions: true } },
+    },
   });
   const { me } = useAccount();
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+  const [isFirstRender, setIsFirstRender] = useState(true);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    console.log(
+      "Scrolling to bottom",
+      isFirstRender ? "instant" : "smooth",
+      chat?.messages?.length
+    );
+    messagesEndRef.current?.scrollIntoView({
+      behavior: isFirstRender ? "instant" : "smooth",
+    });
+    if (isFirstRender && (chat?.messages?.length ?? 0) > 0) {
+      setIsFirstRender(false);
+    }
   };
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
@@ -49,7 +59,6 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
       {
         loadAs: me,
       }
-
     );
 
     if (!worker) return;
@@ -154,19 +163,21 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className={`flex ${message?.role === "user" ? "justify-end" : "justify-start"
-                }`}
+              transition={{ duration: 0.1 }}
+              className={`flex ${
+                message?.role === "user" ? "justify-end" : "justify-start"
+              }`}
             >
               <div
-                className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-3 ${message?.role === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-white text-gray-800"
-                  }`}
+                className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-3 ${
+                  message?.role === "user"
+                    ? "bg-blue-500 text-white"
+                    : "bg-white text-gray-800"
+                }`}
               >
                 <Markdown>{message?.text?.toString()}</Markdown>
-                <span className="text-xs mt-1 block opacity-75">
-                  {message?._edits.text?.by?.profile?.name}
+                <span className="text-xs mt-1 block opacity-75 h-[16px]">
+                  {message?._edits.text?.by?.profile?.name ?? ""}
                 </span>
                 {Object.entries(message?.reactions?.perSession ?? {}).map(
                   ([sessionId, reaction]) => (
