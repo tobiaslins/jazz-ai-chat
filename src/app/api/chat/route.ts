@@ -52,7 +52,7 @@ export async function POST(req: Request) {
   if (chat.name === "Unnamed" || chat.name === "Test") {
     // Generate a name for the chat
     const chatName = await generateText({
-      model: openai("gpt-4o-mini"),
+      model: openai("gpt-4.1-nano"),
       prompt: `Generate a title for this AI chat. Only answer with the name. It should be discriptive of what the chat is about. The current messages are: ${chat?.messages
         ?.map((message) => message?.content)
         .join("\n")}`,
@@ -62,7 +62,7 @@ export async function POST(req: Request) {
 
   const lastMessage = chat?.messages?.[chat?.messages?.length - 1];
   generateText({
-    model: openai("gpt-4o-mini"),
+    model: openai("gpt-4.1-nano"),
     prompt: `Rarely generate a reaction for following message. Do it like a friend would, only if its really emotional or extreme message. Only answer with the reaction as emoji or empty string. Less is more - don't overreact.
     Message: ${lastMessage?.content}`,
   }).then((r) => {
@@ -83,7 +83,7 @@ export async function POST(req: Request) {
   chat.messages?.push(chatMessage);
 
   const result = streamText({
-    model: openai("gpt-4o-mini"),
+    model: openai("gpt-4.1-nano"),
     messages: [
       {
         role: "system",
