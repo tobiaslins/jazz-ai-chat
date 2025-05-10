@@ -5,7 +5,7 @@ import { useState } from "react";
 import type { ID } from "jazz-tools";
 import { Account } from "jazz-tools";
 import { Group } from "jazz-tools";
-
+import { track } from "@vercel/analytics";
 export function useCreateChat() {
   const router = useRouter();
   const { me } = useAccount();
@@ -32,6 +32,8 @@ export function useCreateChat() {
 
     me?.root?.chats?.push(chat);
     router.push(`/chat/${chat.id}`);
+
+    track("Create Chat");
   }
 
   return { createChat, loading };
