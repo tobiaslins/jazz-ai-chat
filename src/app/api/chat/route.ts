@@ -28,7 +28,7 @@ export async function POST(req: Request) {
   }
 
   const { userId, chatId } = await req.json();
-  const account = await Account.load(userId, {loadAs: worker});
+  const account = await Account.load(userId, { loadAs: worker });
   console.log("Account loaded");
   if (!account) {
     return new Response("Account not found", { status: 404 });
@@ -38,11 +38,11 @@ export async function POST(req: Request) {
 
   // Load an existing chat
 
-  chat = await Chat.load(chatId,  {
+  chat = await Chat.load(chatId, {
     loadAs: worker,
     resolve: {
-      messages: {$each: {text: true, reactions: true}}
-    }
+      messages: { $each: { text: true, reactions: true } },
+    },
   });
 
   if (!chat) {
@@ -100,13 +100,13 @@ export async function POST(req: Request) {
   let lastUpdateTime = 0;
   let pendingText = "";
   const THROTTLE_TIME = 250;
-  
+
   for await (const textPart of result.textStream) {
     pendingText += textPart;
     const now = Date.now();
-    
+
     if (now - lastUpdateTime >= THROTTLE_TIME) {
-      chatMessage.text?.insertAfter(currentText.length, pendingText);
+      chatMessage.text?.insertAfter(currentText.length - 1, pendingText);
       currentText += pendingText;
       pendingText = "";
       lastUpdateTime = now;
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
   }
   // Make sure any remaining text gets inserted
   if (pendingText) {
-    chatMessage.text?.insertAfter(currentText.length, pendingText);
+    chatMessage.text?.insertAfter(currentText.length - 1, pendingText);
     currentText += pendingText;
   }
 
