@@ -71,6 +71,17 @@ export async function POST(req: Request) {
     }
   });
 
+  const chatMessage = ChatMessage.create(
+    {
+      content: "",
+      text: CoPlainText.create("", { owner: chat._owner }),
+      role: "assistant" as const,
+      reactions: Reactions.create([], { owner: chat._owner }),
+    },
+    { owner: chat._owner }
+  );
+  chat.messages?.push(chatMessage);
+
   const result = streamText({
     model: openai("gpt-4o-mini"),
     messages: [
@@ -84,17 +95,6 @@ export async function POST(req: Request) {
       })) ?? []),
     ],
   });
-
-  const chatMessage = ChatMessage.create(
-    {
-      content: "",
-      text: CoPlainText.create("", { owner: chat._owner }),
-      role: "assistant" as const,
-      reactions: Reactions.create([], { owner: chat._owner }),
-    },
-    { owner: chat._owner }
-  );
-  chat.messages?.push(chatMessage);
 
   let currentText = "";
   let lastUpdateTime = 0;
