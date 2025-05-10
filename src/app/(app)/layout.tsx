@@ -12,7 +12,6 @@ export default function RootLayout({
 }
 
 function JazzAndAuth({ children }: { children: React.ReactNode }) {
-
   return (
     <>
       <JazzProvider

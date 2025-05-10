@@ -106,7 +106,7 @@ export async function POST(req: Request) {
     const now = Date.now();
 
     if (now - lastUpdateTime >= THROTTLE_TIME) {
-      chatMessage.text?.insertAfter(currentText.length - 1, pendingText);
+      chatMessage.text?.insertAfter(chatMessage.text.length - 1, pendingText);
       currentText += pendingText;
       pendingText = "";
       lastUpdateTime = now;
@@ -114,7 +114,7 @@ export async function POST(req: Request) {
   }
   // Make sure any remaining text gets inserted
   if (pendingText) {
-    chatMessage.text?.insertAfter(currentText.length - 1, pendingText);
+    chatMessage.text?.insertAfter(chatMessage.text.length - 1, pendingText);
     currentText += pendingText;
   }
 
