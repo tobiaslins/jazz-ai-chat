@@ -1,6 +1,6 @@
 "use client";
 
-import { JazzProvider, useDemoAuth } from "jazz-react";
+import { JazzProvider } from "jazz-react";
 import { ChatAccount } from "./schema";
 
 export default function RootLayout({
@@ -23,7 +23,6 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
     </>
   );
 }
-// Register the Account schema so `useAccount` returns our custom `MyAppAccount`
 declare module "jazz-react" {
   interface Register {
     Account: ChatAccount;
