@@ -46,6 +46,7 @@ export async function POST(req: Request) {
   });
 
   if (!chat) {
+    console.error("Chat not found with id:" + chatId);
     return new Response("Chat not found", { status: 404 });
   }
 
