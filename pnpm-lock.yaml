@@ -45,14 +45,14 @@ importers:
         specifier: ^11.17.0
         version: 11.17.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       jazz-nodejs:
-        specifier: ^0.13.23
-        version: 0.13.23
+        specifier: ^0.13.26
+        version: 0.13.26
       jazz-react:
-        specifier: ^0.13.23
-        version: 0.13.23(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        specifier: ^0.13.26
+        version: 0.13.26(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       jazz-tools:
-        specifier: ^0.13.23
-        version: 0.13.23
+        specifier: ^0.13.26
+        version: 0.13.26
       lucide-react:
         specifier: ^0.471.0
         version: 0.471.0(react@19.0.0)
@@ -806,17 +806,17 @@ packages:
     resolution: {integrity: sha512-eYm0QWBtUrBWZWG0d386OGAw16Z995PiOVo2B7bjWSbHedGl5e0ZWaq65kOGgUSNesEIDkB9ISbTg/JK9dhCZA==}
     engines: {node: '>=6'}
 
-  cojson-storage-indexeddb@0.13.23:
-    resolution: {integrity: sha512-SWUNO1+CijdXrXJAooycD9lmJJWyIg18HkwRxYazEDR+paSm/7rZBSB2Bm5UcB3dStksZIRDtB/UdH6R6m3JVw==}
+  cojson-storage-indexeddb@0.13.25:
+    resolution: {integrity: sha512-VGFzvTgjM5VAA3LTffEYJwKAfHKHZKUIzU4/aUhCf11aO7Tm3uk7Wtz6aqKkFDZguhR9nZd2Jwpi0oZqfoV03Q==}
 
-  cojson-storage@0.13.23:
-    resolution: {integrity: sha512-t9c8eoYpaH05vHVHFH0TZqq9jdwq50BktMdjnTSSCMy04u3AYPJ3yNX1hXV41KumJH6P1hSWnNPOg1TGBJqP1A==}
+  cojson-storage@0.13.25:
+    resolution: {integrity: sha512-t6Is+IyPJHVdFUshBFtzFmyFqBoIzHIsOkmr7LuI5Nx4PtQaW3wEgJ6cyWc2vOnFKp5EbW0RASLFwBDs6cCroA==}
 
-  cojson-transport-ws@0.13.23:
-    resolution: {integrity: sha512-aiZbDOMiqJcbPW5+3Tb8t/6ZyMdFd0yywP6elYwhV2Kn+lxHZ8tjH3vtoRBrfyZjhEL+vXKYr7MUepBhd0BoJg==}
+  cojson-transport-ws@0.13.25:
+    resolution: {integrity: sha512-/EeL6Hsq/hBwepXeOEJeWgp/STEnO81AoIcZxPnuSIaEIsgq8OH/VvZ82jgS06WQnljZg2Zl5XkCNsSTf56S1A==}
 
-  cojson@0.13.23:
-    resolution: {integrity: sha512-6Iiv279PdLsWfIjNKmml6Vh4WiFsNnqRwHAn2fC/i/UnGTCvQkY5/7bXeB02UBYvoEaUGu+RTPe2unZ8ojWpJg==}
+  cojson@0.13.25:
+    resolution: {integrity: sha512-HrAF6I8Qd2w2PEESNuF0AM5GEHUKUDudkITJZTnbDs1FbAXB5ShnvLkwXn7BJwRkULa1yub+h/AXc5minXpHxw==}
 
   color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
@@ -1036,32 +1036,32 @@ packages:
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
 
-  jazz-browser-media-images@0.13.23:
-    resolution: {integrity: sha512-40EjC6dw7/ZJoImonQz4ikqxfQAOq8SmAKg9nrxeG2NllgcuEH+cnMhccwRQzZL4MVSuqMNmgAfYfCsZKzGoVw==}
+  jazz-browser-media-images@0.13.26:
+    resolution: {integrity: sha512-xYdg/xlNmVNIA7mpsxi3YA9/JpOofjxwCEeVTWhwDNuy1wxflyMmxSuc8+JI9XBVAAsJQKDWZOJpqiINwg1uTw==}
 
-  jazz-browser@0.13.23:
-    resolution: {integrity: sha512-XlHDrIHKqrNiAYXq4PDfzguob82US135aZFpbEWQICR9kXq7LAF/AZUvc9ZjhPQoKdqfRsGuqG/nft8BoSRQ0Q==}
+  jazz-browser@0.13.26:
+    resolution: {integrity: sha512-YfePyWoTNjHiwUtxLdoR2bVuiA06on6w1x8fnF5Ww4CPClE03Zm5BvQVcikqTiQ5z/0yO+asch3nky5CWzXz6A==}
 
   jazz-crypto-rs@0.0.7:
     resolution: {integrity: sha512-Pzs8Zu1zgKVURkBVvqqF1B2r78FaSZdwPbmeCWx0Nb3nibzPuB/kSKEO7LJsKnb3P5HO0v+lTIJ53mGC5H1urQ==}
 
-  jazz-nodejs@0.13.23:
-    resolution: {integrity: sha512-CrvwFoykqAlkXAJDWt3GpNkzskGFxhPZ9IEHKMLf/GETque1wY6pLunBJQvFRvYN7JgCtuyyYazw4NIqSlaMkQ==}
+  jazz-nodejs@0.13.26:
+    resolution: {integrity: sha512-qT2xw4W1fYwHKs354V9jAuyThTHaJV1v0V5D9V6FIstDdgWuQE9uGfmfEWy94xyAaaN+8/CpV/49fj07i5N1Bg==}
 
-  jazz-react-core@0.13.23:
-    resolution: {integrity: sha512-JCIczburWt2+J+AsDBfkwhzRiBZE4M2Z8X4JbtDoqSls1iXfVnQYXbK57aTXCq5lF1jWaVVPBuSKOZICe8vmzA==}
+  jazz-react-core@0.13.26:
+    resolution: {integrity: sha512-X23RdQCtwIYdrU6pX/qaU0iFeszVjG51ZznPXlMkePWC1U/gBCb+iC0Crya5Us+06hySXl1VQ1O6WHaUQFO0cA==}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  jazz-react@0.13.23:
-    resolution: {integrity: sha512-JJNKmf17JB7dwg+GnkXd6r9N0UnG2Tgbeo11DBdgeu3+hE1QP4V7QyBQVFgaMRYDLCbaSOiSp0iUjktyLSfieQ==}
+  jazz-react@0.13.26:
+    resolution: {integrity: sha512-0LAoaEQgX4b8IqWrOusEGLMsSF7//7kUGd7xYT5bfn8/kz6NInqr1d4saauL/bGcfQfZiojhREPNM6G/Y6rt5w==}
     peerDependencies:
       react: ^17.0.0 || ^18.0.0 || ^19.0.0
       react-dom: ^17.0.0 || ^18.0.0 || ^19.0.0
 
-  jazz-tools@0.13.23:
-    resolution: {integrity: sha512-kRgqxGC80QtpP9NnpbBCUVb2cAavFMsXDYqjySTNn/l0aCDt5TqzSh8w/A/Tg1f8hNfCfXbFRbj+BH64E017XQ==}
+  jazz-tools@0.13.26:
+    resolution: {integrity: sha512-BwoSHVgrFKCRRzDEPhDjIFBuT+NDMTcMKubS4up9R/PjqlephREafKVeVI/r0NZmS6dyfRQ+xSgC18Y3WmRhfw==}
 
   jiti@1.21.7:
     resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
@@ -2247,20 +2247,20 @@ snapshots:
 
   clsx@2.1.1: {}
 
-  cojson-storage-indexeddb@0.13.23:
+  cojson-storage-indexeddb@0.13.25:
     dependencies:
-      cojson: 0.13.23
-      cojson-storage: 0.13.23
+      cojson: 0.13.25
+      cojson-storage: 0.13.25
 
-  cojson-storage@0.13.23:
+  cojson-storage@0.13.25:
     dependencies:
-      cojson: 0.13.23
+      cojson: 0.13.25
 
-  cojson-transport-ws@0.13.23:
+  cojson-transport-ws@0.13.25:
     dependencies:
-      cojson: 0.13.23
+      cojson: 0.13.25
 
-  cojson@0.13.23:
+  cojson@0.13.25:
     dependencies:
       '@noble/ciphers': 0.1.4
       '@noble/curves': 1.8.0
@@ -2480,51 +2480,51 @@ snapshots:
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
 
-  jazz-browser-media-images@0.13.23:
+  jazz-browser-media-images@0.13.26:
     dependencies:
       '@types/image-blob-reduce': 4.1.4
       image-blob-reduce: 4.1.0
-      jazz-browser: 0.13.23
-      jazz-tools: 0.13.23
+      jazz-browser: 0.13.26
+      jazz-tools: 0.13.26
       pica: 9.0.1
 
-  jazz-browser@0.13.23:
+  jazz-browser@0.13.26:
     dependencies:
-      cojson: 0.13.23
-      cojson-storage-indexeddb: 0.13.23
-      cojson-transport-ws: 0.13.23
-      jazz-tools: 0.13.23
+      cojson: 0.13.25
+      cojson-storage-indexeddb: 0.13.25
+      cojson-transport-ws: 0.13.25
+      jazz-tools: 0.13.26
 
   jazz-crypto-rs@0.0.7: {}
 
-  jazz-nodejs@0.13.23:
+  jazz-nodejs@0.13.26:
     dependencies:
-      cojson: 0.13.23
-      cojson-transport-ws: 0.13.23
-      jazz-tools: 0.13.23
+      cojson: 0.13.25
+      cojson-transport-ws: 0.13.25
+      jazz-tools: 0.13.26
 
-  jazz-react-core@0.13.23(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  jazz-react-core@0.13.26(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
-      cojson: 0.13.23
-      jazz-tools: 0.13.23
+      cojson: 0.13.25
+      jazz-tools: 0.13.26
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
-  jazz-react@0.13.23(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  jazz-react@0.13.26(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@scure/bip39': 1.5.1
-      cojson: 0.13.23
-      jazz-browser: 0.13.23
-      jazz-browser-media-images: 0.13.23
-      jazz-react-core: 0.13.23(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
-      jazz-tools: 0.13.23
+      cojson: 0.13.25
+      jazz-browser: 0.13.26
+      jazz-browser-media-images: 0.13.26
+      jazz-react-core: 0.13.26(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      jazz-tools: 0.13.26
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
-  jazz-tools@0.13.23:
+  jazz-tools@0.13.26:
     dependencies:
       '@scure/bip39': 1.5.1
-      cojson: 0.13.23
+      cojson: 0.13.25
       fast-myers-diff: 3.2.0
 
   jiti@1.21.7: {}
