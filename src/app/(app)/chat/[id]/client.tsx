@@ -148,38 +148,39 @@ export function RenderChat({
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
-      {role === "reader" && (
-        <div className="text-sm text-gray-500 px-4 py-1">
-          You are a reader. You cannot send messages.{" "}
+      {role === "reader" ? (
+        <div className="bg-white flex flex-row items-center p-4 shadow-lg text-sm text-gray-500 px-4 py-4">
+          <div className="flex-1">
+            You are a reader. You cannot send messages.
+          </div>
           <Button
-            variant="link"
             onClick={() => {
               router.push("/chat/new");
             }}
           >
-            Create a new chat
+            New chat
           </Button>
         </div>
+      ) : (
+        <form onSubmit={sendMessage} className="bg-white p-4 shadow-lg">
+          <div className="flex items-center space-x-2">
+            <Input
+              type="text"
+              autoFocus
+              value={message}
+              onChange={(e) => setMessage(e.target.value)}
+              placeholder="Type your message..."
+            />
+            <Button type="submit">
+              {isLoading ? (
+                <Loader2 className="w-6 h-6 animate-spin" />
+              ) : (
+                <Send className="w-6 h-6" />
+              )}
+            </Button>
+          </div>
+        </form>
       )}
-      <form onSubmit={sendMessage} className="bg-white p-4 shadow-lg">
-        <div className="flex items-center space-x-2">
-          <Input
-            type="text"
-            autoFocus
-            disabled={role === "reader"}
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
-            placeholder="Type your message..."
-          />
-          <Button type="submit" disabled={role === "reader"}>
-            {isLoading ? (
-              <Loader2 className="w-6 h-6 animate-spin" />
-            ) : (
-              <Send className="w-6 h-6" />
-            )}
-          </Button>
-        </div>
-      </form>
     </div>
   );
 }
