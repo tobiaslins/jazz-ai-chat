@@ -116,10 +116,6 @@ export function RenderChat({
           {orderedMessages?.map((message, index) => (
             <motion.div
               key={message?.id}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.1 }}
               className={`flex ${
                 message?.role === "user" ? "justify-end" : "justify-start"
               }`}

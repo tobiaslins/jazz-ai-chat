@@ -1,7 +1,6 @@
 import { type ID } from "jazz-tools";
 import { Chat } from "../../schema";
 import { RenderChat } from "./client";
-import { use } from "react";
 import { getWorker } from "@/app/worker";
 
 export const dynamic = "force-dynamic";
