@@ -78,7 +78,6 @@ export default function ChatLayout({
                       variant="ghost"
                       className="w-full justify-start p-2 h-12"
                     >
-                      <MessageSquare className="mr-2 h-4 w-4" />
                       <div className="flex flex-col items-start">
                         <span className="text-sm font-medium">
                           {chat.title}
