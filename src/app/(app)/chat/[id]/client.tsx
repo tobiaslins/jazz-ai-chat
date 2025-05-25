@@ -130,9 +130,6 @@ export function RenderChat({
                 <Markdown className={"min-h-[24px]"}>
                   {message?.text?.toString()}
                 </Markdown>
-                <span className="text-xs mt-1 block opacity-75 h-[16px]">
-                  {message?._edits?.text?.by?.profile?.name ?? ""}
-                </span>
                 {Object.entries(message?.reactions?.perSession ?? {}).map(
                   ([sessionId, reaction]) => (
                     <span
