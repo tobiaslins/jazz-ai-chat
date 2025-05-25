@@ -29,20 +29,43 @@ export function RenderChat({
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [isFirstRender, setIsFirstRender] = useState(true);
+  const [hasInitiallyScrolled, setHasInitiallyScrolled] = useState(false);
+  const [previousMessageCount, setPreviousMessageCount] = useState(0);
   const router = useRouter();
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: isFirstRender ? "instant" : "smooth",
-    });
 
-    if (isFirstRender && (chat?.messages?.length ?? 0) > 0) {
-      setIsFirstRender(false);
+  // Initial scroll to bottom after hydration (not SSR)
+  useEffect(() => {
+    if (!hasInitiallyScrolled && messagesEndRef.current) {
+      // Use setTimeout to ensure this runs after hydration
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+        setHasInitiallyScrolled(true);
+      }, 0);
     }
-  };
+  }, [hasInitiallyScrolled]);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(scrollToBottom, [chat?.messages]);
+  //   // Handle scrolling for new messages only
+  useEffect(() => {
+    const currentMessageCount = (chat || preloadedChat)?.messages?.length || 0;
+
+    // Only scroll if we have more messages than before and we've already done initial scroll
+    if (
+      hasInitiallyScrolled &&
+      currentMessageCount > previousMessageCount &&
+      messagesEndRef.current
+    ) {
+      messagesEndRef.current.scrollIntoView({
+        behavior: "smooth",
+      });
+    }
+
+    setPreviousMessageCount(currentMessageCount);
+  }, [
+    chat?.messages,
+    preloadedChat?.messages,
+    hasInitiallyScrolled,
+    previousMessageCount,
+  ]);
 
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
@@ -113,7 +136,10 @@ export function RenderChat({
           Share
         </Button>
       </header>
-      <div className="flex-1 overflow-y-auto p-4 space-y-4">
+      <div
+        id="scroll-container"
+        className="flex-1 overflow-y-auto p-4 space-y-4"
+      >
         <AnimatePresence>
           {orderedMessages?.map((message, index) => (
             <motion.div
@@ -148,6 +174,7 @@ export function RenderChat({
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
+
       {role === "reader" ? (
         <div className="bg-white flex flex-row items-center p-4 shadow-lg text-sm text-gray-500 px-4 py-4">
           <div className="flex-1">

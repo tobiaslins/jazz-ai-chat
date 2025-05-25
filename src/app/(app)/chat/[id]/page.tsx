@@ -19,5 +19,19 @@ export default async function ChatPage({
     },
   });
 
-  return <RenderChat chatId={id as ID<Chat>} preloadedChat={chat?.toJSON()} />;
+  const chatWithOrdered = {
+    ...chat?.toJSON(),
+    messages: chat?.messages
+      ?.toSorted(
+        (a, b) =>
+          (a?._edits?.role?.madeAt?.getTime() ?? 0) -
+          (b?._edits?.role?.madeAt?.getTime() ?? 0)
+      )
+      .map((m) => ({
+        ...m?.toJSON(),
+        text: m?.text?.toString(),
+      })),
+  };
+
+  return <RenderChat chatId={id as ID<Chat>} preloadedChat={chatWithOrdered} />;
 }
