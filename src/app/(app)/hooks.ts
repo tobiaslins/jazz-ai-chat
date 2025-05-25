@@ -17,7 +17,9 @@ export function useCreateChat() {
     const group = Group.create();
     const worker = await Account.load(
       "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
-      {}
+      {
+        loadAs: me,
+      }
     );
     if (!worker) return;
     group.addMember(worker, "writer");

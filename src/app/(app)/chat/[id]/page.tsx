@@ -16,19 +16,6 @@ import { useCreateChat } from "../../hooks";
 
 export default function ChatPage() {
   const { id } = useParams();
-  const { createChat } = useCreateChat();
-  const hasRedirected = useRef(false);
-
-  useEffect(() => {
-    if (id === "new" && createChat) {
-      if (!hasRedirected.current) {
-        hasRedirected.current = true;
-        createChat?.();
-      }
-    }
-  }, [id, createChat]);
-
-  if (id === "new") return null;
 
   return <RenderChat chatId={id as ID<Chat>} />;
 }
