@@ -1,5 +1,5 @@
 import { useAccount } from "jazz-react";
-import { Chat, ListOfChatMessages } from "./schema";
+import { Chat, ChatAccount, ListOfChatMessages } from "./schema";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ID } from "jazz-tools";
@@ -8,7 +8,7 @@ import { Group } from "jazz-tools";
 import { track } from "@vercel/analytics";
 export function useCreateChat() {
   const router = useRouter();
-  const { me } = useAccount();
+  const { me } = useAccount(ChatAccount);
   const [loading, setLoading] = useState(false);
 
   async function createChat() {

@@ -1,41 +1,39 @@
-import { co, CoMap, CoList, Account, CoPlainText, CoFeed } from "jazz-tools";
+import { co, CoMap, CoList, Account, CoPlainText, CoFeed, z } from "jazz-tools";
 
-export class Reactions extends CoFeed.Of(co.string) {}
+export const Reactions = co.feed(z.string());
 
-export class ChatMessage extends CoMap {
-  content = co.string;
-  text = co.ref(CoPlainText);
-  role = co.literal("user", "system", "assistant");
+export const ChatMessage = co.map({
+  content: z.string(),
+  text: co.plainText(),
+  role: z.enum(["user", "system", "assistant"]),
+  reactions: z.optional(Reactions),
+});
 
-  reactions = co.optional.ref(Reactions);
-}
+export const ListOfChatMessages = co.list(ChatMessage);
 
-export class ListOfChatMessages extends CoList.Of(co.ref(ChatMessage)) {}
+export const Chat = co.map({
+  name: z.string(),
+  messages: ListOfChatMessages,
+});
+export type Chat = co.loaded<typeof Chat>;
+export const ListOfChats = co.list(Chat);
 
-export class Chat extends CoMap {
-  name = co.string;
-  messages = co.ref(ListOfChatMessages);
-}
+export const UserRoot = co.map({
+  chats: ListOfChats,
+});
 
-export class UserRoot extends CoMap {
-  chats = co.ref(ListOfChats);
-}
-
-export class ListOfChats extends CoList.Of(co.ref(Chat)) {}
-
-export class ChatAccount extends Account {
-  root = co.ref(UserRoot);
-
-  async migrate() {
-    console.log("migrate", this._refs.root);
-    if (!this._refs.root) {
-      this.root = UserRoot.create(
-        {
-          chats: ListOfChats.create([], this),
-        },
-        this
-      );
-      console.log("created root");
+export const ChatAccount = co
+  .account({
+    root: UserRoot,
+    profile: co.map({
+      name: z.string(),
+    }),
+  })
+  .withMigration(async (account) => {
+    console.log("migrate", account._refs.root);
+    if (!account._refs.root) {
+      account.root = UserRoot.create({
+        chats: ListOfChats.create([], account),
+      });
     }
-  }
-}
+  });

@@ -1,7 +1,13 @@
 "use client";
 
 import { useAccount, useCoState } from "jazz-react";
-import { Chat, ChatMessage, ListOfChatMessages, Reactions } from "../../schema";
+import {
+  Chat,
+  ChatAccount,
+  ChatMessage,
+  ListOfChatMessages,
+  Reactions,
+} from "../../schema";
 import { Account, CoPlainText, Group, type ID } from "jazz-tools";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
@@ -26,7 +32,7 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
       messages: { $each: { text: true, reactions: true } },
     },
   });
-  const { me } = useAccount();
+  const { me } = useAccount(ChatAccount);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -130,7 +136,8 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
 
   const orderedMessages = chat?.messages?.toSorted(
     (a, b) =>
-      a?._edits.role?.madeAt?.getTime() - b?._edits.role?.madeAt?.getTime()
+      (a?._edits?.role?.madeAt?.getTime() ?? 0) -
+      (b?._edits?.role?.madeAt?.getTime() ?? 0)
   );
 
   return (

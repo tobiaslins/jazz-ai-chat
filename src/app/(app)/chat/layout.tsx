@@ -20,6 +20,7 @@ import {
 import { useAccount } from "jazz-react";
 import { useRouter } from "next/navigation";
 import { useCreateChat } from "../hooks";
+import { ChatAccount } from "../schema";
 
 export default function ChatLayout({
   children,
@@ -27,7 +28,9 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
-  const { me } = useAccount({ resolve: { root: { chats: { $each: true } } } });
+  const { me } = useAccount(ChatAccount, {
+    resolve: { root: { chats: { $each: true } } },
+  });
   const { createChat, loading } = useCreateChat();
 
   const recentChats =
@@ -39,7 +42,7 @@ export default function ChatLayout({
         date: chat?._edits?.name?.madeAt?.toLocaleDateString(),
       }))
       .toSorted((a, b) => {
-        return b.created.getTime() - a.created.getTime();
+        return (b?.created?.getTime() ?? 0) - (a?.created?.getTime() ?? 0);
       }) || [];
 
   return (

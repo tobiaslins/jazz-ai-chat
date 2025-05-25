@@ -15,6 +15,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
   return (
     <>
       <JazzProvider
+        experimental_enableSSR
         sync={{ peer: "wss://cloud.jazz.tools/?key=me@tobi.sh-ai-chat" }}
         AccountSchema={ChatAccount}
       >
@@ -22,9 +23,4 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
       </JazzProvider>
     </>
   );
-}
-declare module "jazz-react" {
-  interface Register {
-    Account: ChatAccount;
-  }
 }

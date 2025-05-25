@@ -68,15 +68,6 @@ export async function POST(req: Request) {
   }
 
   const lastMessage = chat?.messages?.[chat?.messages?.length - 1];
-  generateText({
-    model: openai("gpt-4.1-nano"),
-    prompt: `Rarely generate a reaction for following message. Do it like a friend would, only if its really emotional or extreme message. Only answer with the reaction as emoji or empty string. Less is more - don't overreact.
-    Message: ${lastMessage?.content}`,
-  }).then((r) => {
-    if (r.text && r.text.length > 0) {
-      lastMessage?.reactions?.push(r.text);
-    }
-  });
 
   const chatMessage = ChatMessage.create(
     {
@@ -88,6 +79,16 @@ export async function POST(req: Request) {
     { owner: chat._owner }
   );
   chat.messages?.push(chatMessage);
+
+  // generateText({
+  //   model: openai("gpt-4.1-nano"),
+  //   prompt: `Rarely generate a reaction for following message. Do it like a friend would, only if its really emotional or extreme message. Only answer with the reaction as emoji or empty string. Less is more - don't overreact.
+  //   Message: ${lastMessage?.content}`,
+  // }).then((r) => {
+  //   if (r.text && r.text.length > 0) {
+  //     lastMessage?.reactions?.push(r.text);
+  //   }
+  // });
 
   const result = streamText({
     model: openai("gpt-4.1-nano"),
