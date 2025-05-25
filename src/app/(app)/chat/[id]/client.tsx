@@ -7,7 +7,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { Loader2, Send } from "lucide-react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Markdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -30,7 +30,7 @@ export function RenderChat({
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [isFirstRender, setIsFirstRender] = useState(true);
-
+  const router = useRouter();
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({
       behavior: isFirstRender ? "instant" : "smooth",
@@ -93,6 +93,8 @@ export function RenderChat({
       (b?._edits?.role?.madeAt?.getTime() ?? 0)
   );
 
+  const role = chat?._owner?.myRole();
+
   return (
     <div className="flex-1 flex flex-col h-screen bg-gray-100">
       <header className="bg-white shadow-sm p-4 flex justify-between items-center">
@@ -146,16 +148,30 @@ export function RenderChat({
         </AnimatePresence>
         <div ref={messagesEndRef} />
       </div>
+      {role === "reader" && (
+        <div className="text-sm text-gray-500 px-4 py-1">
+          You are a reader. You cannot send messages.{" "}
+          <Button
+            variant="link"
+            onClick={() => {
+              router.push("/chat/new");
+            }}
+          >
+            Create a new chat
+          </Button>
+        </div>
+      )}
       <form onSubmit={sendMessage} className="bg-white p-4 shadow-lg">
         <div className="flex items-center space-x-2">
           <Input
             type="text"
             autoFocus
+            disabled={role === "reader"}
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Type your message..."
           />
-          <Button type="submit">
+          <Button type="submit" disabled={role === "reader"}>
             {isLoading ? (
               <Loader2 className="w-6 h-6 animate-spin" />
             ) : (
