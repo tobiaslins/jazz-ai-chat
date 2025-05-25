@@ -1,45 +1,12 @@
-import { startWorker } from "jazz-nodejs";
-import {
-  Chat,
-  ChatMessage,
-  ListOfChatMessages,
-  Reactions,
-} from "../../(app)/schema";
-import { Account, co, CoMap, CoPlainText, Group, Profile } from "jazz-tools";
+import { Chat, ChatMessage, Reactions } from "../../(app)/schema";
+import { Account, CoPlainText } from "jazz-tools";
 import { generateText, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { after } from "next/server";
-
-let jazz: Awaited<ReturnType<typeof startWorker>> | undefined;
-export let worker: Account | undefined;
-
-export async function getWorker() {
-  if (!worker) {
-    const w = await startWorker({
-      syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat-worker",
-    });
-
-    console.log("Worker started");
-    jazz = w;
-    worker = w.worker;
-  }
-  await jazz?.waitForConnection();
-  return worker;
-}
+import { getWorker } from "@/app/worker";
 
 export async function POST(req: Request) {
-  if (!jazz) {
-    try {
-      await getWorker();
-    } catch (e) {
-      console.error("Error starting worker", e);
-      return new Response("Error starting worker", { status: 500 });
-    }
-  } else {
-    console.log("Waiting for connection");
-    await jazz.waitForConnection();
-    console.log("Connection established");
-  }
+  const worker = await getWorker();
 
   const { userId, chatId } = await req.json();
   const account = await Account.load(userId, { loadAs: worker });
