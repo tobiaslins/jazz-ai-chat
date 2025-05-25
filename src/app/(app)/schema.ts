@@ -37,3 +37,4 @@ export const ChatAccount = co
       });
     }
   });
+export type ChatAccount = co.loaded<typeof ChatAccount>;

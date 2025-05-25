@@ -6,12 +6,14 @@ import type { ID } from "jazz-tools";
 import { Account } from "jazz-tools";
 import { Group } from "jazz-tools";
 import { track } from "@vercel/analytics";
+
 export function useCreateChat() {
   const router = useRouter();
   const { me } = useAccount(ChatAccount);
   const [loading, setLoading] = useState(false);
 
   async function createChat() {
+    setLoading(true);
     const group = Group.create();
     const worker = await Account.load(
       "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
@@ -34,6 +36,7 @@ export function useCreateChat() {
     router.push(`/chat/${chat.id}`);
 
     track("Create Chat");
+    setLoading(false);
   }
 
   return { createChat, loading };

@@ -1,14 +1,8 @@
 "use client";
 
 import { useAccount, useCoState } from "jazz-react";
-import {
-  Chat,
-  ChatAccount,
-  ChatMessage,
-  ListOfChatMessages,
-  Reactions,
-} from "../../schema";
-import { Account, CoPlainText, Group, type ID } from "jazz-tools";
+import { Chat, ChatAccount, ChatMessage, Reactions } from "../../schema";
+import { CoPlainText, Group, type ID } from "jazz-tools";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
@@ -18,10 +12,19 @@ import Markdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
-import { useRouter } from "next/navigation";
+import { useCreateChat } from "../../hooks";
 
 export default function ChatPage() {
   const { id } = useParams();
+  const { createChat, loading } = useCreateChat();
+
+  useEffect(() => {
+    if (id === "new" && createChat) {
+      createChat?.();
+    }
+  }, [id, createChat]);
+
+  if (id === "new") return null;
 
   return <RenderChat chatId={id as ID<Chat>} />;
 }
@@ -36,7 +39,6 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const router = useRouter();
   const [isFirstRender, setIsFirstRender] = useState(true);
 
   const scrollToBottom = () => {
@@ -51,45 +53,6 @@ function RenderChat({ chatId }: { chatId: ID<Chat> }) {
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
   useEffect(scrollToBottom, [chat?.messages]);
-
-  async function createChat() {
-    const group = Group.create({
-      owner: me,
-    });
-    const worker = await Account.load(
-      "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
-      {
-        loadAs: me,
-      }
-    );
-
-    if (!worker) return;
-
-    group.addMember(worker, "writer");
-
-    const list = ListOfChatMessages.create([], { owner: group });
-    const chat = await Chat.create(
-      {
-        messages: list,
-        name: "Unnamed",
-      },
-      {
-        owner: group,
-      }
-    );
-
-    await chat.waitForSync();
-
-    me?.root?.chats?.push(chat);
-    router.push(`/chat/${chat.id}`);
-  }
-
-  // biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-  useEffect(() => {
-    if ((chatId as string) === "new" && me) {
-      createChat();
-    }
-  }, [chatId]);
 
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
