@@ -16,11 +16,15 @@ import { useCreateChat } from "../../hooks";
 
 export default function ChatPage() {
   const { id } = useParams();
-  const { createChat, loading } = useCreateChat();
+  const { createChat } = useCreateChat();
+  const hasRedirected = useRef(false);
 
   useEffect(() => {
     if (id === "new" && createChat) {
-      createChat?.();
+      if (!hasRedirected.current) {
+        hasRedirected.current = true;
+        createChat?.();
+      }
     }
   }, [id, createChat]);
 
