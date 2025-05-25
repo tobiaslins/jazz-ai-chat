@@ -33,9 +33,13 @@ export function useCreateChat() {
         owner: group,
       }
     );
-
-    me?.root?.chats?.push(chat);
     router.push(`/chat/${chat.id}`);
+
+    const loadedMe = await me.ensureLoaded({
+      resolve: { root: { chats: true } },
+    });
+
+    loadedMe.root.chats.push(chat);
 
     track("Create Chat");
     setLoading(false);
