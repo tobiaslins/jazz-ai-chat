@@ -13,7 +13,13 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
 
-export function RenderChat({ chatId }: { chatId: ID<Chat> }) {
+export function RenderChat({
+  chatId,
+  preloadedChat,
+}: {
+  chatId: ID<Chat>;
+  preloadedChat?: Chat;
+}) {
   const chat = useCoState(Chat, chatId, {
     resolve: {
       messages: { $each: { text: true, reactions: true } },
@@ -81,7 +87,7 @@ export function RenderChat({ chatId }: { chatId: ID<Chat> }) {
     }
   }
 
-  const orderedMessages = chat?.messages?.toSorted(
+  const orderedMessages = (chat || preloadedChat)?.messages?.toSorted(
     (a, b) =>
       (a?._edits?.role?.madeAt?.getTime() ?? 0) -
       (b?._edits?.role?.madeAt?.getTime() ?? 0)
@@ -92,7 +98,7 @@ export function RenderChat({ chatId }: { chatId: ID<Chat> }) {
       <header className="bg-white shadow-sm p-4 flex justify-between items-center">
         {/* <SidebarTrigger /> */}
         <h1 className="text-2xl font-bold text-gray-800">
-          {chat?.name || "Chat"}
+          {preloadedChat?.name || chat?.name || "Chat"}
         </h1>
         <Button
           variant="outline"
@@ -129,7 +135,7 @@ export function RenderChat({ chatId }: { chatId: ID<Chat> }) {
                   {message?.text?.toString()}
                 </Markdown>
                 <span className="text-xs mt-1 block opacity-75 h-[16px]">
-                  {message?._edits.text?.by?.profile?.name ?? ""}
+                  {message?._edits?.text?.by?.profile?.name ?? ""}
                 </span>
                 {Object.entries(message?.reactions?.perSession ?? {}).map(
                   ([sessionId, reaction]) => (

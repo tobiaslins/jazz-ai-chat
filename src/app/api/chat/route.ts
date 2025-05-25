@@ -11,18 +11,26 @@ import { openai } from "@ai-sdk/openai";
 import { after } from "next/server";
 
 let jazz: Awaited<ReturnType<typeof startWorker>> | undefined;
-let worker: Account | undefined;
+export let worker: Account | undefined;
+
+export async function getWorker() {
+  if (!worker) {
+    const w = await startWorker({
+      syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat-worker",
+    });
+
+    console.log("Worker started");
+    jazz = w;
+    worker = w.worker;
+  }
+  await jazz?.waitForConnection();
+  return worker;
+}
 
 export async function POST(req: Request) {
   if (!jazz) {
     try {
-      const w = await startWorker({
-        syncServer: "wss://cloud.jazz.tools/?key=jazz-ai-chat-worker",
-      });
-
-      console.log("Worker started");
-      jazz = w;
-      worker = w.worker;
+      await getWorker();
     } catch (e) {
       console.error("Error starting worker", e);
       return new Response("Error starting worker", { status: 500 });
