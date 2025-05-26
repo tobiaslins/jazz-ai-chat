@@ -53,7 +53,6 @@ export async function POST(req: Request) {
     },
     { owner: chat._owner }
   );
-  chat.messages?.push(chatMessage);
 
   // generateText({
   //   model: openai("gpt-4.1-nano"),
@@ -73,11 +72,13 @@ export async function POST(req: Request) {
         content: `You are like a friend in a whatsapp group chat. Don't ever say that youre here to hang out. Don't behave like a system. Only answer to the last message from the user. The messages before are just context.`,
       },
       ...(chat?.messages?.map((message) => ({
-        role: "user" as const,
+        role: message?.role ?? "user",
         content: message?.text?.toString() ?? "",
       })) ?? []),
     ],
   });
+
+  chat.messages?.push(chatMessage);
 
   let currentText = "";
   let lastUpdateTime = 0;
