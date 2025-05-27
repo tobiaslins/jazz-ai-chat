@@ -188,17 +188,6 @@ export function RenderChat({
                   {message?.text?.toString()}
                 </Markdown>
                 <div className="text-xs mt-1">
-                  {message?._edits?.role?.madeAt && (
-                    <span
-                      className={
-                        message?.role === "user"
-                          ? "text-blue-100"
-                          : "text-gray-500"
-                      }
-                    >
-                      {formatTime(message?._edits?.role?.madeAt)}
-                    </span>
-                  )}
                   {Object.entries(message?.reactions?.perSession ?? {}).map(
                     ([sessionId, reaction]) => (
                       <span
