@@ -1,4 +1,4 @@
-import { co, CoMap, CoList, Account, CoPlainText, CoFeed, z } from "jazz-tools";
+import { co, z } from "jazz-tools";
 
 export const Reactions = co.feed(z.string());
 

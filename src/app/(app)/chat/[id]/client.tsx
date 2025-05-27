@@ -119,7 +119,7 @@ export function RenderChat({
   const role = chat?._owner?.myRole();
 
   return (
-    <div className="flex-1 flex flex-col h-screen bg-gray-100">
+    <div className="flex-1 flex flex-col h-[100svh] bg-gray-100">
       <header className="bg-white shadow-sm p-4 flex justify-between items-center">
         {/* <SidebarTrigger /> */}
         <h1 className="text-2xl font-bold text-gray-800">
