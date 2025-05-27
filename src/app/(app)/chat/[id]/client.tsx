@@ -144,9 +144,6 @@ export function RenderChat({
       <div className="sticky top-0 z-50 bg-white border-b border-gray-200 safe-area-inset-top">
         <div className="flex items-center justify-between px-4 py-3 pt-safe">
           <div className="flex items-center space-x-3">
-            <Button variant="ghost" size="sm" className="p-2">
-              <ArrowLeft className="h-5 w-5" />
-            </Button>
             <div>
               <h1 className="font-semibold text-gray-900">
                 {chat?.name || preloadedChat?.name || "Chat"}
