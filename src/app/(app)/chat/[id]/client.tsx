@@ -6,7 +6,7 @@ import { CoPlainText, Group, type ID } from "jazz-tools";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
-import { Loader2, Send } from "lucide-react";
+import { ArrowLeft, Loader2, MoreVertical, Send } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import Markdown from "react-markdown";
 import { Input } from "@/components/ui/input";
@@ -31,12 +31,12 @@ export function RenderChat({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [hasInitiallyScrolled, setHasInitiallyScrolled] = useState(false);
   const [previousMessageCount, setPreviousMessageCount] = useState(0);
+  const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const router = useRouter();
 
   // Initial scroll to bottom after hydration (not SSR)
   useEffect(() => {
     if (!hasInitiallyScrolled && messagesEndRef.current) {
-      // Use setTimeout to ensure this runs after hydration
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
         setHasInitiallyScrolled(true);
@@ -44,11 +44,10 @@ export function RenderChat({
     }
   }, [hasInitiallyScrolled]);
 
-  //   // Handle scrolling for new messages only
+  // Handle scrolling for new messages
   useEffect(() => {
     const currentMessageCount = (chat || preloadedChat)?.messages?.length || 0;
 
-    // Only scroll if we have more messages than before and we've already done initial scroll
     if (
       hasInitiallyScrolled &&
       currentMessageCount > previousMessageCount &&
@@ -67,6 +66,22 @@ export function RenderChat({
     previousMessageCount,
   ]);
 
+  // Handle iOS keyboard visibility
+  useEffect(() => {
+    const handleResize = () => {
+      const viewportHeight =
+        window.visualViewport?.height || window.innerHeight;
+      const windowHeight = window.innerHeight;
+      setIsKeyboardVisible(viewportHeight < windowHeight * 0.75);
+    };
+
+    if (typeof window !== "undefined" && window.visualViewport) {
+      window.visualViewport.addEventListener("resize", handleResize);
+      return () =>
+        window.visualViewport?.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
     if (!chat || !message.trim()) return;
@@ -75,7 +90,7 @@ export function RenderChat({
 
     const chatMessage = ChatMessage.create(
       {
-        content: message, // TODO: remove
+        content: message,
         role: "user",
         text: CoPlainText.create(message, { owner: chat._owner }),
         reactions: Reactions.create([], { owner: chat._owner }),
@@ -87,8 +102,6 @@ export function RenderChat({
     setMessage("");
 
     await chatMessage.waitForSync();
-
-    // sendMessageToWorker(chatMessage);
 
     try {
       await fetch("/api/chat", {
@@ -118,30 +131,46 @@ export function RenderChat({
 
   const role = chat?._owner?.myRole();
 
+  const formatTime = (date: Date) => {
+    return date.toLocaleTimeString("en-US", {
+      hour: "numeric",
+      minute: "2-digit",
+      hour12: true,
+    });
+  };
+
   return (
-    <div className="flex-1 flex flex-col h-[100svh] bg-gray-100">
-      <header className="bg-white shadow-sm p-4 flex justify-between items-center">
-        {/* <SidebarTrigger /> */}
-        <h1 className="text-2xl font-bold text-gray-800">
-          {chat?.name || preloadedChat?.name || "Chat"}
-        </h1>
-        <Button
-          variant="outline"
-          onClick={() => {
-            chat?._owner.castAs(Group).addMember("everyone", "reader");
-            navigator.clipboard.writeText(window.location.href);
-            toast.success("Copied to clipboard");
-          }}
-        >
-          Share
-        </Button>
-      </header>
-      <div
-        id="scroll-container"
-        className="flex-1 overflow-y-auto p-4 space-y-4"
-      >
+    <div className="flex flex-col h-full max-w-full w-full mx-auto bg-white relative">
+      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 safe-area-inset-top">
+        <div className="flex items-center justify-between px-4 py-3 pt-safe">
+          <div className="flex items-center space-x-3">
+            <Button variant="ghost" size="sm" className="p-2">
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <div>
+              <h1 className="font-semibold text-gray-900">
+                {chat?.name || preloadedChat?.name || "Chat"}
+              </h1>
+            </div>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="p-2"
+            onClick={() => {
+              chat?._owner.castAs(Group).addMember("everyone", "reader");
+              navigator.clipboard.writeText(window.location.href);
+              toast.success("Copied to clipboard");
+            }}
+          >
+            Share
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-safe">
         <AnimatePresence>
-          {orderedMessages?.map((message, index) => (
+          {orderedMessages?.map((message) => (
             <motion.div
               key={message?.id}
               className={`flex ${
@@ -149,25 +178,42 @@ export function RenderChat({
               }`}
             >
               <div
-                className={`max-w-xs md:max-w-md lg:max-w-lg xl:max-w-xl rounded-lg p-3 ${
+                className={`max-w-[80%] rounded-2xl px-4 py-2 ${
                   message?.role === "user"
-                    ? "bg-blue-500 text-white"
-                    : "bg-white text-gray-800"
+                    ? "bg-blue-500 text-white rounded-br-md"
+                    : "bg-gray-100 text-gray-900 rounded-bl-md"
                 }`}
               >
-                <Markdown className={"min-h-[24px]"}>
+                <Markdown className="text-sm">
                   {message?.text?.toString()}
                 </Markdown>
-                {Object.entries(message?.reactions?.perSession ?? {}).map(
-                  ([sessionId, reaction]) => (
+                <div className="text-xs mt-1">
+                  {message?._edits?.role?.madeAt && (
                     <span
-                      key={sessionId}
-                      className="text-xs mt-1 block opacity-75"
+                      className={
+                        message?.role === "user"
+                          ? "text-blue-100"
+                          : "text-gray-500"
+                      }
                     >
-                      {reaction.value}
+                      {formatTime(message?._edits?.role?.madeAt)}
                     </span>
-                  )
-                )}
+                  )}
+                  {Object.entries(message?.reactions?.perSession ?? {}).map(
+                    ([sessionId, reaction]) => (
+                      <span
+                        key={sessionId}
+                        className={`ml-2 ${
+                          message?.role === "user"
+                            ? "text-blue-100"
+                            : "text-gray-500"
+                        }`}
+                      >
+                        {reaction.value}
+                      </span>
+                    )
+                  )}
+                </div>
               </div>
             </motion.div>
           ))}
@@ -176,37 +222,54 @@ export function RenderChat({
       </div>
 
       {role === "reader" ? (
-        <div className="bg-white flex flex-row items-center p-4 shadow-lg text-sm text-gray-500 px-4 py-4">
-          <div className="flex-1">
-            You are a reader. You cannot send messages.
-          </div>
-          <Button
-            onClick={() => {
-              router.push("/chat/new");
-            }}
-          >
-            New chat
-          </Button>
-        </div>
-      ) : (
-        <form onSubmit={sendMessage} className="bg-white p-4 shadow-lg">
-          <div className="flex items-center space-x-2">
-            <Input
-              type="text"
-              autoFocus
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              placeholder="Type your message..."
-            />
-            <Button type="submit">
-              {isLoading ? (
-                <Loader2 className="w-6 h-6 animate-spin" />
-              ) : (
-                <Send className="w-6 h-6" />
-              )}
+        <div className="sticky bottom-0 z-50 bg-white border-t border-gray-200 px-4 py-3">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">
+              You are a reader. You cannot send messages.
+            </span>
+            <Button
+              onClick={() => {
+                router.push("/chat/new");
+              }}
+            >
+              New chat
             </Button>
           </div>
-        </form>
+        </div>
+      ) : (
+        <div
+          className={`sticky bottom-0 z-50 bg-white border-t border-gray-200 transition-all duration-200 ${
+            isKeyboardVisible ? "pb-2" : "pb-safe"
+          }`}
+        >
+          <form
+            onSubmit={sendMessage}
+            className="flex items-center space-x-3 px-4 py-3"
+          >
+            <div className="flex-1 relative">
+              <Input
+                type="text"
+                placeholder="Type a message..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="w-full rounded-md border-gray-300 pr-12 py-2 text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                style={{ fontSize: "16px" }}
+              />
+            </div>
+            <Button
+              type="submit"
+              disabled={!message.trim() || isLoading}
+              size="sm"
+              className="rounded-full w-10 h-10 p-0 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300"
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+            </Button>
+          </form>
+        </div>
       )}
     </div>
   );
