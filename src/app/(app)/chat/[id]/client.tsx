@@ -38,7 +38,7 @@ export function RenderChat({
   useEffect(() => {
     if (!hasInitiallyScrolled && messagesEndRef.current) {
       setTimeout(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
+        //   messagesEndRef.current?.scrollIntoView({ behavior: "instant" });
         setHasInitiallyScrolled(true);
       }, 0);
     }
