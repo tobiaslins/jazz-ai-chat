@@ -21,6 +21,7 @@ import { useParams } from "next/navigation";
 import { ChatAccount } from "./schema";
 import clsx from "clsx";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function ChatLayout({
   children,
@@ -78,21 +79,23 @@ export default function ChatLayout({
                 <SidebarMenuItem key={chat.id}>
                   <SidebarMenuButton asChild>
                     <Button
-                      onClick={() => handleChatClick(chat.id!)}
                       variant={"ghost"}
+                      asChild
                       className={clsx(
                         "w-full justify-start p-2 h-12 hover:bg-stone-200 active:bg-stone-200",
                         currentChatId === chat.id ? "bg-stone-200" : ""
                       )}
                     >
-                      <div className="flex flex-col items-start">
-                        <span className="text-sm font-medium">
-                          {chat.title}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {chat.date}
-                        </span>
-                      </div>
+                      <Link href={`/chat/${chat.id}`}>
+                        <div className="flex flex-col items-start">
+                          <span className="text-sm font-medium">
+                            {chat.title}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {chat.date}
+                          </span>
+                        </div>
+                      </Link>
                     </Button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -219,7 +219,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 pb-safe">
+      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         <AnimatePresence>
           {orderedMessages?.map((message) => (
             <motion.div
@@ -268,7 +268,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
       ) : (
         <div
           className={`sticky bottom-0 z-50 bg-white border-t border-gray-200 transition-all duration-200 ${
-            isKeyboardVisible ? "pb-2" : "pb-safe"
+            isKeyboardVisible ? "pb-2" : ""
           }`}
         >
           <form
