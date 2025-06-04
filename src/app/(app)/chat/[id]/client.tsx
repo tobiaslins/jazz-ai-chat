@@ -12,6 +12,7 @@ import Markdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "react-hot-toast";
+import clsx from "clsx";
 
 export function RenderChat({
   chatId,
@@ -175,31 +176,20 @@ export function RenderChat({
               }`}
             >
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2 ${
+                className={`max-w-[80%] rounded-2xl px-4 py-2 min-h-[36px] ${
                   message?.role === "user"
                     ? "bg-blue-500 text-white rounded-br-md"
                     : "bg-gray-100 text-gray-900 rounded-bl-md"
                 }`}
               >
-                <Markdown className="text-sm">
-                  {message?.text?.toString()}
-                </Markdown>
-                <div className="text-xs mt-1">
-                  {Object.entries(message?.reactions?.perSession ?? {}).map(
-                    ([sessionId, reaction]) => (
-                      <span
-                        key={sessionId}
-                        className={`ml-2 ${
-                          message?.role === "user"
-                            ? "text-blue-100"
-                            : "text-gray-500"
-                        }`}
-                      >
-                        {reaction.value}
-                      </span>
-                    )
+                <Markdown
+                  className={clsx(
+                    "text-sm",
+                    message?.text?.toString() ? "" : "text-gray-500"
                   )}
-                </div>
+                >
+                  {message?.text?.toString() || "..."}
+                </Markdown>
               </div>
             </motion.div>
           ))}

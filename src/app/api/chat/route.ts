@@ -86,21 +86,18 @@ export async function POST(req: Request) {
   const THROTTLE_TIME = 250;
 
   for await (const textPart of result.textStream) {
-    pendingText += textPart;
+    currentText += textPart;
     const now = Date.now();
 
     if (now - lastUpdateTime >= THROTTLE_TIME) {
-      chatMessage.text?.insertAfter(chatMessage.text.length - 1, pendingText);
-      currentText += pendingText;
-      pendingText = "";
+      chatMessage.text.applyDiff(currentText);
+
       lastUpdateTime = now;
     }
   }
   // Make sure any remaining text gets inserted
-  if (pendingText) {
-    chatMessage.text?.insertAfter(chatMessage.text.length - 1, pendingText);
-    currentText += pendingText;
-  }
+
+  chatMessage.text?.applyDiff(currentText);
 
   after(async () => {
     await worker?.waitForAllCoValuesSync({ timeout: 5000 });
