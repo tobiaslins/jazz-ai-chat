@@ -2,6 +2,7 @@
 
 import { JazzProvider } from "jazz-react";
 import { ChatAccount } from "./schema";
+import ChatLayout from "./chat-layout";
 
 export default function RootLayout({
   children,
@@ -19,7 +20,7 @@ function JazzAndAuth({ children }: { children: React.ReactNode }) {
         sync={{ peer: "wss://cloud.jazz.tools/?key=me@tobi.sh-ai-chat" }}
         AccountSchema={ChatAccount}
       >
-        {children}
+        <ChatLayout>{children}</ChatLayout>
       </JazzProvider>
     </>
   );

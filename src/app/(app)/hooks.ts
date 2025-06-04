@@ -1,6 +1,5 @@
 import { useAccount } from "jazz-react";
 import { Chat, ChatAccount, ListOfChatMessages } from "./schema";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { ID } from "jazz-tools";
 import { Account } from "jazz-tools";
@@ -8,7 +7,6 @@ import { Group } from "jazz-tools";
 import { track } from "@vercel/analytics";
 
 export function useCreateChat() {
-  const router = useRouter();
   const { me } = useAccount(ChatAccount);
   const [loading, setLoading] = useState(false);
 
@@ -34,12 +32,8 @@ export function useCreateChat() {
       }
     );
 
-    // Use query params instead of route navigation
-    const url = new URL(window.location.href);
-    url.searchParams.set("chat", chat.id);
-    window.history.pushState(null, "", url.toString());
-    // Trigger a re-render by dispatching a custom event
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    // Navigate to the new chat using route navigation
+    window.history.pushState(null, "", `/chat/${chat.id}`);
 
     const loadedMe = await me.ensureLoaded({
       resolve: { root: { chats: true } },

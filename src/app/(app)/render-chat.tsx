@@ -12,8 +12,8 @@ import { CoPlainText, Group, type ID, Account } from "jazz-tools";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
-import { ArrowLeft, Loader2, MoreVertical, Send } from "lucide-react";
-import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { Loader2, Send } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
 import Markdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,8 @@ import clsx from "clsx";
 import { track } from "@vercel/analytics";
 
 export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
-  const searchParams = useSearchParams();
-  const chatId = searchParams.get("chat");
+  const params = useParams();
+  const chatId = params.id as string | undefined;
   const chat = useCoState(Chat, chatId || undefined, {
     resolve: {
       messages: { $each: { text: true, reactions: true } },
@@ -38,6 +38,8 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const [previousMessageCount, setPreviousMessageCount] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const router = useRouter();
+
+  const chatToUse = chat || preloadedChat;
 
   // Initial scroll to bottom after hydration (not SSR)
   useEffect(() => {
@@ -127,11 +129,9 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
         });
         loadedMe.root.chats.push(currentChat);
 
-        // Navigate to the new chat
-        const url = new URL(window.location.href);
-        url.searchParams.set("chat", currentChat.id);
-        window.history.pushState(null, "", url.toString());
-        window.dispatchEvent(new PopStateEvent("popstate"));
+        // Navigate to the new chat using instant navigation
+        window.history.pushState(null, "", `/chat/${currentChat.id}`);
+        router.push(`/chat/${currentChat.id}`);
 
         track("Create Chat");
       }
@@ -175,8 +175,6 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
       setIsLoading(false);
     }
   }
-
-  const chatToUse = chatId === preloadedChat?.id ? preloadedChat : chat;
 
   const orderedMessages = chatToUse?.messages?.toSorted(
     (a, b) =>
@@ -260,8 +258,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             </span>
             <Button
               onClick={() => {
-                // Create new chat using existing hook logic, which now uses query params
-                window.location.href = "/?new=true";
+                window.location.href = "/";
               }}
             >
               New chat

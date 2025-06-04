@@ -1,7 +1,7 @@
 "use client";
 
 import type * as React from "react";
-import { MessageSquare, Plus, Settings, User } from "lucide-react";
+import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 
@@ -15,38 +15,24 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarProvider,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useAccount } from "jazz-react";
-import { useSearchParams, useRouter } from "next/navigation";
-import { useCreateChat } from "./hooks";
+import { useParams } from "next/navigation";
 import { ChatAccount } from "./schema";
-import { useEffect, useState } from "react";
 import clsx from "clsx";
+import { useRouter } from "next/navigation";
 
 export default function ChatLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const params = useParams();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const currentChatId = searchParams.get("chat");
+  const currentChatId = params.id as string | undefined;
   const { me } = useAccount(ChatAccount, {
     resolve: { root: { chats: { $each: true } } },
   });
-  const { createChat, loading } = useCreateChat();
-  const [, forceUpdate] = useState({});
-
-  // Listen for popstate events to trigger re-renders
-  useEffect(() => {
-    const handlePopState = () => {
-      forceUpdate({});
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, []);
 
   const recentChats =
     me?.root?.chats
@@ -61,11 +47,7 @@ export default function ChatLayout({
       }) || [];
 
   const handleChatClick = (chatId: string) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set("chat", chatId);
-    window.history.pushState(null, "", url.toString());
-    // Trigger a re-render by dispatching a custom event
-    window.dispatchEvent(new PopStateEvent("popstate"));
+    router.push(`/chat/${chatId}`);
   };
 
   return (
@@ -77,13 +59,14 @@ export default function ChatLayout({
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
                   <Button
-                    onClick={createChat}
+                    onClick={() => {
+                      router.push("/");
+                    }}
                     variant="outline"
-                    disabled={loading}
                     className="w-full justify-start"
                   >
                     <Plus className="mr-2 h-4 w-4" />
-                    {loading ? "Creating Chat..." : "New Chat"}
+                    New Chat
                   </Button>
                 </SidebarMenuButton>
               </SidebarMenuItem>
