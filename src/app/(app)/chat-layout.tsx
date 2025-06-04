@@ -47,10 +47,6 @@ export default function ChatLayout({
         return (b?.created?.getTime() ?? 0) - (a?.created?.getTime() ?? 0);
       }) || [];
 
-  const handleChatClick = (chatId: string) => {
-    router.push(`/chat/${chatId}`);
-  };
-
   return (
     <SidebarProvider>
       <div className="flex h-screen bg-background w-full">
@@ -86,7 +82,7 @@ export default function ChatLayout({
                         currentChatId === chat.id ? "bg-stone-200" : ""
                       )}
                     >
-                      <Link href={`/chat/${chat.id}`}>
+                      <Link prefetch={false} href={`/chat/${chat.id}`}>
                         <div className="flex flex-col items-start">
                           <span className="text-sm font-medium">
                             {chat.title}
