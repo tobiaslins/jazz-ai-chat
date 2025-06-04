@@ -22,12 +22,7 @@ import { toast } from "react-hot-toast";
 import clsx from "clsx";
 import { track } from "@vercel/analytics";
 
-export function RenderChat({
-  preloadedChat,
-}: {
-  chatId: ID<Chat> | null;
-  preloadedChat?: Chat;
-}) {
+export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const searchParams = useSearchParams();
   const chatId = searchParams.get("chat");
   const chat = useCoState(Chat, chatId || undefined, {

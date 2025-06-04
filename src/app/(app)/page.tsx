@@ -11,6 +11,14 @@ export default async function Home({
 }) {
   const { chat: chatId } = await searchParams;
 
+  if (!chatId) {
+    return (
+      <ChatLayout>
+        <RenderChat />
+      </ChatLayout>
+    );
+  }
+
   const worker = await getWorker();
   const chat = await Chat.load(chatId, {
     loadAs: worker,
