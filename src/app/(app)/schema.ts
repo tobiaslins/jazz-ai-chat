@@ -1,12 +1,9 @@
 import { co, z } from "jazz-tools";
 
-export const Reactions = co.feed(z.string());
-
 export const ChatMessage = co.map({
   content: z.string(),
   text: co.plainText(),
   role: z.enum(["user", "system", "assistant"]),
-  reactions: z.optional(Reactions),
 });
 
 export const ListOfChatMessages = co.list(ChatMessage);

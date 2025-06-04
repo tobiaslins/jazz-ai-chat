@@ -1,22 +1,24 @@
 ## AI Chat using Jazz as storage/streaming
 
 The schema:
+
 ```ts
-import { co, CoMap, CoList } from "jazz-tools";
+import { co } from "jazz-tools";
 
-export class ChatMessage extends CoMap {
-  content = co.string;
-  role = co.literal("user", "system");
-}
+export const ChatMessage = co.map({
+  content: z.string(),
+  text: co.plainText(),
+  role: z.enum(["user", "system", "assistant"]),
+});
 
-export class ListOfChatMessages extends CoList.Of(co.ref(ChatMessage)) {}
+export const ListOfChatMessages = co.list(ChatMessage);
 
-export class Chat extends CoMap {
-  name = co.string;
-  messages = co.ref(ListOfChatMessages);
-}
+export const Chat = co.map({
+  name: z.string(),
+  messages: ListOfChatMessages,
+});
 ```
 
-
 ### API Route that handles AI calls
+
 https://github.com/tobiaslins/jazz-ai-chat/blob/main/src/app/api/chat/route.ts

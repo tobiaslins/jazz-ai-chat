@@ -22,7 +22,7 @@ export default async function ChatPage({
   const chat = await Chat.load(id, {
     loadAs: worker,
     resolve: {
-      messages: { $each: { text: true, reactions: true } },
+      messages: { $each: { text: true } },
     },
   });
 

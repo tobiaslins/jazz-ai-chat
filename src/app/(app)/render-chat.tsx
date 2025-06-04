@@ -1,13 +1,7 @@
 "use client";
 
 import { useAccount, useCoState } from "jazz-react";
-import {
-  Chat,
-  ChatAccount,
-  ChatMessage,
-  Reactions,
-  ListOfChatMessages,
-} from "./schema";
+import { Chat, ChatAccount, ChatMessage, ListOfChatMessages } from "./schema";
 import { CoPlainText, Group, type ID, Account } from "jazz-tools";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
@@ -27,7 +21,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const chatId = params.id as string | undefined;
   const chat = useCoState(Chat, chatId || undefined, {
     resolve: {
-      messages: { $each: { text: true, reactions: true } },
+      messages: { $each: { text: true } },
     },
   });
   const { me } = useAccount(ChatAccount);
@@ -143,7 +137,6 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
           content: message,
           role: "user",
           text: CoPlainText.create(message, { owner: currentChat._owner }),
-          reactions: Reactions.create([], { owner: currentChat._owner }),
         },
         { owner: currentChat._owner }
       );

@@ -1,4 +1,4 @@
-import { Chat, ChatMessage, Reactions } from "../../(app)/schema";
+import { Chat, ChatMessage } from "../../(app)/schema";
 import { Account, CoPlainText } from "jazz-tools";
 import { generateText, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
@@ -10,7 +10,7 @@ export async function POST(req: Request) {
 
   const { userId, chatId } = await req.json();
   const account = await Account.load(userId, { loadAs: worker });
-  console.log("Account loaded");
+
   if (!account) {
     return new Response("Account not found", { status: 404 });
   }
@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   chat = await Chat.load(chatId, {
     loadAs: worker,
     resolve: {
-      messages: { $each: { text: true, reactions: true } },
+      messages: { $each: { text: true } },
     },
   });
 
@@ -42,27 +42,14 @@ export async function POST(req: Request) {
     chat.name = chatName.text;
   }
 
-  const lastMessage = chat?.messages?.[chat?.messages?.length - 1];
-
   const chatMessage = ChatMessage.create(
     {
       content: "",
       text: CoPlainText.create("", { owner: chat._owner }),
       role: "assistant" as const,
-      reactions: Reactions.create([], { owner: chat._owner }),
     },
     { owner: chat._owner }
   );
-
-  // generateText({
-  //   model: openai("gpt-4.1-nano"),
-  //   prompt: `Rarely generate a reaction for following message. Do it like a friend would, only if its really emotional or extreme message. Only answer with the reaction as emoji or empty string. Less is more - don't overreact.
-  //   Message: ${lastMessage?.content}`,
-  // }).then((r) => {
-  //   if (r.text && r.text.length > 0) {
-  //     lastMessage?.reactions?.push(r.text);
-  //   }
-  // });
 
   const result = streamText({
     model: openai("gpt-4.1-nano"),
@@ -82,7 +69,6 @@ export async function POST(req: Request) {
 
   let currentText = "";
   let lastUpdateTime = 0;
-  let pendingText = "";
   const THROTTLE_TIME = 250;
 
   for await (const textPart of result.textStream) {
