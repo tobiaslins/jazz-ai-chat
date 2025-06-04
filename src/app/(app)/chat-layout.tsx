@@ -81,8 +81,8 @@ export default function ChatLayout({
                       onClick={() => handleChatClick(chat.id!)}
                       variant={"ghost"}
                       className={clsx(
-                        "w-full justify-start p-2 h-12",
-                        currentChatId === chat.id ? "bg-gray-200" : ""
+                        "w-full justify-start p-2 h-12 hover:bg-stone-200 active:bg-stone-200",
+                        currentChatId === chat.id ? "bg-stone-200" : ""
                       )}
                     >
                       <div className="flex flex-col items-start">
