@@ -13,7 +13,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { ArrowLeft, Loader2, MoreVertical, Send } from "lucide-react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Markdown from "react-markdown";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,12 +23,13 @@ import clsx from "clsx";
 import { track } from "@vercel/analytics";
 
 export function RenderChat({
-  chatId,
   preloadedChat,
 }: {
   chatId: ID<Chat> | null;
   preloadedChat?: Chat;
 }) {
+  const searchParams = useSearchParams();
+  const chatId = searchParams.get("chat");
   const chat = useCoState(Chat, chatId || undefined, {
     resolve: {
       messages: { $each: { text: true, reactions: true } },
@@ -180,7 +181,9 @@ export function RenderChat({
     }
   }
 
-  const orderedMessages = (chat || preloadedChat)?.messages?.toSorted(
+  const chatToUse = chatId === preloadedChat?.id ? preloadedChat : chat;
+
+  const orderedMessages = chatToUse?.messages?.toSorted(
     (a, b) =>
       (a?._edits?.role?.madeAt?.getTime() ?? 0) -
       (b?._edits?.role?.madeAt?.getTime() ?? 0)
