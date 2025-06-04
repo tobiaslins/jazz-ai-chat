@@ -177,14 +177,6 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
 
   const role = chat?._owner?.myRole() || "admin"; // Default to admin for new chats
 
-  const formatTime = (date: Date) => {
-    return date.toLocaleTimeString("en-US", {
-      hour: "numeric",
-      minute: "2-digit",
-      hour12: true,
-    });
-  };
-
   return (
     <div className="flex flex-col h-full max-w-full w-full mx-auto bg-white relative">
       <div className="sticky top-0 z-50 bg-white border-b border-gray-200 safe-area-inset-top">

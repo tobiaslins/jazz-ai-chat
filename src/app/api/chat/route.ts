@@ -58,7 +58,7 @@ export async function POST(req: Request) {
         role: "system",
         content: `You are like a friend in a whatsapp group chat. Don't ever say that youre here to hang out. Don't behave like a system. Only answer to the last message from the user. The messages before are just context.`,
       },
-      ...(chat?.messages?.map((message) => ({
+      ...(chat?.messages?.slice(-5)?.map((message) => ({
         role: message?.role ?? "user",
         content: message?.text?.toString() ?? "",
       })) ?? []),
