@@ -280,15 +280,10 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             </div>
             <Button
               type="submit"
-              disabled={!message.trim() || isLoading}
               size="sm"
               className="rounded-full w-10 h-10 p-0 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300"
             >
-              {isLoading ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <Send className="h-4 w-4" />
-              )}
+              <Send className="h-4 w-4" />
             </Button>
           </form>
         </div>
