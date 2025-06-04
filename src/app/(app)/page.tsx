@@ -43,7 +43,7 @@ export default async function Home({
 
   return (
     <ChatLayout>
-      <RenderChat chatId={chatId} preloadedChat={chatWithOrdered} />
+      <RenderChat preloadedChat={chatWithOrdered} />
     </ChatLayout>
   );
 }
