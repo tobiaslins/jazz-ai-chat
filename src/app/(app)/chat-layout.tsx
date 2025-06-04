@@ -18,9 +18,11 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useAccount } from "jazz-react";
-import { useRouter } from "next/navigation";
-import { useCreateChat } from "../hooks";
-import { ChatAccount } from "../schema";
+import { useSearchParams, useRouter } from "next/navigation";
+import { useCreateChat } from "./hooks";
+import { ChatAccount } from "./schema";
+import { useEffect, useState } from "react";
+import clsx from "clsx";
 
 export default function ChatLayout({
   children,
@@ -28,10 +30,23 @@ export default function ChatLayout({
   children: React.ReactNode;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const currentChatId = searchParams.get("chat");
   const { me } = useAccount(ChatAccount, {
     resolve: { root: { chats: { $each: true } } },
   });
   const { createChat, loading } = useCreateChat();
+  const [, forceUpdate] = useState({});
+
+  // Listen for popstate events to trigger re-renders
+  useEffect(() => {
+    const handlePopState = () => {
+      forceUpdate({});
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, []);
 
   const recentChats =
     me?.root?.chats
@@ -44,6 +59,14 @@ export default function ChatLayout({
       .toSorted((a, b) => {
         return (b?.created?.getTime() ?? 0) - (a?.created?.getTime() ?? 0);
       }) || [];
+
+  const handleChatClick = (chatId: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set("chat", chatId);
+    window.history.pushState(null, "", url.toString());
+    // Trigger a re-render by dispatching a custom event
+    window.dispatchEvent(new PopStateEvent("popstate"));
+  };
 
   return (
     <SidebarProvider>
@@ -72,11 +95,12 @@ export default function ChatLayout({
                 <SidebarMenuItem key={chat.id}>
                   <SidebarMenuButton asChild>
                     <Button
-                      onClick={() => {
-                        router.push(`/chat/${chat.id}`);
-                      }}
-                      variant="ghost"
-                      className="w-full justify-start p-2 h-12"
+                      onClick={() => handleChatClick(chat.id!)}
+                      variant={"ghost"}
+                      className={clsx(
+                        "w-full justify-start p-2 h-12",
+                        currentChatId === chat.id ? "bg-gray-200" : ""
+                      )}
                     >
                       <div className="flex flex-col items-start">
                         <span className="text-sm font-medium">

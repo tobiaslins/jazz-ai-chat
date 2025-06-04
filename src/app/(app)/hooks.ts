@@ -33,7 +33,13 @@ export function useCreateChat() {
         owner: group,
       }
     );
-    router.push(`/chat/${chat.id}`);
+
+    // Use query params instead of route navigation
+    const url = new URL(window.location.href);
+    url.searchParams.set("chat", chat.id);
+    window.history.pushState(null, "", url.toString());
+    // Trigger a re-render by dispatching a custom event
+    window.dispatchEvent(new PopStateEvent("popstate"));
 
     const loadedMe = await me.ensureLoaded({
       resolve: { root: { chats: true } },

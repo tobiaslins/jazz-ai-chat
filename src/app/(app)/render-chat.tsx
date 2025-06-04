@@ -1,8 +1,14 @@
 "use client";
 
 import { useAccount, useCoState } from "jazz-react";
-import { Chat, ChatAccount, ChatMessage, Reactions } from "../../schema";
-import { CoPlainText, Group, type ID } from "jazz-tools";
+import {
+  Chat,
+  ChatAccount,
+  ChatMessage,
+  Reactions,
+  ListOfChatMessages,
+} from "./schema";
+import { CoPlainText, Group, type ID, Account } from "jazz-tools";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
@@ -14,15 +20,16 @@ import { Button } from "@/components/ui/button";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { toast } from "react-hot-toast";
 import clsx from "clsx";
+import { track } from "@vercel/analytics";
 
 export function RenderChat({
   chatId,
   preloadedChat,
 }: {
-  chatId: ID<Chat>;
+  chatId: ID<Chat> | null;
   preloadedChat?: Chat;
 }) {
-  const chat = useCoState(Chat, chatId, {
+  const chat = useCoState(Chat, chatId || undefined, {
     resolve: {
       messages: { $each: { text: true, reactions: true } },
     },
@@ -86,40 +93,88 @@ export function RenderChat({
 
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
-    if (!chat || !message.trim()) return;
+    if (!message.trim() || !me) return;
 
     setIsLoading(true);
 
-    const chatMessage = ChatMessage.create(
-      {
-        content: message,
-        role: "user",
-        text: CoPlainText.create(message, { owner: chat._owner }),
-        reactions: Reactions.create([], { owner: chat._owner }),
-      },
-      { owner: chat._owner }
-    );
-
-    chat.messages?.push(chatMessage);
-    setMessage("");
-
-    await chatMessage.waitForSync();
-
     try {
-      await fetch("/api/chat", {
-        method: "POST",
-        body: JSON.stringify({
-          chatId,
-          userId: me?.id,
-          lastMessageId: chatMessage?.id,
-        }),
-      })
-        .then((res) => res.json())
-        .then((data) => {
-          console.log(data);
+      let currentChat = chat;
+      let currentChatId = chatId;
+
+      // Create a new chat if none exists
+      if (!currentChat && !currentChatId) {
+        const group = Group.create();
+        const worker = await Account.load(
+          "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
+          {
+            loadAs: me,
+          }
+        );
+        if (!worker) return;
+        group.addMember(worker, "writer");
+
+        currentChat = await Chat.create(
+          {
+            messages: ListOfChatMessages.create([], { owner: group }),
+            name: "Unnamed",
+          },
+          {
+            owner: group,
+          }
+        );
+
+        currentChatId = currentChat.id;
+
+        // Update user's chat list
+        const loadedMe = await me.ensureLoaded({
+          resolve: { root: { chats: true } },
         });
+        loadedMe.root.chats.push(currentChat);
+
+        // Navigate to the new chat
+        const url = new URL(window.location.href);
+        url.searchParams.set("chat", currentChat.id);
+        window.history.pushState(null, "", url.toString());
+        window.dispatchEvent(new PopStateEvent("popstate"));
+
+        track("Create Chat");
+      }
+
+      if (!currentChat) return;
+
+      const chatMessage = ChatMessage.create(
+        {
+          content: message,
+          role: "user",
+          text: CoPlainText.create(message, { owner: currentChat._owner }),
+          reactions: Reactions.create([], { owner: currentChat._owner }),
+        },
+        { owner: currentChat._owner }
+      );
+
+      currentChat.messages?.push(chatMessage);
+      setMessage("");
+
+      await chatMessage.waitForSync();
+
+      try {
+        await fetch("/api/chat", {
+          method: "POST",
+          body: JSON.stringify({
+            chatId: currentChatId,
+            userId: me?.id,
+            lastMessageId: chatMessage?.id,
+          }),
+        })
+          .then((res) => res.json())
+          .then((data) => {
+            console.log(data);
+          });
+      } catch (error) {
+        console.error(error);
+      }
     } catch (error) {
-      console.error(error);
+      console.error("Failed to send message:", error);
     } finally {
       setIsLoading(false);
     }
@@ -131,7 +186,7 @@ export function RenderChat({
       (b?._edits?.role?.madeAt?.getTime() ?? 0)
   );
 
-  const role = chat?._owner?.myRole();
+  const role = chat?._owner?.myRole() || "admin"; // Default to admin for new chats
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString("en-US", {
@@ -149,7 +204,7 @@ export function RenderChat({
             <SidebarTrigger />
             <div>
               <h1 className="font-semibold text-gray-900">
-                {chat?.name || preloadedChat?.name || "Chat"}
+                {chat?.name || preloadedChat?.name || "New Chat"}
               </h1>
             </div>
           </div>
@@ -207,7 +262,8 @@ export function RenderChat({
             </span>
             <Button
               onClick={() => {
-                router.push("/chat/new");
+                // Create new chat using existing hook logic, which now uses query params
+                window.location.href = "/?new=true";
               }}
             >
               New chat
