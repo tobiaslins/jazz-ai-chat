@@ -4,15 +4,16 @@ import { generateText, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { after } from "next/server";
 import { getWorker } from "@/app/worker";
-import { gateway } from "@vercel/ai-sdk-gateway";
-
-const model = gateway("openai/gpt-4.1-nano");
+import { gateway, GatewayModelId } from "@vercel/ai-sdk-gateway";
+import { defaultModel } from "@/lib/models";
 
 export async function POST(req: Request) {
   const worker = await getWorker();
 
-  const { userId, chatId } = await req.json();
+  const { userId, chatId, model: modelId } = await req.json();
   const account = await Account.load(userId, { loadAs: worker });
+
+  const model = gateway((modelId as GatewayModelId) || defaultModel);
 
   if (!account) {
     return new Response("Account not found", { status: 404 });

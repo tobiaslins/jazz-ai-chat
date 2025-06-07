@@ -11,6 +11,7 @@ export const ListOfChatMessages = co.list(ChatMessage);
 export const Chat = co.map({
   name: z.string(),
   messages: ListOfChatMessages,
+  model: z.string().optional(),
 });
 export type Chat = co.loaded<typeof Chat>;
 export const ListOfChats = co.list(Chat);

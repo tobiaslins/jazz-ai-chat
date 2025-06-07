@@ -15,6 +15,8 @@ import { SidebarTrigger } from "@/components/ui/sidebar";
 import { toast } from "react-hot-toast";
 import clsx from "clsx";
 import { track } from "@vercel/analytics";
+import { ModelSelector } from "@/components/ui/model-selector";
+import { ModelId, defaultModel } from "@/lib/models";
 
 export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const params = useParams();
@@ -27,6 +29,8 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const { me } = useAccount(ChatAccount);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const selectedModel = chat?.model || preloadedChat?.model || defaultModel;
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [hasInitiallyScrolled, setHasInitiallyScrolled] = useState(false);
   const [previousMessageCount, setPreviousMessageCount] = useState(0);
@@ -109,6 +113,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
           {
             messages: ListOfChatMessages.create([], { owner: group }),
             name: "Unnamed",
+            model: selectedModel,
           },
           {
             owner: group,
@@ -153,6 +158,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             chatId: currentChatId,
             userId: me?.id,
             lastMessageId: chatMessage?.id,
+            model: selectedModel,
           }),
         })
           .then((res) => res.json())
@@ -176,6 +182,12 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   );
 
   const role = chat?._owner?.myRole() || "admin"; // Default to admin for new chats
+
+  useEffect(() => {
+    if (chat && chat?.model !== selectedModel) {
+      chat.model = selectedModel;
+    }
+  }, [selectedModel, chat]);
 
   return (
     <div className="flex flex-col h-full max-w-full w-full mx-auto bg-white relative">
@@ -258,25 +270,49 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
         >
           <form
             onSubmit={sendMessage}
-            className="flex items-center space-x-3 px-4 py-3"
+            className="flex items-center space-x-3 px-4 py-3 lg:flex-row flex-col"
           >
-            <div className="flex-1 relative">
-              <Input
-                type="text"
-                placeholder="Type a message..."
-                value={message}
-                onChange={(e) => setMessage(e.target.value)}
-                className="w-full rounded-md border-gray-300 pr-12 py-2 text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                style={{ fontSize: "16px" }}
+            <div className="flex-1 flex items-center space-x-3">
+              <div className="flex-1 relative min-w-80">
+                <Input
+                  type="text"
+                  placeholder="Type a message..."
+                  value={message}
+                  autoFocus
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="w-full rounded-md border-gray-300 pr-12 py-2 text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  style={{ fontSize: "16px" }}
+                />
+              </div>
+              <div className="flex-1 max-w-60 lg:block hidden">
+                <ModelSelector
+                  selectedModel={selectedModel}
+                  setSelectedModel={(model) => {
+                    if (chat) {
+                      chat.model = model;
+                    }
+                  }}
+                />
+              </div>
+              <Button
+                type="submit"
+                size="sm"
+                className="rounded-full w-10 h-10 p-0 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300"
+              >
+                <Send className="h-4 w-4" />
+              </Button>
+            </div>
+            <div className="lg:hidden block">
+              <ModelSelector
+                singleLine
+                selectedModel={selectedModel}
+                setSelectedModel={(model) => {
+                  if (chat) {
+                    chat.model = model;
+                  }
+                }}
               />
             </div>
-            <Button
-              type="submit"
-              size="sm"
-              className="rounded-full w-10 h-10 p-0 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
           </form>
         </div>
       )}
