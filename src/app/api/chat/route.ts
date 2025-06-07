@@ -4,6 +4,9 @@ import { generateText, streamText } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { after } from "next/server";
 import { getWorker } from "@/app/worker";
+import { gateway } from "@vercel/ai-sdk-gateway";
+
+const model = gateway("openai/gpt-4.1-nano");
 
 export async function POST(req: Request) {
   const worker = await getWorker();
@@ -34,7 +37,7 @@ export async function POST(req: Request) {
   if (chat.name === "Unnamed" || chat.name === "Test") {
     // Generate a name for the chat
     const chatName = await generateText({
-      model: openai("gpt-4.1-nano"),
+      model: model,
       prompt: `Generate a title for this AI chat. Only answer with the name. It should be discriptive of what the chat is about. The current messages are: ${chat?.messages
         ?.map((message) => message?.content)
         .join("\n")}`,
@@ -52,7 +55,7 @@ export async function POST(req: Request) {
   );
 
   const result = streamText({
-    model: openai("gpt-4.1-nano"),
+    model: model,
     messages: [
       {
         role: "system",

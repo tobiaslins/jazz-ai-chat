@@ -6,6 +6,8 @@ import { Account } from "jazz-tools";
 import { Group } from "jazz-tools";
 import { track } from "@vercel/analytics";
 
+const JAZZ_WORKER_ID = "co_zm1eobD4gAy4hfPrsKR7vuEShYz";
+
 export function useCreateChat() {
   const { me } = useAccount(ChatAccount);
   const [loading, setLoading] = useState(false);
@@ -13,12 +15,9 @@ export function useCreateChat() {
   async function createChat() {
     setLoading(true);
     const group = Group.create();
-    const worker = await Account.load(
-      "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
-      {
-        loadAs: me,
-      }
-    );
+    const worker = await Account.load(JAZZ_WORKER_ID as ID<Account>, {
+      loadAs: me,
+    });
     if (!worker) return;
     group.addMember(worker, "writer");
 
