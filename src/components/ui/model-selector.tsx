@@ -42,7 +42,7 @@ export function ModelSelector({
           variant="ghost"
           role="combobox"
           aria-expanded={open}
-          className="flex-1 max-w-full overflow-hidden"
+          className="overflow-hidden"
         >
           <div
             className={cn(

@@ -6,7 +6,7 @@ import { CoPlainText, Group, type ID, Account } from "jazz-tools";
 import { useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
-import { Loader2, Send } from "lucide-react";
+import { Loader2, Send, Trash2 } from "lucide-react";
 import { useParams, useRouter } from "next/navigation";
 import Markdown from "react-markdown";
 import { Input } from "@/components/ui/input";
@@ -17,6 +17,8 @@ import clsx from "clsx";
 import { track } from "@vercel/analytics";
 import { ModelSelector } from "@/components/ui/model-selector";
 import { ModelId, defaultModel } from "@/lib/models";
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import { darcula } from "react-syntax-highlighter/dist/esm/styles/prism";
 
 export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const params = useParams();
@@ -201,18 +203,42 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
               </h1>
             </div>
           </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="p-2"
-            onClick={() => {
-              chat?._owner.castAs(Group).addMember("everyone", "reader");
-              navigator.clipboard.writeText(window.location.href);
-              toast.success("Copied to clipboard");
-            }}
-          >
-            Share
-          </Button>
+          <div className="flex items-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-2"
+              onClick={() => {
+                chat?._owner.castAs(Group).addMember("everyone", "reader");
+                navigator.clipboard.writeText(window.location.href);
+                toast.success("Copied to clipboard");
+              }}
+            >
+              Share
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="p-2"
+              onClick={async () => {
+                if (
+                  chat &&
+                  me?.root?.chats &&
+                  window.confirm("Are you sure you want to delete this chat?")
+                ) {
+                  const chatIdx = me.root.chats.findIndex(
+                    (c) => c?.id === chat.id
+                  );
+                  if (chatIdx > -1) {
+                    me.root.chats.splice(chatIdx, 1);
+                    router.push("/");
+                  }
+                }
+              }}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
@@ -237,6 +263,22 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                     "text-sm",
                     message?.text?.toString() ? "" : "text-gray-500"
                   )}
+                  components={{
+                    code({ className, children }) {
+                      const match = /language-(\w+)/.exec(className || "");
+                      return match ? (
+                        <SyntaxHighlighter
+                          PreTag="div"
+                          language={match[1]}
+                          style={darcula}
+                        >
+                          {String(children).replace(/\n$/, "")}
+                        </SyntaxHighlighter>
+                      ) : (
+                        <code className={className}>{children}</code>
+                      );
+                    },
+                  }}
                 >
                   {message?.text?.toString() || "..."}
                 </Markdown>
@@ -272,7 +314,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             onSubmit={sendMessage}
             className="flex items-center space-x-3 px-4 py-3 lg:flex-row flex-col"
           >
-            <div className="flex-1 flex items-center space-x-3">
+            <div className="flex-1 flex items-center space-x-3 justify-center">
               <div className="flex-1 relative min-w-80">
                 <Input
                   type="text"
@@ -284,7 +326,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                   style={{ fontSize: "16px" }}
                 />
               </div>
-              <div className="flex-1 max-w-60 lg:block hidden">
+              <div className="items-start justify-start flex-1 max-w-60 lg:flex hidden">
                 <ModelSelector
                   selectedModel={selectedModel}
                   setSelectedModel={(model) => {
