@@ -247,12 +247,12 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
           {orderedMessages?.map((message) => (
             <motion.div
               key={message?.id}
-              className={`flex ${
+              className={`w-full flex ${
                 message?.role === "user" ? "justify-end" : "justify-start"
               }`}
             >
               <div
-                className={`max-w-[80%] rounded-2xl px-4 py-2 min-h-[36px] ${
+                className={`md:max-w-[80%] min-w-0 rounded-2xl px-4 py-2 min-h-[36px] break-words ${
                   message?.role === "user"
                     ? "bg-blue-500 text-white rounded-br-md"
                     : "bg-gray-100 text-gray-900 rounded-bl-md"
@@ -267,13 +267,15 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                     code({ className, children }) {
                       const match = /language-(\w+)/.exec(className || "");
                       return match ? (
-                        <SyntaxHighlighter
-                          PreTag="div"
-                          language={match[1]}
-                          style={darcula}
-                        >
-                          {String(children).replace(/\n$/, "")}
-                        </SyntaxHighlighter>
+                        <div className="overflow-x-auto">
+                          <SyntaxHighlighter
+                            PreTag="div"
+                            language={match[1]}
+                            style={darcula}
+                          >
+                            {String(children).replace(/\n$/, "")}
+                          </SyntaxHighlighter>
+                        </div>
                       ) : (
                         <code className={className}>{children}</code>
                       );
@@ -315,7 +317,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             className="flex items-center space-x-3 px-4 py-3 lg:flex-row flex-col"
           >
             <div className="flex-1 flex items-center space-x-3 justify-center">
-              <div className="flex-1 relative min-w-80">
+              <div className="flex-1 relative ">
                 <Input
                   type="text"
                   placeholder="Type a message..."

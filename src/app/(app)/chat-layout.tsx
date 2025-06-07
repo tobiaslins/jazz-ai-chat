@@ -119,7 +119,9 @@ export default function ChatLayout({
             </SidebarMenu> */}
           </SidebarFooter>
         </Sidebar>
-        <SidebarInset className="flex flex-1 flex-col">{children}</SidebarInset>
+        <SidebarInset className="flex flex-1 flex-col overflow-hidden">
+          {children}
+        </SidebarInset>
       </div>
     </SidebarProvider>
   );
