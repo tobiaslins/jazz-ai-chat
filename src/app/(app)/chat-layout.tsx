@@ -49,7 +49,7 @@ export default function ChatLayout({
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen bg-background w-full">
+      <div className="flex h-svh bg-background w-full">
         <Sidebar className="w-64 border-r">
           <SidebarHeader className="p-4">
             <SidebarMenu>
