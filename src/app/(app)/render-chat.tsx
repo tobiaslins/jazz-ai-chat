@@ -311,52 +311,56 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
               />
               <Label htmlFor="audio-generation">Audio</Label>
             </div>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="p-2"
-                  disabled={!chat}
-                >
-                  Share
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent>
-                <DropdownMenuItem
-                  onClick={() => {
-                    if (!chat) return;
-                    const link = createInviteLink(chat, "reader", BASE_URL);
-                    navigator.clipboard.writeText(link);
-                    toast.success("Read-only invite link copied to clipboard");
-                  }}
-                >
-                  Share as viewer
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    if (!chat) return;
-                    const link = createInviteLink(chat, "writer", BASE_URL);
-                    navigator.clipboard.writeText(link);
-                    toast.success("Writer invite link copied to clipboard");
-                  }}
-                >
-                  Share as collaborator
-                </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => {
-                    if (!chat) return;
-                    chat._owner.castAs(Group).addMember("everyone", "reader");
-                    navigator.clipboard.writeText(window.location.href);
-                    toast.success(
-                      "Chat is now public. Link copied to clipboard."
-                    );
-                  }}
-                >
-                  Make public
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            {role === "admin" ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="p-2"
+                    disabled={!chat}
+                  >
+                    Share
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (!chat) return;
+                      const link = createInviteLink(chat, "reader", BASE_URL);
+                      navigator.clipboard.writeText(link);
+                      toast.success(
+                        "Read-only invite link copied to clipboard"
+                      );
+                    }}
+                  >
+                    Share as viewer
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (!chat) return;
+                      const link = createInviteLink(chat, "writer", BASE_URL);
+                      navigator.clipboard.writeText(link);
+                      toast.success("Writer invite link copied to clipboard");
+                    }}
+                  >
+                    Share as collaborator
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => {
+                      if (!chat) return;
+                      chat._owner.castAs(Group).makePublic("reader");
+                      navigator.clipboard.writeText(window.location.href);
+                      toast.success(
+                        "Chat is now public. Link copied to clipboard."
+                      );
+                    }}
+                  >
+                    Make public
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
             <Button
               variant="ghost"
               size="sm"
