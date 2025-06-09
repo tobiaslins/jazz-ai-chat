@@ -51,6 +51,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const { me } = useAccount(ChatAccount);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [newlyCreatedChat, setNewlyCreatedChat] = useState<Chat | null>(null);
   const [selectedModel, setSelectedModel] = useState(
     preloadedChat?.model || defaultModel
   );
@@ -61,7 +62,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const router = useRouter();
 
-  const chatToUse = chat || preloadedChat;
+  const chatToUse = chat || preloadedChat || newlyCreatedChat;
 
   // Only show author if there are others
   const hasOtherMembers =
@@ -72,6 +73,33 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
       setSelectedModel(chat?.model || defaultModel);
     }
   }, [chat?.model, selectedModel]);
+
+  // Create a new chat object in memory if we're on the new chat page
+  useEffect(() => {
+    if (chatId || !me || newlyCreatedChat) return;
+
+    const group = Group.create({ owner: me });
+    const workerPromise = Account.load(
+      "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
+      { loadAs: me }
+    );
+
+    workerPromise.then((worker) => {
+      if (!worker) return;
+      group.addMember(worker, "writer");
+
+      const newChat = Chat.create(
+        {
+          messages: ListOfChatMessages.create([], { owner: group }),
+          name: "Unnamed",
+          model: selectedModel,
+          generateAudio: false,
+        },
+        { owner: group }
+      );
+      setNewlyCreatedChat(newChat);
+    });
+  }, [chatId, me, newlyCreatedChat, selectedModel]);
 
   // Initial scroll to bottom after hydration (not SSR)
   useEffect(() => {
@@ -85,7 +113,8 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
 
   // Handle scrolling for new messages
   useEffect(() => {
-    const currentMessageCount = (chat || preloadedChat)?.messages?.length || 0;
+    const currentMessageCount =
+      (chat || preloadedChat || newlyCreatedChat)?.messages?.length || 0;
 
     if (
       hasInitiallyScrolled &&
@@ -101,6 +130,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   }, [
     chat?.messages,
     preloadedChat?.messages,
+    newlyCreatedChat?.messages,
     hasInitiallyScrolled,
     previousMessageCount,
   ]);
@@ -171,54 +201,28 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
 
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
-    if (!message.trim() || !me) return;
+    const chatForMessage = chat || newlyCreatedChat;
+
+    if (!message.trim() || !me || !chatForMessage) return;
 
     setIsLoading(true);
 
     try {
-      let currentChat = chat;
-      let currentChatId = chatId;
-
-      // Create a new chat if none exists
-      if (!currentChat && !currentChatId) {
-        const group = Group.create();
-        const worker = await Account.load(
-          "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
-          {
-            loadAs: me,
-          }
-        );
-        if (!worker) return;
-        group.addMember(worker, "writer");
-
-        currentChat = Chat.create(
-          {
-            messages: ListOfChatMessages.create([], { owner: group }),
-            name: "Unnamed",
-            model: selectedModel,
-          },
-          {
-            owner: group,
-          }
-        );
-
-        console.log(`starting chat with model`, selectedModel);
-        currentChatId = currentChat.id;
-
-        // Update user's chat list
+      console.log("chat", chat, newlyCreatedChat);
+      if (!chat && newlyCreatedChat) {
+        // This is the first message in a new chat.
+        // Add the chat to our list of chats.
         const loadedMe = await me.ensureLoaded({
           resolve: { root: { chats: true } },
         });
-        loadedMe.root.chats.push(currentChat);
-
-        // Navigate to the new chat using instant navigation
-        window.history.pushState(null, "", `/chat/${currentChat.id}`);
-        router.push(`/chat/${currentChat.id}`);
-
+        loadedMe.root.chats.push(newlyCreatedChat);
+        // And navigate to the new chat's URL.
+        router.push(`/chat/${newlyCreatedChat.id}`);
         track("Create Chat");
       }
 
-      if (!currentChat) return;
+      const currentChat = chatForMessage;
+      const currentChatId = chatId || currentChat.id;
 
       const chatMessage = ChatMessage.create(
         {

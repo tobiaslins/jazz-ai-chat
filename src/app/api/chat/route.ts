@@ -17,10 +17,11 @@ async function generateAudio(message: ChatMessage) {
     model: openai.speech("tts-1"),
     text: message.text?.toString() ?? "",
     voice: "alloy",
+    outputFormat: "mp3",
   });
 
   const file = await FileStream.createFromBlob(
-    new Blob([audio.audio.uint8Array]),
+    new Blob([audio.audio.uint8Array], { type: "audio/mp3" }),
     {
       owner: message._owner,
     }
@@ -42,10 +43,6 @@ export async function POST(req: Request) {
   }
 
   let chat: Chat | null;
-
-  // Load an existing chat
-
-  const shouldGenerateAudio = true;
 
   chat = await Chat.load(chatId, {
     loadAs: worker,
