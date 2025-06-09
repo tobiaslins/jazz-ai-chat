@@ -68,6 +68,16 @@ export async function POST(req: Request) {
     });
   }
 
+  const chatMessage = ChatMessage.create(
+    {
+      type: "text",
+      text: CoPlainText.create("", { owner: chat._owner }),
+      role: "assistant" as const,
+    },
+    { owner: chat._owner }
+  );
+  chat.messages?.push(chatMessage);
+
   const result = streamText({
     model: model,
     messages: [
@@ -85,24 +95,12 @@ export async function POST(req: Request) {
     },
   });
 
-  let chatMessage: ChatMessage | null = null;
   let currentText = "";
   let lastUpdateTime = 0;
   const THROTTLE_TIME = 250;
 
   for await (const textPart of result.textStream) {
-    if (chatMessage === null && textPart) {
-      chatMessage = ChatMessage.create(
-        {
-          type: "text",
-          text: CoPlainText.create(textPart, { owner: chat._owner }),
-          role: "assistant" as const,
-        },
-        { owner: chat._owner }
-      );
-      chat.messages?.push(chatMessage);
-      currentText = textPart;
-    } else if (chatMessage) {
+    if (chatMessage) {
       currentText += textPart;
       const now = Date.now();
 
