@@ -91,7 +91,7 @@ export async function POST(req: Request) {
       })) ?? []),
     ],
     tools: {
-      createImage: createImageTool(chat),
+      createImage: createImageTool(chat, chatMessage),
     },
   });
 

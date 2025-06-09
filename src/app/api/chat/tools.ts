@@ -5,7 +5,7 @@ import { Chat, ChatMessage } from "@/app/(app)/schema";
 import { openai } from "@ai-sdk/openai";
 import sharp from "sharp";
 
-export function createImageTool(chat: Chat) {
+export function createImageTool(chat: Chat, chatMessage: ChatMessage) {
   return tool({
     description:
       "Create an image from a prompt. Use it when the user asks to create, draw, or generate an image.",
@@ -16,18 +16,8 @@ export function createImageTool(chat: Chat) {
       const imageSize = 1024;
       const size = `${imageSize}x${imageSize}`;
 
-      const imageMessage = ChatMessage.create(
-        {
-          type: "image",
-          role: "assistant",
-          text: CoPlainText.create("Creating image...", {
-            owner: chat._owner,
-          }),
-        },
-        { owner: chat._owner }
-      );
-
-      chat.messages?.push(imageMessage);
+      chatMessage.type = "image";
+      chatMessage.text?.applyDiff("Creating image...");
 
       const { image: imageResponse } = await experimental_generateImage({
         model: openai.imageModel("dall-e-3"),
@@ -58,8 +48,8 @@ export function createImageTool(chat: Chat) {
         }
       );
 
-      imageMessage.image = image;
-      imageMessage.text.applyDiff("Image from prompt: " + prompt);
+      chatMessage.image = image;
+      chatMessage.text?.applyDiff("Image from prompt: " + prompt);
 
       const blob = new Blob([imageResponse.uint8Array], {
         type: "image/png",
