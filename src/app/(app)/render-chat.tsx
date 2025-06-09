@@ -272,7 +272,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
     }
   }, [selectedModel, chat]);
 
-  if (chat === null) {
+  if (chat === null && chatId) {
     return (
       <div className="flex flex-col h-full max-w-full w-full mx-auto bg-white relative">
         <div className="flex items-center justify-center h-full">
