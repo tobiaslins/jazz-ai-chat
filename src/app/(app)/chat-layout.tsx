@@ -1,9 +1,19 @@
 "use client";
 
-import type * as React from "react";
-import { Plus } from "lucide-react";
+import * as React from "react";
+import { Plus, User } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 import {
   Sidebar,
@@ -32,8 +42,11 @@ export default function ChatLayout({
   const router = useRouter();
   const currentChatId = params.id as string | undefined;
   const { me } = useAccount(ChatAccount, {
-    resolve: { root: { chats: { $each: true } } },
+    resolve: { root: { chats: { $each: true } }, profile: true },
   });
+
+  const [profileName, setProfileName] = React.useState("");
+  const [isProfileDialogOpen, setProfileDialogOpen] = React.useState(false);
 
   const recentChats =
     me?.root?.chats
@@ -99,24 +112,54 @@ export default function ChatLayout({
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter className="p-4">
-            {/* <SidebarMenu>
+            <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </Button>
-                </SidebarMenuButton>
+                <Dialog
+                  open={isProfileDialogOpen}
+                  onOpenChange={(open) => {
+                    if (open && me?.profile) {
+                      setProfileName(me.profile.name);
+                    }
+                    setProfileDialogOpen(open);
+                  }}
+                >
+                  <DialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="w-full justify-start"
+                      disabled={!me}
+                    >
+                      <User className="mr-2 h-4 w-4" />
+                      {me?.profile?.name || "Profile"}
+                    </Button>
+                  </DialogTrigger>
+                  <DialogContent>
+                    <DialogHeader>
+                      <DialogTitle>Edit Profile</DialogTitle>
+                      <DialogDescription>
+                        This is your display name.
+                      </DialogDescription>
+                    </DialogHeader>
+                    <Input
+                      value={profileName}
+                      onChange={(e) => setProfileName(e.target.value)}
+                    />
+                    <DialogFooter>
+                      <Button
+                        onClick={() => {
+                          if (me?.profile) {
+                            me.profile.name = profileName;
+                          }
+                          setProfileDialogOpen(false);
+                        }}
+                      >
+                        Save
+                      </Button>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </Button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu> */}
+            </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
         <SidebarInset className="flex flex-1 flex-col overflow-hidden">

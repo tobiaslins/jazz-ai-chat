@@ -1,9 +1,16 @@
 "use client";
 
-import { useAccount, useCoState } from "jazz-react";
+import { ProgressiveImg, useAccount, useCoState } from "jazz-react";
 import { Chat, ChatAccount, ChatMessage, ListOfChatMessages } from "./schema";
-import { CoPlainText, Group, type ID, Account } from "jazz-tools";
-import { useEffect, useRef, useState } from "react";
+import {
+  CoPlainText,
+  Group,
+  type ID,
+  Account,
+  createInviteLink,
+  consumeInviteLink,
+} from "jazz-tools";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import { AnimatePresence } from "framer-motion";
 import { Loader2, Send, Trash2 } from "lucide-react";
@@ -19,19 +26,34 @@ import { ModelSelector } from "@/components/ui/model-selector";
 import { ModelId, defaultModel } from "@/lib/models";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import { darcula } from "react-syntax-highlighter/dist/esm/styles/prism";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+
+const BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://jazz-ai-chat.vercel.app/"
+    : "http://localhost:3001/";
 
 export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const params = useParams();
   const chatId = params.id as string | undefined;
   const chat = useCoState(Chat, chatId || undefined, {
     resolve: {
-      messages: { $each: { text: true } },
+      messages: { $each: { text: true, image: true } },
     },
   });
   const { me } = useAccount(ChatAccount);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const selectedModel = chat?.model || preloadedChat?.model || defaultModel;
+  const [selectedModel, setSelectedModel] = useState(
+    preloadedChat?.model || defaultModel
+  );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [hasInitiallyScrolled, setHasInitiallyScrolled] = useState(false);
@@ -40,6 +62,16 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const router = useRouter();
 
   const chatToUse = chat || preloadedChat;
+
+  // Only show author if there are others
+  const hasOtherMembers =
+    chat?._owner?.members?.length && chat?._owner?.members?.length > 2;
+
+  useEffect(() => {
+    if (chat?.model !== selectedModel) {
+      setSelectedModel(chat?.model || defaultModel);
+    }
+  }, [chat?.model, selectedModel]);
 
   // Initial scroll to bottom after hydration (not SSR)
   useEffect(() => {
@@ -89,6 +121,54 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
     }
   }, []);
 
+  useEffect(() => {
+    const redeemInvite = async () => {
+      console.log("redeemInvite");
+      try {
+        const inviteURL = window.location.href;
+
+        if (!inviteURL.includes("#/invite/")) return;
+
+        // Consume the invite link
+        const redeemed = await consumeInviteLink({
+          invitedObjectSchema: Chat,
+          inviteURL,
+        });
+
+        if (redeemed) {
+          const loadedChat = await Chat.load(redeemed.valueID, { loadAs: me });
+          const loadedMe = await me.ensureLoaded({
+            resolve: { root: { chats: true } },
+          });
+          console.log("loadedChat", loadedChat);
+          // Check if chat is already in the list to avoid duplicates
+          if (
+            loadedChat &&
+            loadedMe.root?.chats &&
+            !loadedMe.root.chats.some((c) => c?.id === loadedChat.id)
+          ) {
+            loadedMe.root.chats.push(loadedChat);
+          }
+          // Navigate to the chat page
+          if (loadedChat) {
+            router.push(`/chat/${loadedChat.id}`);
+          }
+
+          toast.success("Successfully joined chat!");
+        } else {
+          toast.error("Failed to redeem invite link.");
+        }
+      } catch (error) {
+        console.error("Failed to redeem invite:", error);
+        toast.error("Failed to redeem invite link.");
+      }
+    };
+
+    if (me) {
+      redeemInvite();
+    }
+  }, [me, router]);
+
   async function sendMessage(e: React.FormEvent) {
     e.preventDefault();
     if (!message.trim() || !me) return;
@@ -111,7 +191,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
         if (!worker) return;
         group.addMember(worker, "writer");
 
-        currentChat = await Chat.create(
+        currentChat = Chat.create(
           {
             messages: ListOfChatMessages.create([], { owner: group }),
             name: "Unnamed",
@@ -122,6 +202,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
           }
         );
 
+        console.log(`starting chat with model`, selectedModel);
         currentChatId = currentChat.id;
 
         // Update user's chat list
@@ -141,7 +222,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
 
       const chatMessage = ChatMessage.create(
         {
-          content: message,
+          type: "text",
           role: "user",
           text: CoPlainText.create(message, { owner: currentChat._owner }),
         },
@@ -191,6 +272,16 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
     }
   }, [selectedModel, chat]);
 
+  if (chat === null) {
+    return (
+      <div className="flex flex-col h-full max-w-full w-full mx-auto bg-white relative">
+        <div className="flex items-center justify-center h-full">
+          <div className="text-gray-500">Chat not found</div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full max-w-full w-full mx-auto bg-white relative">
       <div className="sticky top-0 z-50 bg-white border-b border-gray-200 safe-area-inset-top">
@@ -204,18 +295,68 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             </div>
           </div>
           <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="p-2"
-              onClick={() => {
-                chat?._owner.castAs(Group).addMember("everyone", "reader");
-                navigator.clipboard.writeText(window.location.href);
-                toast.success("Copied to clipboard");
-              }}
-            >
-              Share
-            </Button>
+            <div className="flex items-center space-x-2 mr-2">
+              <Switch
+                id="audio-generation"
+                checked={!!chat?.generateAudio}
+                onCheckedChange={(checked: boolean) => {
+                  if (chat) {
+                    chat.generateAudio = checked;
+                    if (checked) {
+                      toast.success(
+                        "New chat messages will be automatically converted to audio"
+                      );
+                    }
+                    track("Toggle Audio Generation", {
+                      chatId: chat.id,
+                      enabled: checked,
+                    });
+                  }
+                }}
+              />
+              <Label htmlFor="audio-generation">Audio</Label>
+            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="p-2">
+                  Share
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent>
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (!chat) return;
+                    const link = createInviteLink(chat, "reader", BASE_URL);
+                    navigator.clipboard.writeText(link);
+                    toast.success("Read-only invite link copied to clipboard");
+                  }}
+                >
+                  Share as viewer
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (!chat) return;
+                    const link = createInviteLink(chat, "writer", BASE_URL);
+                    navigator.clipboard.writeText(link);
+                    toast.success("Writer invite link copied to clipboard");
+                  }}
+                >
+                  Share as collaborator
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  onClick={() => {
+                    if (!chat) return;
+                    chat._owner.castAs(Group).addMember("everyone", "reader");
+                    navigator.clipboard.writeText(window.location.href);
+                    toast.success(
+                      "Chat is now public. Link copied to clipboard."
+                    );
+                  }}
+                >
+                  Make public
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button
               variant="ghost"
               size="sm"
@@ -244,46 +385,75 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
 
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         <AnimatePresence>
-          {orderedMessages?.map((message) => (
+          {orderedMessages?.map((message, idx) => (
             <motion.div
               key={message?.id}
-              className={`w-full flex ${
-                message?.role === "user" ? "justify-end" : "justify-start"
-              }`}
+              className={clsx(
+                "w-full flex",
+                message?.role === "user" && message?._edits.text?.by?.isMe
+                  ? "justify-end"
+                  : "justify-start"
+              )}
             >
-              <div
-                className={`md:max-w-[80%] min-w-0 rounded-2xl px-4 py-2 min-h-[36px] break-words ${
-                  message?.role === "user"
-                    ? "bg-blue-500 text-white rounded-br-md"
-                    : "bg-gray-100 text-gray-900 rounded-bl-md"
-                }`}
-              >
-                <Markdown
+              <div className="flex flex-col md:max-w-[80%]">
+                <div
                   className={clsx(
-                    "text-sm",
-                    message?.text?.toString() ? "" : "text-gray-500"
+                    "w-full min-w-0 rounded-2xl px-4 py-2 min-h-[36px] break-words relative",
+                    message?.role === "user"
+                      ? "bg-blue-500 text-white rounded-br-md"
+                      : "bg-gray-100 text-gray-900 rounded-bl-md",
+                    message?._edits.text?.by?.isMe ? "" : ""
                   )}
-                  components={{
-                    code({ className, children }) {
-                      const match = /language-(\w+)/.exec(className || "");
-                      return match ? (
-                        <div className="overflow-x-auto">
-                          <SyntaxHighlighter
-                            PreTag="div"
-                            language={match[1]}
-                            style={darcula}
-                          >
-                            {String(children).replace(/\n$/, "")}
-                          </SyntaxHighlighter>
-                        </div>
-                      ) : (
-                        <code className={className}>{children}</code>
-                      );
-                    },
-                  }}
                 >
-                  {message?.text?.toString() || "..."}
-                </Markdown>
+                  {message?.image ? (
+                    <ProgressiveImg
+                      image={chat?.messages[idx]?.image} // The image definition to load
+                      targetWidth={300} // Looks for the best available resolution for a 800px image
+                    >
+                      {({ src }) => (
+                        <img
+                          src={src}
+                          alt="Gallery image"
+                          className="gallery-image max-w-64 min-w-64"
+                        />
+                      )}
+                    </ProgressiveImg>
+                  ) : (
+                    <Markdown
+                      className={clsx(
+                        "text-sm",
+                        message?.text?.toString() ? "" : "text-gray-500"
+                      )}
+                      components={{
+                        code({ className, children }) {
+                          const match = /language-(\w+)/.exec(className || "");
+                          return match ? (
+                            <div className="overflow-x-auto">
+                              <SyntaxHighlighter
+                                PreTag="div"
+                                language={match[1]}
+                                style={darcula}
+                              >
+                                {String(children).replace(/\n$/, "")}
+                              </SyntaxHighlighter>
+                            </div>
+                          ) : (
+                            <code className={className}>{children}</code>
+                          );
+                        },
+                      }}
+                    >
+                      {message?.text?.toString() || "..."}
+                    </Markdown>
+                  )}
+                  {message?.audio ? <AudioMessage message={message} /> : null}
+                </div>
+
+                {hasOtherMembers && !message?._edits.text?.by?.isMe && (
+                  <div className="text-[8px] ml-1 mt-0.5 text-gray-500">
+                    {message?._edits.text?.by?.profile?.name}
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}
@@ -332,6 +502,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                 <ModelSelector
                   selectedModel={selectedModel}
                   setSelectedModel={(model) => {
+                    setSelectedModel(model);
                     if (chat) {
                       chat.model = model;
                     }
@@ -351,6 +522,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                 singleLine
                 selectedModel={selectedModel}
                 setSelectedModel={(model) => {
+                  setSelectedModel(model);
                   if (chat) {
                     chat.model = model;
                   }
@@ -360,6 +532,67 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
           </form>
         </div>
       )}
+    </div>
+  );
+}
+
+function AudioMessage({ message }: { message: ChatMessage }) {
+  const url = useMemo(() => {
+    const audio = message.audio;
+    if (!audio) return;
+    const blob = audio?.toBlob();
+    if (!blob) return;
+    const url = URL.createObjectURL(blob);
+    return url;
+  }, [message.audio]);
+
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement>(null);
+
+  const togglePlay = () => {
+    if (!audioRef.current) return;
+
+    if (isPlaying) {
+      audioRef.current.pause();
+    } else {
+      audioRef.current.play();
+    }
+    setIsPlaying(!isPlaying);
+  };
+
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleEnded = () => setIsPlaying(false);
+    audio.addEventListener("ended", handleEnded);
+
+    return () => {
+      audio.removeEventListener("ended", handleEnded);
+    };
+  }, []);
+
+  if (!url) {
+    return <div>Loading audio...</div>;
+  }
+  return (
+    <div className="flex items-center gap-2 p-1 rounded absolute -bottom-4 -right-4">
+      <button
+        onClick={togglePlay}
+        className="w-6 h-6 rounded-full bg-gray-400 hover:bg-blue-600 flex items-center justify-center text-white"
+      >
+        {isPlaying ? (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <rect x="6" y="4" width="4" height="16" />
+            <rect x="14" y="4" width="4" height="16" />
+          </svg>
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z" />
+          </svg>
+        )}
+      </button>
+      <audio ref={audioRef} src={url} className="hidden" />
     </div>
   );
 }

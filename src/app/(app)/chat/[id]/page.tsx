@@ -12,8 +12,9 @@ export default async function ChatPage({
 }) {
   const requestType = await detectRequestType();
 
-  if (requestType.isRSCRequest) {
+  if (requestType.isRSCRequest || true) {
     // Don't prefetch the chat, just render it
+    // don't prerender now bc of permissions
     return <RenderChat />;
   }
 
@@ -36,7 +37,8 @@ export default async function ChatPage({
       )
       .map((m) => ({
         ...m?.toJSON(),
-        text: m?.text?.toString(),
+        ...(m?.type === "text" ? { text: m?.text?.toString() } : {}),
+        ...(m?.type === "image" ? { image: m?.image?.toString() } : {}),
       })),
   };
 

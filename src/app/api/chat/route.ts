@@ -1,11 +1,33 @@
 import { Chat, ChatMessage } from "../../(app)/schema";
-import { Account, CoPlainText } from "jazz-tools";
+import { Account, CoPlainText, FileStream } from "jazz-tools";
 import { generateText, streamText } from "ai";
-import { openai } from "@ai-sdk/openai";
 import { after } from "next/server";
 import { getWorker } from "@/app/worker";
 import { gateway, GatewayModelId } from "@vercel/ai-sdk-gateway";
 import { defaultModel } from "@/lib/models";
+import { z } from "zod";
+import sharp from "sharp";
+import { createImageTool } from "./tools";
+import { experimental_generateSpeech as generateSpeech } from "ai";
+import { openai } from "@ai-sdk/openai";
+import { readFile } from "fs/promises";
+
+async function generateAudio(message: ChatMessage) {
+  const audio = await generateSpeech({
+    model: openai.speech("tts-1"),
+    text: message.text?.toString() ?? "",
+    voice: "alloy",
+  });
+
+  const file = await FileStream.createFromBlob(
+    new Blob([audio.audio.uint8Array]),
+    {
+      owner: message._owner,
+    }
+  );
+
+  message.audio = file;
+}
 
 export async function POST(req: Request) {
   const worker = await getWorker();
@@ -23,6 +45,8 @@ export async function POST(req: Request) {
 
   // Load an existing chat
 
+  const shouldGenerateAudio = true;
+
   chat = await Chat.load(chatId, {
     loadAs: worker,
     resolve: {
@@ -35,25 +59,17 @@ export async function POST(req: Request) {
     return new Response("Chat not found", { status: 404 });
   }
 
-  if (chat.name === "Unnamed" || chat.name === "Test") {
+  if (chat.name === "Unnamed") {
     // Generate a name for the chat
-    const chatName = await generateText({
-      model: model,
+    generateText({
+      model: gateway("openai/gpt-4.1-nano"),
       prompt: `Generate a title for this AI chat. Only answer with the name. It should be discriptive of what the chat is about. The current messages are: ${chat?.messages
-        ?.map((message) => message?.content)
+        ?.map((message) => message?.text?.toString())
         .join("\n")}`,
+    }).then((text) => {
+      chat.name = text.text;
     });
-    chat.name = chatName.text;
   }
-
-  const chatMessage = ChatMessage.create(
-    {
-      content: "",
-      text: CoPlainText.create("", { owner: chat._owner }),
-      role: "assistant" as const,
-    },
-    { owner: chat._owner }
-  );
 
   const result = streamText({
     model: model,
@@ -67,27 +83,46 @@ export async function POST(req: Request) {
         content: message?.text?.toString() ?? "",
       })) ?? []),
     ],
+    tools: {
+      createImage: createImageTool(chat),
+    },
   });
 
-  chat.messages?.push(chatMessage);
-
+  let chatMessage: ChatMessage | null = null;
   let currentText = "";
   let lastUpdateTime = 0;
   const THROTTLE_TIME = 250;
 
   for await (const textPart of result.textStream) {
-    currentText += textPart;
-    const now = Date.now();
+    if (chatMessage === null && textPart) {
+      chatMessage = ChatMessage.create(
+        {
+          type: "text",
+          text: CoPlainText.create(textPart, { owner: chat._owner }),
+          role: "assistant" as const,
+        },
+        { owner: chat._owner }
+      );
+      chat.messages?.push(chatMessage);
+      currentText = textPart;
+    } else if (chatMessage) {
+      currentText += textPart;
+      const now = Date.now();
 
-    if (now - lastUpdateTime >= THROTTLE_TIME) {
-      chatMessage.text.applyDiff(currentText);
-
-      lastUpdateTime = now;
+      if (now - lastUpdateTime >= THROTTLE_TIME) {
+        chatMessage.text?.applyDiff(currentText);
+        lastUpdateTime = now;
+      }
     }
   }
   // Make sure any remaining text gets inserted
+  if (chatMessage) {
+    chatMessage.text?.applyDiff(currentText);
 
-  chatMessage.text?.applyDiff(currentText);
+    if (chat.generateAudio) {
+      await generateAudio(chatMessage!);
+    }
+  }
 
   after(async () => {
     await worker?.waitForAllCoValuesSync({ timeout: 5000 });
