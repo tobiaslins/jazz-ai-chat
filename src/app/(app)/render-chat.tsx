@@ -51,10 +51,10 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const { me } = useAccount(ChatAccount);
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [newlyCreatedChat, setNewlyCreatedChat] = useState<Chat | null>(null);
-  const [selectedModel, setSelectedModel] = useState(
-    preloadedChat?.model || defaultModel
+  const [newlyCreatedChatId, setNewlyCreatedChatId] = useState<ID<Chat> | null>(
+    null
   );
+  const newlyCreatedChat = useCoState(Chat, newlyCreatedChatId || undefined);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [hasInitiallyScrolled, setHasInitiallyScrolled] = useState(false);
@@ -62,23 +62,20 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const router = useRouter();
 
-  const chatToUse = chat || preloadedChat || newlyCreatedChat;
+  const chatToUse = chat || newlyCreatedChat || preloadedChat;
 
   // Only show author if there are others
   const hasOtherMembers =
     chat?._owner?.members?.length && chat?._owner?.members?.length > 2;
 
-  useEffect(() => {
-    if (chat?.model !== selectedModel) {
-      setSelectedModel(chat?.model || defaultModel);
-    }
-  }, [chat?.model, selectedModel]);
+  const selectedModel = chatToUse?.model || defaultModel;
 
   // Create a new chat object in memory if we're on the new chat page
   useEffect(() => {
-    if (chatId || !me || newlyCreatedChat) return;
+    if (chatId || !me || newlyCreatedChatId) return;
 
     const group = Group.create({ owner: me });
+
     const workerPromise = Account.load(
       "co_zm1eobD4gAy4hfPrsKR7vuEShYz" as ID<Account>,
       { loadAs: me }
@@ -97,9 +94,10 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
         },
         { owner: group }
       );
-      setNewlyCreatedChat(newChat);
+
+      setNewlyCreatedChatId(newChat.id);
     });
-  }, [chatId, me, newlyCreatedChat, selectedModel]);
+  }, [chatId, me, newlyCreatedChatId, selectedModel]);
 
   // Initial scroll to bottom after hydration (not SSR)
   useEffect(() => {
@@ -153,7 +151,6 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
 
   useEffect(() => {
     const redeemInvite = async () => {
-      console.log("redeemInvite");
       try {
         const inviteURL = window.location.href;
 
@@ -170,7 +167,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
           const loadedMe = await me.ensureLoaded({
             resolve: { root: { chats: true } },
           });
-          console.log("loadedChat", loadedChat);
+
           // Check if chat is already in the list to avoid duplicates
           if (
             loadedChat &&
@@ -270,12 +267,6 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
 
   const role = chat?._owner?.myRole() || "admin"; // Default to admin for new chats
 
-  useEffect(() => {
-    if (chat && chat?.model !== selectedModel) {
-      chat.model = selectedModel;
-    }
-  }, [selectedModel, chat]);
-
   if (chat === null && chatId) {
     return (
       <div className="flex flex-col h-full max-w-full w-full mx-auto bg-white relative">
@@ -302,17 +293,17 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             <div className="flex items-center space-x-2 mr-2">
               <Switch
                 id="audio-generation"
-                checked={!!chat?.generateAudio}
+                checked={!!chatToUse?.generateAudio}
                 onCheckedChange={(checked: boolean) => {
-                  if (chat) {
-                    chat.generateAudio = checked;
+                  if (chatToUse) {
+                    chatToUse.generateAudio = checked;
                     if (checked) {
                       toast.success(
                         "New chat messages will be automatically converted to audio"
                       );
                     }
                     track("Toggle Audio Generation", {
-                      chatId: chat.id,
+                      chatId: chatToUse.id,
                       enabled: checked,
                     });
                   }
@@ -322,7 +313,12 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="p-2">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="p-2"
+                  disabled={!chat}
+                >
                   Share
                 </Button>
               </DropdownMenuTrigger>
@@ -365,6 +361,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
               variant="ghost"
               size="sm"
               className="p-2"
+              disabled={!chat}
               onClick={async () => {
                 if (
                   chat &&
@@ -473,7 +470,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             </span>
             <Button
               onClick={() => {
-                window.location.href = "/";
+                router.push("/");
               }}
             >
               New chat
@@ -506,9 +503,8 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                 <ModelSelector
                   selectedModel={selectedModel}
                   setSelectedModel={(model) => {
-                    setSelectedModel(model);
-                    if (chat) {
-                      chat.model = model;
+                    if (chatToUse) {
+                      chatToUse.model = model;
                     }
                   }}
                 />
@@ -526,9 +522,8 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                 singleLine
                 selectedModel={selectedModel}
                 setSelectedModel={(model) => {
-                  setSelectedModel(model);
-                  if (chat) {
-                    chat.model = model;
+                  if (chatToUse) {
+                    chatToUse.model = model;
                   }
                 }}
               />
@@ -577,7 +572,7 @@ function AudioMessage({ message }: { message: ChatMessage }) {
   }, []);
 
   if (!url) {
-    return <div>Loading audio...</div>;
+    return null;
   }
   return (
     <div className="flex items-center gap-2 p-1 rounded absolute -bottom-4 -right-4">
