@@ -75,6 +75,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const [previousMessageCount, setPreviousMessageCount] = useState(0);
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
 
   const chatToUse = chat || newlyCreatedChat || preloadedChat;
 
@@ -530,6 +531,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                   onChange={(e) => setMessage(e.target.value)}
                   className="w-full rounded-md border-gray-300 pr-12 py-2 text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   style={{ fontSize: "16px" }}
+                  disabled={userCredits && userCredits.balance <= 0}
                 />
               </div>
               <div className="items-start justify-start flex-1 max-w-60 lg:flex hidden">
@@ -562,6 +564,39 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
               />
             </div>
           </form>
+          {userCredits && userCredits.balance <= 0 && (
+            <div className="flex items-center justify-center p-4 bg-yellow-100 border-t border-yellow-200">
+              <p className="text-sm text-yellow-800">You're out of credits.</p>
+              <Button
+                variant="link"
+                className="ml-2 text-sm"
+                disabled={isLoading}
+                onClick={async () => {
+                  setIsLoading(true);
+                  try {
+                    await fetch("/api/purchase", {
+                      method: "POST",
+                      body: JSON.stringify({
+                        userId: me.id,
+                        creditsId: userCredits.id,
+                      }),
+                    });
+                    toast.success("10 credits added!");
+                  } catch (error) {
+                    toast.error("Failed to add credits.");
+                    console.error("Purchase failed:", error);
+                  } finally {
+                    setIsLoading(false);
+                  }
+                }}
+              >
+                {isLoading ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : null}
+                Buy more
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
