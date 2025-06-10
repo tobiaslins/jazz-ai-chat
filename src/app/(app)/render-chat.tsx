@@ -1,7 +1,13 @@
 "use client";
 
 import { ProgressiveImg, useAccount, useCoState } from "jazz-react";
-import { Chat, ChatAccount, ChatMessage, ListOfChatMessages } from "./schema";
+import {
+  Chat,
+  ChatAccount,
+  ChatMessage,
+  ListOfChatMessages,
+  Credits,
+} from "./schema";
 import {
   CoPlainText,
   Group,
@@ -48,9 +54,17 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
       messages: { $each: { text: true, image: true } },
     },
   });
+  const { me: withCredits } = useAccount(ChatAccount, {
+    resolve: {
+      root: {
+        credits: true,
+      },
+    },
+  });
   const { me } = useAccount(ChatAccount);
   const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+
+  const userCredits = withCredits?.root.credits;
   const [newlyCreatedChatId, setNewlyCreatedChatId] = useState<ID<Chat> | null>(
     null
   );
@@ -90,6 +104,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
           messages: ListOfChatMessages.create([], { owner: group }),
           name: "Unnamed",
           model: selectedModel,
+          creditsId: me.root?.credits?.id,
           generateAudio: false,
         },
         { owner: group }
@@ -202,10 +217,14 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
 
     if (!message.trim() || !me || !chatForMessage) return;
 
-    setIsLoading(true);
+    // Check if user has credits
+    if (userCredits && userCredits.balance <= 0) {
+      toast.error("Insufficient credits to send message");
+
+      return;
+    }
 
     try {
-      console.log("chat", chat, newlyCreatedChat);
       if (!chat && newlyCreatedChat) {
         // This is the first message in a new chat.
         // Add the chat to our list of chats.
@@ -243,6 +262,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             userId: me?.id,
             lastMessageId: chatMessage?.id,
             model: selectedModel,
+            creditsId: userCredits?.id,
           }),
         })
           .then((res) => res.json())
@@ -254,8 +274,6 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
       }
     } catch (error) {
       console.error("Failed to send message:", error);
-    } finally {
-      setIsLoading(false);
     }
   }
 
@@ -290,6 +308,17 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             </div>
           </div>
           <div className="flex items-center">
+            {/* Credits Display */}
+            {userCredits && (
+              <div className="flex items-center gap-2 text-sm mr-4 px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded-md">
+                <span className="text-gray-600 dark:text-gray-400">
+                  Credits:
+                </span>
+                <span className="font-semibold text-blue-600 dark:text-blue-400">
+                  {userCredits.balance}
+                </span>
+              </div>
+            )}
             <div className="flex items-center space-x-2 mr-2">
               <Switch
                 id="audio-generation"

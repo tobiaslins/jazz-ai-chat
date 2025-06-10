@@ -1,4 +1,4 @@
-import { Chat, ChatMessage } from "../../(app)/schema";
+import { Chat, ChatMessage, Credits } from "../../(app)/schema";
 import { Account, CoPlainText, FileStream } from "jazz-tools";
 import { generateText, streamText } from "ai";
 import { after } from "next/server";
@@ -33,13 +33,31 @@ async function generateAudio(message: ChatMessage) {
 export async function POST(req: Request) {
   const worker = await getWorker();
 
-  const { userId, chatId, model: modelId } = await req.json();
+  const { userId, chatId, model: modelId, creditsId } = await req.json();
   const account = await Account.load(userId, { loadAs: worker });
 
   const model = gateway((modelId as GatewayModelId) || defaultModel);
 
   if (!account) {
     return new Response("Account not found", { status: 404 });
+  }
+
+  // Check and deduct credits
+  if (creditsId) {
+    const credits = await Credits.load(creditsId, { loadAs: worker });
+    if (!credits) {
+      return new Response("Credits not found", { status: 404 });
+    }
+    
+    if (credits.balance <= 0) {
+      return new Response("Insufficient credits", { status: 402 });
+    }
+    
+    // Deduct one credit
+    credits.balance = credits.balance - 1;
+    credits.lastUpdated = new Date().toISOString();
+    
+    console.log(`Deducted 1 credit. Remaining balance: ${credits.balance}`);
   }
 
   let chat: Chat | null;
