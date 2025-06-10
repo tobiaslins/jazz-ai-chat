@@ -48,15 +48,15 @@ export async function POST(req: Request) {
     if (!credits) {
       return new Response("Credits not found", { status: 404 });
     }
-    
+
     if (credits.balance <= 0) {
       return new Response("Insufficient credits", { status: 402 });
     }
-    
+
     // Deduct one credit
     credits.balance = credits.balance - 1;
     credits.lastUpdated = new Date().toISOString();
-    
+
     console.log(`Deducted 1 credit. Remaining balance: ${credits.balance}`);
   }
 
@@ -65,7 +65,11 @@ export async function POST(req: Request) {
   chat = await Chat.load(chatId, {
     loadAs: worker,
     resolve: {
-      messages: { $each: { text: true } },
+      messages: {
+        $each: {
+          text: true,
+        },
+      },
     },
   });
 
@@ -126,14 +130,28 @@ export async function POST(req: Request) {
       const now = Date.now();
 
       if (now - lastUpdateTime >= THROTTLE_TIME) {
-        chatMessage.text?.applyDiff(currentText);
+        try {
+          chatMessage.text.applyDiff(currentText);
+        } catch (e) {
+          console.error("Error applying diff", {
+            currentText,
+            messageText: chatMessage.text?.toString(),
+          });
+        }
         lastUpdateTime = now;
       }
     }
   }
   // Make sure any remaining text gets inserted
   if (chatMessage) {
-    chatMessage.text?.applyDiff(currentText);
+    try {
+      chatMessage.text.applyDiff(currentText);
+    } catch (e) {
+      console.error("Error applying diff", {
+        currentText,
+        messageText: chatMessage.text?.toString(),
+      });
+    }
 
     if (chat.generateAudio) {
       await generateAudio(chatMessage!);
