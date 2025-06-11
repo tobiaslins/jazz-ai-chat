@@ -4,6 +4,7 @@ import type * as React from "react";
 import { Plus } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 import {
   Sidebar,
@@ -78,8 +79,8 @@ export default function ChatLayout({
                       variant={"ghost"}
                       asChild
                       className={clsx(
-                        "w-full justify-start p-2 h-12 hover:bg-stone-200 active:bg-stone-200",
-                        currentChatId === chat.id ? "bg-stone-200" : ""
+                        "w-full justify-start p-2 h-12 hover:bg-sidebar-accent active:bg-sidebar-accent",
+                        currentChatId === chat.id ? "bg-sidebar-accent" : ""
                       )}
                     >
                       <Link prefetch={false} href={`/chat/${chat.id}`}>
@@ -99,24 +100,13 @@ export default function ChatLayout({
             </SidebarMenu>
           </SidebarContent>
           <SidebarFooter className="p-4">
-            {/* <SidebarMenu>
+            <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <User className="mr-2 h-4 w-4" />
-                    Profile
-                  </Button>
+                  <ThemeToggle />
                 </SidebarMenuButton>
               </SidebarMenuItem>
-              <SidebarMenuItem>
-                <SidebarMenuButton asChild>
-                  <Button variant="ghost" className="w-full justify-start">
-                    <Settings className="mr-2 h-4 w-4" />
-                    Settings
-                  </Button>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
-            </SidebarMenu> */}
+            </SidebarMenu>
           </SidebarFooter>
         </Sidebar>
         <SidebarInset className="flex flex-1 flex-col overflow-hidden">
