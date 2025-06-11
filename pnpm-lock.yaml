@@ -9,14 +9,17 @@ importers:
   .:
     dependencies:
       '@ai-sdk/openai':
-        specifier: ^1.3.22
-        version: 1.3.22(zod@3.25.24-beta.0)
+        specifier: 2.0.0-alpha.10
+        version: 2.0.0-alpha.10(zod@3.25.56)
       '@radix-ui/react-dialog':
         specifier: ^1.1.4
         version: 1.1.4(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@radix-ui/react-dropdown-menu':
         specifier: ^2.1.15
         version: 2.1.15(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@radix-ui/react-label':
+        specifier: ^2.1.7
+        version: 2.1.7(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@radix-ui/react-popover':
         specifier: ^1.1.14
         version: 1.1.14(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -26,6 +29,9 @@ importers:
       '@radix-ui/react-slot':
         specifier: ^1.1.1
         version: 1.1.1(@types/react@19.0.4)(react@19.0.0)
+      '@radix-ui/react-switch':
+        specifier: ^1.2.5
+        version: 1.2.5(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       '@radix-ui/react-tooltip':
         specifier: ^1.1.6
         version: 1.1.6(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -37,13 +43,16 @@ importers:
         version: 8.5.13
       '@vercel/ai-sdk-gateway':
         specifier: ^0.1.10
-        version: 0.1.10(zod@3.25.24-beta.0)
+        version: 0.1.10(zod@3.25.56)
       '@vercel/analytics':
         specifier: ^1.5.0
         version: 1.5.0(next@15.4.0-canary.70(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
+      '@vercel/speed-insights':
+        specifier: ^1.2.0
+        version: 1.2.0(next@15.4.0-canary.70(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)
       ai:
         specifier: 5.0.0-alpha.10
-        version: 5.0.0-alpha.10(zod@3.25.24-beta.0)
+        version: 5.0.0-alpha.10(zod@3.25.56)
       bufferutil:
         specifier: ^4.0.9
         version: 4.0.9
@@ -60,14 +69,14 @@ importers:
         specifier: ^11.17.0
         version: 11.17.0(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       jazz-nodejs:
-        specifier: ^0.14.14
-        version: 0.14.14
+        specifier: ^0.14.23
+        version: 0.14.23
       jazz-react:
-        specifier: ^0.14.14
-        version: 0.14.14(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+        specifier: ^0.14.23
+        version: 0.14.23(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       jazz-tools:
-        specifier: ^0.14.14
-        version: 0.14.14
+        specifier: ^0.14.23
+        version: 0.14.23
       lucide-react:
         specifier: ^0.471.0
         version: 0.471.0(react@19.0.0)
@@ -89,6 +98,9 @@ importers:
       react-syntax-highlighter:
         specifier: ^15.6.1
         version: 15.6.1(react@19.0.0)
+      sharp:
+        specifier: ^0.34.2
+        version: 0.34.2
       tailwind-merge:
         specifier: ^2.6.0
         version: 2.6.0
@@ -98,6 +110,9 @@ importers:
       ws:
         specifier: 8.14.2
         version: 8.14.2(bufferutil@4.0.9)
+      zod:
+        specifier: ^3.25.56
+        version: 3.25.56
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -126,17 +141,11 @@ packages:
     peerDependencies:
       zod: ^3.25.49
 
-  '@ai-sdk/openai@1.3.22':
-    resolution: {integrity: sha512-QwA+2EkG0QyjVR+7h6FE7iOu2ivNqAVMm9UJZkVxxTk5OIq5fFJDTEI/zICEMuHImTTXR2JjsL6EirJ28Jc4cw==}
+  '@ai-sdk/openai@2.0.0-alpha.10':
+    resolution: {integrity: sha512-F8KeauWiLc8xgWhj/kxQLnkhn/mNi3RKikOYsUGX2V1WXQ/o+bBDtguVK6PMACeI2wJOa85IevC14M/ctj+L6Q==}
     engines: {node: '>=18'}
     peerDependencies:
-      zod: ^3.0.0
-
-  '@ai-sdk/provider-utils@2.2.8':
-    resolution: {integrity: sha512-fqhG+4sCVv8x7nFzYnFo19ryhAa3w096Kmc3hWxMQfW/TubPOmt3A6tYZhl4mUfQWWQMsuSkLrtjlWuXBVSGQA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.23.8
+      zod: ^3.25.49
 
   '@ai-sdk/provider-utils@3.0.0-alpha.10':
     resolution: {integrity: sha512-gmGZXo3phA5O6IRVBhMBKGalx8SOGlUTNQjHyfKyA6Zee6K6sBJ33kGbqW8DPDaJJPkdebsXSZS+UR8HQigbQw==}
@@ -149,10 +158,6 @@ packages:
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.46
-
-  '@ai-sdk/provider@1.1.3':
-    resolution: {integrity: sha512-qZMxYJ0qqX/RfnuIaab+zp8UAeJn/ygXXAffR5I4N0n1IrvA6qBsjc8hXLmBiMV2zoXlifkacF7sEFnYnjBcqg==}
-    engines: {node: '>=18'}
 
   '@ai-sdk/provider@2.0.0-alpha.10':
     resolution: {integrity: sha512-CKScjnFGO90x18Awp1rp2sHMB1GarXojKAiYiVAwdQk5iS0GSPp/vFnvp7pEqcZwcf88HgAhu1PZZ+76QbkccQ==}
@@ -630,6 +635,19 @@ packages:
       '@types/react':
         optional: true
 
+  '@radix-ui/react-label@2.1.7':
+    resolution: {integrity: sha512-YT1GqPSL8kJn20djelMX7/cTRp/Y9w5IZHvfxQTVHrOqa2yMl7i/UfMqKRU5V7mEyKTrUVgJXhNQPVCG8PBLoQ==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+
   '@radix-ui/react-menu@2.1.15':
     resolution: {integrity: sha512-tVlmA3Vb9n8SZSd+YSbuFR66l87Wiy4du+YE+0hzKQEANA+7cWKH1WgqcEX4pXqxUFQKrWQGHdvEfw00TjFiew==}
     peerDependencies:
@@ -804,6 +822,19 @@ packages:
       '@types/react':
         optional: true
 
+  '@radix-ui/react-switch@1.2.5':
+    resolution: {integrity: sha512-5ijLkak6ZMylXsaImpZ8u4Rlf5grRmoc0p0QeX9VJtlrM4f5m3nCTX8tWga/zOA8PZYIR/t0p2Mnvd7InrJ6yQ==}
+    peerDependencies:
+      '@types/react': '*'
+      '@types/react-dom': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+      react-dom: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+      '@types/react-dom':
+        optional: true
+
   '@radix-ui/react-tooltip@1.1.6':
     resolution: {integrity: sha512-TLB5D8QLExS1uDn7+wH/bjEmRurNMTzNrtq7IjaS4kjion9NtzsTGkvR5+i7yc9q01Pi2KMM2cN3f8UG4IvvXA==}
     peerDependencies:
@@ -891,6 +922,15 @@ packages:
 
   '@radix-ui/react-use-layout-effect@1.1.1':
     resolution: {integrity: sha512-RbJRS4UWQFkzHTTwVymMTUv8EqYhOp8dOOviLj2ugtTiXRaRQS7GLGxZTLL1jWhMeoSCf5zmcZkqTl9IiYfXcQ==}
+    peerDependencies:
+      '@types/react': '*'
+      react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+
+  '@radix-ui/react-use-previous@1.1.1':
+    resolution: {integrity: sha512-2dHfToCj/pzca2Ck724OZ5L0EVrr3eHRNsG/b3xQJLA2hZpVCS99bLAX+hm1IHXDEnzU6by5z/5MIY794/a8NQ==}
     peerDependencies:
       '@types/react': '*'
       react: ^16.8 || ^17.0 || ^18.0 || ^19.0 || ^19.0.0-rc
@@ -1050,6 +1090,29 @@ packages:
       vue-router:
         optional: true
 
+  '@vercel/speed-insights@1.2.0':
+    resolution: {integrity: sha512-y9GVzrUJ2xmgtQlzFP2KhVRoCglwfRQgjyfY607aU0hh0Un6d0OUyrJkjuAlsV18qR4zfoFPs/BiIj9YDS6Wzw==}
+    peerDependencies:
+      '@sveltejs/kit': ^1 || ^2
+      next: '>= 13'
+      react: ^18 || ^19 || ^19.0.0-rc
+      svelte: '>= 4'
+      vue: ^3
+      vue-router: ^4
+    peerDependenciesMeta:
+      '@sveltejs/kit':
+        optional: true
+      next:
+        optional: true
+      react:
+        optional: true
+      svelte:
+        optional: true
+      vue:
+        optional: true
+      vue-router:
+        optional: true
+
   ai@5.0.0-alpha.10:
     resolution: {integrity: sha512-Uvlc2RpILJ3iayPR0rH92hrHvjYapg3iTGJ+Hck93ZGsjtU1yk2UzQSKXcO11REuq3t49AGAX1Y8koLcY/wBNw==}
     engines: {node: '>=18'}
@@ -1158,17 +1221,17 @@ packages:
       react: ^18 || ^19 || ^19.0.0-rc
       react-dom: ^18 || ^19 || ^19.0.0-rc
 
-  cojson-storage-indexeddb@0.14.1:
-    resolution: {integrity: sha512-yCX72QWaAII0Hb4BBq+mF2pUUfUCjy/C8c6e8Zk2Vz3G1O4dC1hV2o+WZokVpBXhddClPvEHzUaSpeIQMTNB0w==}
+  cojson-storage-indexeddb@0.14.23:
+    resolution: {integrity: sha512-IyX4yatAImrq1CiQZxp3Rh8zNYkGzbupbcATVvBHxk6N55NVfzm4jdGt8rhFhbL5cv/bhzNWfrGENqr8Xqjl1Q==}
 
-  cojson-storage@0.14.1:
-    resolution: {integrity: sha512-65VQpJpON5wl6XivkJLtMxW5MRv2+NFCbqxuJDNkP98F4UTTvQoVWzDkgMqOkDwizPS9UNbSnZ/N7i42Cw+cmA==}
+  cojson-storage@0.14.23:
+    resolution: {integrity: sha512-+lvLiRl7fkZnGWACkhx1fK37iwFpPBm3dgch3BT8OtCG//ivWgvRIFa8nRqE3/6stVvPHlvVGLkKTWW/wRXMgw==}
 
-  cojson-transport-ws@0.14.1:
-    resolution: {integrity: sha512-GpCBm5oqn0AHbIW/OX/bqVzlcJcAPOunk2mt1JK/u2BcSzebeu0luU1AG54k/0GUxX/ZbrgmdqeOxPi6QWXZbw==}
+  cojson-transport-ws@0.14.23:
+    resolution: {integrity: sha512-/U8rU9gVgQ7I+UbE5thsuXFrgL/kknIZo7u5ZgRxM6JkR5GF9KfS2ezIxBHpMHaYm5M8h31lfSk6qCbBnqeuYA==}
 
-  cojson@0.14.1:
-    resolution: {integrity: sha512-U3VhymNJqx56mt61UZT6ey6dDp53Qjq2390//ARBg5FW9qpebg03AqvWQjAZoadmO4QVgfLXAzkZzc5NoEFUMg==}
+  cojson@0.14.23:
+    resolution: {integrity: sha512-I5f+AZ2rX2sj8q0eOY4F+NpYHywqLVbQmGmsrRtB5cQyMtnFFIlgHSegxFlXFIClFFg/YWfZHAlDR40QPhYbJg==}
 
   color-convert@2.0.1:
     resolution: {integrity: sha512-RRECPsj7iu/xb5oKYcsFHSppFNnsj/52OVTRKb4zP5onXwVF3zVmmToNcOfGC+CRDpfK/U584fMg38ZHCaElKQ==}
@@ -1419,31 +1482,31 @@ packages:
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
 
-  jazz-browser-media-images@0.14.14:
-    resolution: {integrity: sha512-XBoO5XavbB6iQdmLKOKTk6ZE1dcC0YTuh41W8L9Ft8EHXNhmPAMc9HEWAHLHJDEFvMr2bD1yO/tvRti9yqrd4g==}
+  jazz-browser-media-images@0.14.23:
+    resolution: {integrity: sha512-wUJEdUE3JzJuQo6IJbjxP2thwXzT3ysz+A96m17BUdxwjzITPBKE9NAQqCPC6L2E8FTqW/H2qzscmz8LCnQGYA==}
 
-  jazz-browser@0.14.14:
-    resolution: {integrity: sha512-KnI7kWP2sq+f92JS93f1SGZIHLqewHTegx4zwWDXfOdCOiUF76+jbTPyJdWGpxAlckxAjvXUhmATaGvEao5LEA==}
+  jazz-browser@0.14.23:
+    resolution: {integrity: sha512-UHsNUn+ifuznHhQVUegOwlDq+3GzffE59n9uxYQbhpcQ87L+P9o68vdLZf7422eS1uAWWFWvB8sJT+MgR70Cbg==}
 
   jazz-crypto-rs@0.0.7:
     resolution: {integrity: sha512-Pzs8Zu1zgKVURkBVvqqF1B2r78FaSZdwPbmeCWx0Nb3nibzPuB/kSKEO7LJsKnb3P5HO0v+lTIJ53mGC5H1urQ==}
 
-  jazz-nodejs@0.14.14:
-    resolution: {integrity: sha512-ZWywLEgVfPy/nvJIOLGLDfh3HK6bWT+SXuqH5rP8Jo+v0LTsyGMeR3LIcv7ud++SxsIb8Wrw7dYeWUpCMCDBbg==}
+  jazz-nodejs@0.14.23:
+    resolution: {integrity: sha512-tg/Pu0FyNIlLLW66uZE6ITPnSYqoC2XAuN1hwMYQOFHscxk3JSGcGz8FLAXzZrk3Yl3hSZ+yHwCpetbopjWaxQ==}
 
-  jazz-react-core@0.14.14:
-    resolution: {integrity: sha512-qTyW4ulnJaU/AWth7m6vH0JPkOPS5pvmlwTvOM5MHoZQ3u4KzaB5qquZAxLvSPGr3PRkszV74RkJOQeV8UuDCg==}
+  jazz-react-core@0.14.23:
+    resolution: {integrity: sha512-fn5kf0mlCnpNHYNeTvzjpIpSQGlBAGfWGkBodU/Id3cgjoieeTt5DWuEAXTaBBHCLO2ILQbVqxL7efCeoQJWBw==}
     peerDependencies:
       react: '*'
 
-  jazz-react@0.14.14:
-    resolution: {integrity: sha512-d87E3VMTFqValI4IZN85e4jGN0wskYGnnwla1q4cTWZ8vZ6PwScTbtUQB156JjpZfXDoZwxSsoblH/1N0MXwbw==}
+  jazz-react@0.14.23:
+    resolution: {integrity: sha512-YcAyNtvElTauvrt+3CCcJv5SL6JNyi37jk9vU6IKGOH0L+IzuNlPkkuSTsxYDnHEtDMqtPQFMSvOtt8jfEGx6Q==}
     peerDependencies:
       react: '*'
       react-dom: '*'
 
-  jazz-tools@0.14.14:
-    resolution: {integrity: sha512-D+gFjGlzVUABF4rygOyptcSm+im4csk70H2y4NQURwpYcGVQ7JRKPiDvN7FmvoIKfBsm5b+RsFLM3h8dXFgfpw==}
+  jazz-tools@0.14.23:
+    resolution: {integrity: sha512-OcPGi7GvkGJbgO1ewahYb1cRI6CEtyQHH7jVbOGoi0n1HYroPpBEAjaCsGknymLotdrMZkWHddOmd04QVR2RHw==}
 
   jiti@1.21.7:
     resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
@@ -1839,9 +1902,6 @@ packages:
   scheduler@0.25.0:
     resolution: {integrity: sha512-xFVuu11jh+xcO7JOAGJNOXld8/TcEHK/4CituBUeUb5hqxJLj9YuemAEuvm9gQ/+pgXYfbQuqAkiYu+u7YEsNA==}
 
-  secure-json-parse@2.7.0:
-    resolution: {integrity: sha512-6aU+Rwsezw7VR8/nyvKTx8QpWH9FrcYiXXlqC4z5d5XQBDRqtbfsRjnwGyqbi3gddNtWHuEk9OANUotL26qKUw==}
-
   semver@7.7.2:
     resolution: {integrity: sha512-RF0Fw+rO5AMf9MAyaRXI4AV0Ulj5lMHqVxxdSgiVbixSCXoEmmX/jk0CuJw4+3SqroYO9VoUh+HcuJivvtJemA==}
     engines: {node: '>=10'}
@@ -2056,50 +2116,42 @@ packages:
     peerDependencies:
       zod: ^3.24.1
 
-  zod@3.25.24-beta.0:
-    resolution: {integrity: sha512-ywo5CJEuW+SrziC3uRmtRPADjlNyIFuWjT7Jlbrn6Yu9O4HnRsVQ+LbHpb8Rp/b6GlsA54FcAelE1wga+1LtKA==}
+  zod@3.25.28:
+    resolution: {integrity: sha512-/nt/67WYKnr5by3YS7LroZJbtcCBurDKKPBPWWzaxvVCGuG/NOsiKkrjoOhI8mJ+SQUXEbUzeB3S+6XDUEEj7Q==}
+
+  zod@3.25.56:
+    resolution: {integrity: sha512-rd6eEF3BTNvQnR2e2wwolfTmUTnp70aUTqr0oaGbHifzC3BKJsoV+Gat8vxUMR1hwOKBs6El+qWehrHbCpW6SQ==}
 
   zwitch@2.0.4:
     resolution: {integrity: sha512-bXE4cR/kVZhKZX/RjPEflHaKVhUVl85noU3v6b8apfQEc1x4A+zBxjZ4lN8LqGd6WZ3dl98pY4o717VFmoPp+A==}
 
 snapshots:
 
-  '@ai-sdk/gateway@1.0.0-alpha.10(zod@3.25.24-beta.0)':
+  '@ai-sdk/gateway@1.0.0-alpha.10(zod@3.25.56)':
     dependencies:
       '@ai-sdk/provider': 2.0.0-alpha.10
-      '@ai-sdk/provider-utils': 3.0.0-alpha.10(zod@3.25.24-beta.0)
-      zod: 3.25.24-beta.0
+      '@ai-sdk/provider-utils': 3.0.0-alpha.10(zod@3.25.56)
+      zod: 3.25.56
 
-  '@ai-sdk/openai@1.3.22(zod@3.25.24-beta.0)':
+  '@ai-sdk/openai@2.0.0-alpha.10(zod@3.25.56)':
     dependencies:
-      '@ai-sdk/provider': 1.1.3
-      '@ai-sdk/provider-utils': 2.2.8(zod@3.25.24-beta.0)
-      zod: 3.25.24-beta.0
+      '@ai-sdk/provider': 2.0.0-alpha.10
+      '@ai-sdk/provider-utils': 3.0.0-alpha.10(zod@3.25.56)
+      zod: 3.25.56
 
-  '@ai-sdk/provider-utils@2.2.8(zod@3.25.24-beta.0)':
-    dependencies:
-      '@ai-sdk/provider': 1.1.3
-      nanoid: 3.3.8
-      secure-json-parse: 2.7.0
-      zod: 3.25.24-beta.0
-
-  '@ai-sdk/provider-utils@3.0.0-alpha.10(zod@3.25.24-beta.0)':
+  '@ai-sdk/provider-utils@3.0.0-alpha.10(zod@3.25.56)':
     dependencies:
       '@ai-sdk/provider': 2.0.0-alpha.10
       '@standard-schema/spec': 1.0.0
-      zod: 3.25.24-beta.0
-      zod-to-json-schema: 3.24.1(zod@3.25.24-beta.0)
+      zod: 3.25.56
+      zod-to-json-schema: 3.24.1(zod@3.25.56)
 
-  '@ai-sdk/provider-utils@3.0.0-alpha.8(zod@3.25.24-beta.0)':
+  '@ai-sdk/provider-utils@3.0.0-alpha.8(zod@3.25.56)':
     dependencies:
       '@ai-sdk/provider': 2.0.0-alpha.8
       '@standard-schema/spec': 1.0.0
-      zod: 3.25.24-beta.0
-      zod-to-json-schema: 3.24.1(zod@3.25.24-beta.0)
-
-  '@ai-sdk/provider@1.1.3':
-    dependencies:
-      json-schema: 0.4.0
+      zod: 3.25.56
+      zod-to-json-schema: 3.24.1(zod@3.25.56)
 
   '@ai-sdk/provider@2.0.0-alpha.10':
     dependencies:
@@ -2492,6 +2544,15 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.0.4
 
+  '@radix-ui/react-label@2.1.7(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@radix-ui/react-primitive': 2.1.3(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+    optionalDependencies:
+      '@types/react': 19.0.4
+      '@types/react-dom': 19.0.2(@types/react@19.0.4)
+
   '@radix-ui/react-menu@2.1.15(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@radix-ui/primitive': 1.1.2
@@ -2675,6 +2736,21 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.0.4
 
+  '@radix-ui/react-switch@1.2.5(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
+    dependencies:
+      '@radix-ui/primitive': 1.1.2
+      '@radix-ui/react-compose-refs': 1.1.2(@types/react@19.0.4)(react@19.0.0)
+      '@radix-ui/react-context': 1.1.2(@types/react@19.0.4)(react@19.0.0)
+      '@radix-ui/react-primitive': 2.1.3(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      '@radix-ui/react-use-controllable-state': 1.2.2(@types/react@19.0.4)(react@19.0.0)
+      '@radix-ui/react-use-previous': 1.1.1(@types/react@19.0.4)(react@19.0.0)
+      '@radix-ui/react-use-size': 1.1.1(@types/react@19.0.4)(react@19.0.0)
+      react: 19.0.0
+      react-dom: 19.0.0(react@19.0.0)
+    optionalDependencies:
+      '@types/react': 19.0.4
+      '@types/react-dom': 19.0.2(@types/react@19.0.4)
+
   '@radix-ui/react-tooltip@1.1.6(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)':
     dependencies:
       '@radix-ui/primitive': 1.1.1
@@ -2750,6 +2826,12 @@ snapshots:
       '@types/react': 19.0.4
 
   '@radix-ui/react-use-layout-effect@1.1.1(@types/react@19.0.4)(react@19.0.0)':
+    dependencies:
+      react: 19.0.0
+    optionalDependencies:
+      '@types/react': 19.0.4
+
+  '@radix-ui/react-use-previous@1.1.1(@types/react@19.0.4)(react@19.0.0)':
     dependencies:
       react: 19.0.0
     optionalDependencies:
@@ -2865,24 +2947,29 @@ snapshots:
 
   '@ungap/structured-clone@1.2.1': {}
 
-  '@vercel/ai-sdk-gateway@0.1.10(zod@3.25.24-beta.0)':
+  '@vercel/ai-sdk-gateway@0.1.10(zod@3.25.56)':
     dependencies:
       '@ai-sdk/provider': 2.0.0-alpha.8
-      '@ai-sdk/provider-utils': 3.0.0-alpha.8(zod@3.25.24-beta.0)
-      zod: 3.25.24-beta.0
+      '@ai-sdk/provider-utils': 3.0.0-alpha.8(zod@3.25.56)
+      zod: 3.25.56
 
   '@vercel/analytics@1.5.0(next@15.4.0-canary.70(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)':
     optionalDependencies:
       next: 15.4.0-canary.70(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
       react: 19.0.0
 
-  ai@5.0.0-alpha.10(zod@3.25.24-beta.0):
+  '@vercel/speed-insights@1.2.0(next@15.4.0-canary.70(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0))(react@19.0.0)':
+    optionalDependencies:
+      next: 15.4.0-canary.70(@opentelemetry/api@1.9.0)(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
+      react: 19.0.0
+
+  ai@5.0.0-alpha.10(zod@3.25.56):
     dependencies:
-      '@ai-sdk/gateway': 1.0.0-alpha.10(zod@3.25.24-beta.0)
+      '@ai-sdk/gateway': 1.0.0-alpha.10(zod@3.25.56)
       '@ai-sdk/provider': 2.0.0-alpha.10
-      '@ai-sdk/provider-utils': 3.0.0-alpha.10(zod@3.25.24-beta.0)
+      '@ai-sdk/provider-utils': 3.0.0-alpha.10(zod@3.25.56)
       '@opentelemetry/api': 1.9.0
-      zod: 3.25.24-beta.0
+      zod: 3.25.56
 
   ansi-regex@5.0.1: {}
 
@@ -2977,20 +3064,20 @@ snapshots:
       - '@types/react'
       - '@types/react-dom'
 
-  cojson-storage-indexeddb@0.14.1:
+  cojson-storage-indexeddb@0.14.23:
     dependencies:
-      cojson: 0.14.1
-      cojson-storage: 0.14.1
+      cojson: 0.14.23
+      cojson-storage: 0.14.23
 
-  cojson-storage@0.14.1:
+  cojson-storage@0.14.23:
     dependencies:
-      cojson: 0.14.1
+      cojson: 0.14.23
 
-  cojson-transport-ws@0.14.1:
+  cojson-transport-ws@0.14.23:
     dependencies:
-      cojson: 0.14.1
+      cojson: 0.14.23
 
-  cojson@0.14.1:
+  cojson@0.14.23:
     dependencies:
       '@noble/ciphers': 1.3.0
       '@noble/curves': 1.9.1
@@ -3012,13 +3099,11 @@ snapshots:
     dependencies:
       color-name: 1.1.4
       simple-swizzle: 0.2.2
-    optional: true
 
   color@4.2.3:
     dependencies:
       color-convert: 2.0.1
       color-string: 1.9.1
-    optional: true
 
   comma-separated-tokens@1.0.8: {}
 
@@ -3046,8 +3131,7 @@ snapshots:
 
   dequal@2.0.3: {}
 
-  detect-libc@2.0.4:
-    optional: true
+  detect-libc@2.0.4: {}
 
   detect-node-es@1.1.0: {}
 
@@ -3203,8 +3287,7 @@ snapshots:
       is-alphabetical: 2.0.1
       is-decimal: 2.0.1
 
-  is-arrayish@0.3.2:
-    optional: true
+  is-arrayish@0.3.2: {}
 
   is-binary-path@2.1.0:
     dependencies:
@@ -3242,52 +3325,53 @@ snapshots:
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
 
-  jazz-browser-media-images@0.14.14:
+  jazz-browser-media-images@0.14.23:
     dependencies:
       '@types/image-blob-reduce': 4.1.4
       image-blob-reduce: 4.1.0
-      jazz-browser: 0.14.14
-      jazz-tools: 0.14.14
+      jazz-browser: 0.14.23
+      jazz-tools: 0.14.23
       pica: 9.0.1
 
-  jazz-browser@0.14.14:
+  jazz-browser@0.14.23:
     dependencies:
-      cojson: 0.14.1
-      cojson-storage-indexeddb: 0.14.1
-      cojson-transport-ws: 0.14.1
-      jazz-tools: 0.14.14
+      cojson: 0.14.23
+      cojson-storage-indexeddb: 0.14.23
+      cojson-transport-ws: 0.14.23
+      jazz-tools: 0.14.23
 
   jazz-crypto-rs@0.0.7: {}
 
-  jazz-nodejs@0.14.14:
+  jazz-nodejs@0.14.23:
     dependencies:
-      cojson: 0.14.1
-      cojson-transport-ws: 0.14.1
-      jazz-tools: 0.14.14
+      cojson: 0.14.23
+      cojson-transport-ws: 0.14.23
+      jazz-tools: 0.14.23
 
-  jazz-react-core@0.14.14(react@19.0.0):
+  jazz-react-core@0.14.23(react@19.0.0):
     dependencies:
-      cojson: 0.14.1
-      jazz-tools: 0.14.14
+      cojson: 0.14.23
+      jazz-tools: 0.14.23
       react: 19.0.0
 
-  jazz-react@0.14.14(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
+  jazz-react@0.14.23(react-dom@19.0.0(react@19.0.0))(react@19.0.0):
     dependencies:
       '@scure/bip39': 1.5.1
-      cojson: 0.14.1
-      jazz-browser: 0.14.14
-      jazz-browser-media-images: 0.14.14
-      jazz-react-core: 0.14.14(react@19.0.0)
-      jazz-tools: 0.14.14
+      cojson: 0.14.23
+      cojson-transport-ws: 0.14.23
+      jazz-browser: 0.14.23
+      jazz-browser-media-images: 0.14.23
+      jazz-react-core: 0.14.23(react@19.0.0)
+      jazz-tools: 0.14.23
       react: 19.0.0
       react-dom: 19.0.0(react@19.0.0)
 
-  jazz-tools@0.14.14:
+  jazz-tools@0.14.23:
     dependencies:
       '@scure/bip39': 1.5.1
-      cojson: 0.14.1
+      cojson: 0.14.23
       fast-myers-diff: 3.2.0
-      zod: 3.25.24-beta.0
+      zod: 3.25.28
 
   jiti@1.21.7: {}
 
@@ -3828,10 +3912,7 @@ snapshots:
 
   scheduler@0.25.0: {}
 
-  secure-json-parse@2.7.0: {}
-
-  semver@7.7.2:
-    optional: true
+  semver@7.7.2: {}
 
   sharp@0.34.2:
     dependencies:
@@ -3860,7 +3941,6 @@ snapshots:
       '@img/sharp-win32-arm64': 0.34.2
       '@img/sharp-win32-ia32': 0.34.2
       '@img/sharp-win32-x64': 0.34.2
-    optional: true
 
   shebang-command@2.0.0:
     dependencies:
@@ -3873,7 +3953,6 @@ snapshots:
   simple-swizzle@0.2.2:
     dependencies:
       is-arrayish: 0.3.2
-    optional: true
 
   source-map-js@1.2.1: {}
 
@@ -4072,10 +4151,12 @@ snapshots:
 
   yaml@2.7.0: {}
 
-  zod-to-json-schema@3.24.1(zod@3.25.24-beta.0):
+  zod-to-json-schema@3.24.1(zod@3.25.56):
     dependencies:
-      zod: 3.25.24-beta.0
+      zod: 3.25.56
 
-  zod@3.25.24-beta.0: {}
+  zod@3.25.28: {}
+
+  zod@3.25.56: {}
 
   zwitch@2.0.4: {}
