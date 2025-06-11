@@ -51,11 +51,13 @@ export const ChatAccount = co
     } else {
       const loadedRoot = await UserRoot.load(account._refs.root.id, {
         loadAs: account,
+        resolve: {}
       });
       if (!loadedRoot?._refs.credits) {
+        if (loadedRoot) {
         console.log("Generating credits");
         const credits = await generateCredits(account);
-        account.root.credits = credits;
+        loadedRoot.credits = credits;
       }
     }
   });
