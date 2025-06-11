@@ -192,13 +192,13 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   }, [selectedModel, chat]);
 
   return (
-    <div className="flex flex-col h-full max-w-full w-full mx-auto bg-white relative">
-      <div className="sticky top-0 z-50 bg-white border-b border-gray-200 safe-area-inset-top">
+    <div className="flex flex-col h-full max-w-full w-full mx-auto bg-background relative">
+      <div className="sticky top-0 z-50 bg-background border-b border-border safe-area-inset-top">
         <div className="flex items-center justify-between px-4 py-3 pt-safe">
           <div className="flex items-center space-x-3">
             <SidebarTrigger />
             <div>
-              <h1 className="font-semibold text-gray-900">
+              <h1 className="font-semibold text-foreground">
                 {chat?.name || preloadedChat?.name || "New Chat"}
               </h1>
             </div>
@@ -254,14 +254,14 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
               <div
                 className={`md:max-w-[80%] min-w-0 rounded-2xl px-4 py-2 min-h-[36px] break-words ${
                   message?.role === "user"
-                    ? "bg-blue-500 text-white rounded-br-md"
-                    : "bg-gray-100 text-gray-900 rounded-bl-md"
+                    ? "bg-primary text-primary-foreground rounded-br-md"
+                    : "bg-muted text-muted-foreground rounded-bl-md"
                 }`}
               >
                 <Markdown
                   className={clsx(
                     "text-sm",
-                    message?.text?.toString() ? "" : "text-gray-500"
+                    message?.text?.toString() ? "" : "text-muted-foreground"
                   )}
                   components={{
                     code({ className, children }) {
@@ -292,9 +292,9 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
       </div>
 
       {role === "reader" ? (
-        <div className="sticky bottom-0 z-50 bg-white border-t border-gray-200 px-4 py-3">
+        <div className="sticky bottom-0 z-50 bg-background border-t border-border px-4 py-3">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">
+            <span className="text-sm text-muted-foreground">
               You are a reader. You cannot send messages.
             </span>
             <Button
@@ -308,7 +308,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
         </div>
       ) : (
         <div
-          className={`sticky bottom-0 z-50 bg-white border-t border-gray-200 transition-all duration-200 ${
+          className={`sticky bottom-0 z-50 bg-background border-t border-border transition-all duration-200 ${
             isKeyboardVisible ? "pb-2" : ""
           }`}
         >
@@ -324,7 +324,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                   value={message}
                   autoFocus
                   onChange={(e) => setMessage(e.target.value)}
-                  className="w-full rounded-md border-gray-300 pr-12 py-2 text-base focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full rounded-md border-input pr-12 py-2 text-base focus:ring-2 focus:ring-ring focus:border-transparent bg-background text-foreground"
                   style={{ fontSize: "16px" }}
                 />
               </div>
@@ -341,7 +341,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
               <Button
                 type="submit"
                 size="sm"
-                className="rounded-full w-10 h-10 p-0 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300"
+                className="rounded-full w-10 h-10 p-0 bg-primary hover:bg-primary/90 disabled:bg-muted"
               >
                 <Send className="h-4 w-4" />
               </Button>
