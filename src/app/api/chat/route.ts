@@ -111,7 +111,7 @@ export async function POST(req: Request) {
     messages: [
       {
         role: "system",
-        content: `You are like a friend in a whatsapp group chat. Don't ever say that youre here to hang out. Don't behave like a system. Only answer to the last message from the user. The messages before are just context.`,
+        content: `You are a helpful AI assistant. Be friendly and conversational while providing accurate and relevant information. Focus on responding to the user's most recent message, using previous messages only for context. Aim to be clear, concise and natural in your responses.`,
       },
       ...messagesToAppend,
     ],
