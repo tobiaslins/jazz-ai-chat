@@ -76,6 +76,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
   const [isKeyboardVisible, setIsKeyboardVisible] = useState(false);
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const redeemedInvite = useRef<boolean>(false);
 
   const chatToUse = chat || newlyCreatedChat || preloadedChat;
 
@@ -208,7 +209,10 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
     };
 
     if (me) {
-      redeemInvite();
+      if (!redeemedInvite.current) {
+        redeemInvite();
+        redeemedInvite.current = true;
+      }
     }
   }, [me, router]);
 
@@ -364,7 +368,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                       );
                     }}
                   >
-                    Share as viewer
+                    Share - Read-only
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {
@@ -374,7 +378,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                       toast.success("Writer invite link copied to clipboard");
                     }}
                   >
-                    Share as collaborator
+                    Share - Others can collaborate
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => {
@@ -513,9 +517,8 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
         </div>
       ) : (
         <div
-          className={`sticky bottom-0 z-50 bg-white border-t border-gray-200 transition-all duration-200 ${
-            isKeyboardVisible ? "pb-2" : ""
-          }`}
+          className={`sticky bottom-0 z-50 bg-white border-t border-gray-200 transition-all duration-200 ${isKeyboardVisible ? "pb-2" : ""
+            }`}
         >
           <form
             onSubmit={sendMessage}
