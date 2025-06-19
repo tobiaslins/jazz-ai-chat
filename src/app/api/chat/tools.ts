@@ -1,6 +1,6 @@
-import { CoPlainText, FileStream, Group, ImageDefinition } from "jazz-tools";
+import {  FileStream, Group, ImageDefinition } from "jazz-tools";
 import { experimental_generateImage, tool } from "ai";
-import { z } from "zod";
+import { z } from "zod/v4";
 import { Chat, ChatMessage } from "@/app/(app)/schema";
 import { openai } from "@ai-sdk/openai";
 import sharp from "sharp";
@@ -9,7 +9,7 @@ export function createImageTool(chat: Chat, chatMessage: ChatMessage) {
   return tool({
     description:
       "Create an image from a prompt. Use it when the user asks to create, draw, or generate an image.",
-    parameters: z.object({
+    inputSchema: z.object({
       prompt: z.string().describe("The prompt to generate the image from."),
     }),
     execute: async ({ prompt }) => {

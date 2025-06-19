@@ -3,7 +3,7 @@ import { Account, CoPlainText, FileStream } from "jazz-tools";
 import { generateText, streamText } from "ai";
 import { after } from "next/server";
 import { getWorker } from "@/app/worker";
-import { gateway, GatewayModelId } from "@vercel/ai-sdk-gateway";
+import { gateway, GatewayModelId } from "@ai-sdk/gateway";
 import { defaultModel } from "@/lib/models";
 import { z } from "zod";
 import sharp from "sharp";
