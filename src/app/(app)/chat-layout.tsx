@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Plus, User } from "lucide-react";
+import { track } from "@vercel/analytics";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -70,6 +71,10 @@ export default function ChatLayout({
                 <SidebarMenuButton asChild>
                   <Button
                     onClick={() => {
+                      track("New Chat Clicked", {
+                        source: "sidebar",
+                        currentChatId: currentChatId || "none",
+                      });
                       router.push("/");
                     }}
                     variant="outline"
@@ -95,7 +100,17 @@ export default function ChatLayout({
                         currentChatId === chat.id ? "bg-stone-200" : ""
                       )}
                     >
-                      <Link prefetch={false} href={`/chat/${chat.id}`}>
+                      <Link 
+                        prefetch={false} 
+                        href={`/chat/${chat.id}`}
+                        onClick={() => {
+                          track("Chat Selected", {
+                            chatId: chat.id,
+                            chatTitle: chat.title,
+                            source: "sidebar",
+                          });
+                        }}
+                      >
                         <div className="flex flex-col items-start">
                           <span className="text-sm font-medium">
                             {chat.title}
@@ -128,6 +143,11 @@ export default function ChatLayout({
                       variant="ghost"
                       className="w-full justify-start"
                       disabled={!me}
+                      onClick={() => {
+                        track("Profile Dialog Opened", {
+                          currentName: me?.profile?.name || "unnamed",
+                        });
+                      }}
                     >
                       <User className="mr-2 h-4 w-4" />
                       {me?.profile?.name || "Profile"}
@@ -148,7 +168,12 @@ export default function ChatLayout({
                       <Button
                         onClick={() => {
                           if (me?.profile) {
+                            const previousName = me.profile.name;
                             me.profile.name = profileName;
+                            track("Profile Updated", {
+                              previousName: previousName || "unnamed",
+                              newName: profileName,
+                            });
                           }
                           setProfileDialogOpen(false);
                         }}

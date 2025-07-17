@@ -11,6 +11,7 @@ import { createImageTool } from "./tools";
 import { experimental_generateSpeech as generateSpeech } from "ai";
 import { openai } from "@ai-sdk/openai";
 import { readFile } from "fs/promises";
+import { track } from "@vercel/analytics/server";
 
 async function generateAudio(message: ChatMessage) {
   const audio = await generateSpeech({
@@ -39,6 +40,11 @@ export async function POST(req: Request) {
   const model = gateway((modelId as GatewayModelId) || defaultModel);
 
   if (!account) {
+    track("API Error", {
+      endpoint: "/api/chat",
+      error: "account_not_found",
+      userId,
+    });
     return new Response("Account not found", { status: 404 });
   }
 
@@ -46,16 +52,36 @@ export async function POST(req: Request) {
   if (creditsId) {
     const credits = await Credits.load(creditsId, { loadAs: worker });
     if (!credits) {
+      track("API Error", {
+        endpoint: "/api/chat",
+        error: "credits_not_found",
+        userId,
+        creditsId,
+      });
       return new Response("Credits not found", { status: 404 });
     }
 
     if (credits.balance <= 0) {
+      track("API Error", {
+        endpoint: "/api/chat",
+        error: "insufficient_credits",
+        userId,
+        balance: credits.balance,
+      });
       return new Response("Insufficient credits", { status: 402 });
     }
 
     // Deduct one credit
+    const previousBalance = credits.balance;
     credits.balance = credits.balance - 1;
     credits.lastUpdated = new Date().toISOString();
+
+    track("Credit Deducted", {
+      userId,
+      previousBalance,
+      newBalance: credits.balance,
+      model: modelId,
+    });
 
     console.log(`Deducted 1 credit. Remaining balance: ${credits.balance}`);
   }
@@ -75,6 +101,12 @@ export async function POST(req: Request) {
 
   if (!chat) {
     console.error("Chat not found with id:" + chatId);
+    track("API Error", {
+      endpoint: "/api/chat",
+      error: "chat_not_found",
+      userId,
+      chatId,
+    });
     return new Response("Chat not found", { status: 404 });
   }
 
@@ -87,6 +119,11 @@ export async function POST(req: Request) {
         .join("\n")}`,
     }).then((text) => {
       chat.name = text.text;
+      track("Chat Name Generated", {
+        chatId: chat.id,
+        generatedName: text.text,
+        messageCount: chat.messages?.length || 0,
+      });
     });
   }
 
@@ -137,6 +174,12 @@ export async function POST(req: Request) {
             currentText,
             messageText: chatMessage.text?.toString(),
           });
+          track("API Error", {
+            endpoint: "/api/chat",
+            error: "diff_apply_error",
+            chatId,
+            userId,
+          });
         }
         lastUpdateTime = now;
       }
@@ -151,15 +194,43 @@ export async function POST(req: Request) {
         currentText,
         messageText: chatMessage.text?.toString(),
       });
+      track("API Error", {
+        endpoint: "/api/chat",
+        error: "final_diff_apply_error",
+        chatId,
+        userId,
+      });
     }
 
     if (chat.generateAudio) {
-      await generateAudio(chatMessage!);
+      try {
+        await generateAudio(chatMessage!);
+        track("Audio Generated", {
+          chatId,
+          messageId: chatMessage.id,
+          model: modelId,
+        });
+      } catch (error) {
+        track("API Error", {
+          endpoint: "/api/chat",
+          error: "audio_generation_failed",
+          chatId,
+          userId,
+        });
+      }
     }
   }
 
   after(async () => {
     await worker?.waitForAllCoValuesSync({ timeout: 5000 });
+  });
+
+  track("AI Response Generated", {
+    chatId: chat?.id,
+    model: modelId,
+    userId,
+    messageLength: currentText.length,
+    hasAudio: !!chat.generateAudio,
   });
 
   return Response.json({

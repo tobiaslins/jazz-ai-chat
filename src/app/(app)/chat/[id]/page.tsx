@@ -12,13 +12,13 @@ export default async function ChatPage({
 }) {
   const requestType = await detectRequestType();
 
+  const { id } = await params;
+  
   if (requestType.isRSCRequest || true) {
     // Don't prefetch the chat, just render it
     // don't prerender now bc of permissions
     return <RenderChat />;
   }
-
-  const { id } = await params;
   const worker = await getWorker();
   const chat = await Chat.load(id, {
     loadAs: worker,

@@ -198,11 +198,22 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
             router.push(`/chat/${loadedChat.id}`);
           }
 
+          track("Invite Redeemed", {
+            chatId: loadedChat?.id || "unknown",
+            inviteType: "link",
+          });
           toast.success("Successfully joined chat!");
         } else {
+          track("Invite Redemption Failed", {
+            reason: "invalid_link",
+          });
           toast.error("Failed to redeem invite link.");
         }
       } catch (error) {
+        track("Invite Redemption Failed", {
+          reason: "error",
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
         console.error("Failed to redeem invite:", error);
         toast.error("Failed to redeem invite link.");
       }
@@ -225,9 +236,15 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
     // Check if user has credits
     if (userCredits && userCredits.balance <= 0) {
       toast.error("Insufficient credits to send message");
-
+      track("Message Send Failed", {
+        reason: "insufficient_credits",
+        creditsBalance: userCredits.balance,
+      });
       return;
     }
+
+    const messageLength = message.trim().length;
+    const isFirstMessage = !chat && newlyCreatedChat;
 
     try {
       if (!chat && newlyCreatedChat) {
@@ -239,11 +256,24 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
         loadedMe.root.chats.push(newlyCreatedChat);
         // And navigate to the new chat's URL.
         router.push(`/chat/${newlyCreatedChat.id}`);
-        track("Create Chat");
+        track("Create Chat", {
+          model: selectedModel,
+          messageLength,
+          hasAudio: chatForMessage.generateAudio ? "true" : "false",
+        });
       }
 
       const currentChat = chatForMessage;
       const currentChatId = chatId || currentChat.id;
+
+      track("Message Sent", {
+        chatId: currentChatId,
+        model: selectedModel,
+        messageLength,
+        isFirstMessage: isFirstMessage ? "true" : "false",
+        hasAudio: currentChat.generateAudio ? "true" : "false",
+        creditsBalance: userCredits?.balance || 0,
+      });
 
       const chatMessage = ChatMessage.create(
         {
@@ -260,6 +290,7 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
       await chatMessage.waitForSync();
 
       try {
+        const startTime = Date.now();
         await fetch("/api/chat", {
           method: "POST",
           body: JSON.stringify({
@@ -272,12 +303,29 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
         })
           .then((res) => res.json())
           .then((data) => {
+            const responseTime = Date.now() - startTime;
+            track("AI Response Received", {
+              chatId: currentChatId,
+              model: selectedModel,
+              responseTime,
+              success: true,
+            });
             console.log(data);
           });
       } catch (error) {
+        track("AI Response Failed", {
+          chatId: currentChatId,
+          model: selectedModel,
+          error: error instanceof Error ? error.message : "Unknown error",
+        });
         console.error(error);
       }
     } catch (error) {
+      track("Message Send Failed", {
+        reason: "general_error",
+        error: error instanceof Error ? error.message : "Unknown error",
+        model: selectedModel,
+      });
       console.error("Failed to send message:", error);
     }
   }
@@ -366,6 +414,11 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                       toast.success(
                         "Read-only invite link copied to clipboard"
                       );
+                      track("Share Chat", {
+                        chatId: chat.id,
+                        shareType: "read-only",
+                        method: "invite_link",
+                      });
                     }}
                   >
                     Share - Read-only
@@ -376,6 +429,11 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                       const link = createInviteLink(chat, "writer", BASE_URL);
                       navigator.clipboard.writeText(link);
                       toast.success("Writer invite link copied to clipboard");
+                      track("Share Chat", {
+                        chatId: chat.id,
+                        shareType: "collaborative",
+                        method: "invite_link",
+                      });
                     }}
                   >
                     Share - Others can collaborate
@@ -388,6 +446,11 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                       toast.success(
                         "Chat is now public. Link copied to clipboard."
                       );
+                      track("Share Chat", {
+                        chatId: chat.id,
+                        shareType: "public",
+                        method: "make_public",
+                      });
                     }}
                   >
                     Make public
@@ -410,6 +473,11 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                     (c) => c?.id === chat.id
                   );
                   if (chatIdx > -1) {
+                    track("Delete Chat", {
+                      chatId: chat.id,
+                      messageCount: chat.messages?.length || 0,
+                      model: chat.model || "unknown",
+                    });
                     me.root.chats.splice(chatIdx, 1);
                     router.push("/");
                   }
@@ -542,7 +610,13 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                   selectedModel={selectedModel}
                   setSelectedModel={(model) => {
                     if (chatToUse) {
+                      const previousModel = chatToUse.model;
                       chatToUse.model = model;
+                      track("Model Changed in Chat", {
+                        chatId: chatToUse.id,
+                        previousModel: previousModel || "unknown",
+                        newModel: model,
+                      });
                     }
                   }}
                 />
@@ -561,7 +635,14 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                 selectedModel={selectedModel}
                 setSelectedModel={(model) => {
                   if (chatToUse) {
+                    const previousModel = chatToUse.model;
                     chatToUse.model = model;
+                    track("Model Changed in Chat", {
+                      chatId: chatToUse.id,
+                      previousModel: previousModel || "unknown",
+                      newModel: model,
+                      interface: "mobile",
+                    });
                   }
                 }}
               />
@@ -576,6 +657,10 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                 disabled={isLoading}
                 onClick={async () => {
                   setIsLoading(true);
+                  track("Credit Purchase Started", {
+                    currentBalance: userCredits.balance,
+                    userId: me.id,
+                  });
                   try {
                     await fetch("/api/purchase", {
                       method: "POST",
@@ -585,8 +670,18 @@ export function RenderChat({ preloadedChat }: { preloadedChat?: Chat }) {
                       }),
                     });
                     toast.success("10 credits added!");
+                    track("Credit Purchase Completed", {
+                      previousBalance: userCredits.balance,
+                      creditsAdded: 10,
+                      userId: me.id,
+                    });
                   } catch (error) {
                     toast.error("Failed to add credits.");
+                    track("Credit Purchase Failed", {
+                      currentBalance: userCredits.balance,
+                      error: error instanceof Error ? error.message : "Unknown error",
+                      userId: me.id,
+                    });
                     console.error("Purchase failed:", error);
                   } finally {
                     setIsLoading(false);
@@ -624,8 +719,16 @@ function AudioMessage({ message }: { message: ChatMessage }) {
 
     if (isPlaying) {
       audioRef.current.pause();
+      track("Audio Paused", {
+        messageId: message.id,
+        messageRole: message.role,
+      });
     } else {
       audioRef.current.play();
+      track("Audio Played", {
+        messageId: message.id,
+        messageRole: message.role,
+      });
     }
     setIsPlaying(!isPlaying);
   };
@@ -634,7 +737,13 @@ function AudioMessage({ message }: { message: ChatMessage }) {
     const audio = audioRef.current;
     if (!audio) return;
 
-    const handleEnded = () => setIsPlaying(false);
+    const handleEnded = () => {
+      setIsPlaying(false);
+      track("Audio Ended", {
+        messageId: message.id,
+        messageRole: message.role,
+      });
+    };
     audio.addEventListener("ended", handleEnded);
 
     return () => {

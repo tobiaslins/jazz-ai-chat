@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { Button } from "@/components/ui/button";
+import { track } from "@vercel/analytics";
 import {
   Command,
   CommandEmpty,
@@ -43,6 +44,11 @@ export function ModelSelector({
           role="combobox"
           aria-expanded={open}
           className="overflow-hidden"
+          onClick={() => {
+            track("Model Selector Opened", {
+              currentModel: selectedModel,
+            });
+          }}
         >
           <div
             className={cn(
@@ -72,7 +78,13 @@ export function ModelSelector({
                           (m) => m.name.toLowerCase() === currentValue
                         )?.id;
                         if (modelId) {
+                          const previousModel = selectedModel;
                           setSelectedModel(modelId);
+                          track("Model Changed", {
+                            previousModel,
+                            newModel: modelId,
+                            provider,
+                          });
                         }
                         setOpen(false);
                       }}
