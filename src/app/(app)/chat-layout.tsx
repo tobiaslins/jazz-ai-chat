@@ -100,8 +100,7 @@ export default function ChatLayout({
                         currentChatId === chat.id ? "bg-stone-200" : ""
                       )}
                     >
-                      <Link 
-                        prefetch={false} 
+                      <Link
                         href={`/chat/${chat.id}`}
                         onClick={() => {
                           track("Chat Selected", {

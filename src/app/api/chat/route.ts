@@ -5,12 +5,9 @@ import { after } from "next/server";
 import { getWorker } from "@/app/worker";
 import { gateway, GatewayModelId } from "@ai-sdk/gateway";
 import { defaultModel } from "@/lib/models";
-import { z } from "zod";
-import sharp from "sharp";
 import { createImageTool } from "./tools";
 import { experimental_generateSpeech as generateSpeech } from "ai";
 import { openai } from "@ai-sdk/openai";
-import { readFile } from "fs/promises";
 import { track } from "@vercel/analytics/server";
 
 async function generateAudio(message: ChatMessage) {
@@ -22,7 +19,9 @@ async function generateAudio(message: ChatMessage) {
   });
 
   const file = await FileStream.createFromBlob(
-    new Blob([audio.audio.uint8Array], { type: "audio/mp3" }),
+    new Blob([audio.audio.uint8Array as unknown as ArrayBuffer], {
+      type: "audio/mp3",
+    }),
     {
       owner: message._owner,
     }

@@ -1,4 +1,4 @@
-import {  FileStream, Group, ImageDefinition } from "jazz-tools";
+import { FileStream, Group, ImageDefinition } from "jazz-tools";
 import { experimental_generateImage, tool } from "ai";
 import { z } from "zod/v4";
 import { Chat, ChatMessage } from "@/app/(app)/schema";
@@ -51,9 +51,12 @@ export function createImageTool(chat: Chat, chatMessage: ChatMessage) {
       chatMessage.image = image;
       chatMessage.text?.applyDiff("Image from prompt: " + prompt);
 
-      const blob = new Blob([imageResponse.uint8Array], {
-        type: "image/png",
-      });
+      const blob = new Blob(
+        [imageResponse.uint8Array as unknown as ArrayBuffer],
+        {
+          type: "image/png",
+        }
+      );
 
       // Create both full size and resized versions
       image[size] = await FileStream.createFromBlob(blob, {
@@ -67,7 +70,7 @@ export function createImageTool(chat: Chat, chatMessage: ChatMessage) {
         })
         .toBuffer();
 
-      const resizedBlob = new Blob([resizedBuffer], {
+      const resizedBlob = new Blob([resizedBuffer as unknown as ArrayBuffer], {
         type: "image/png",
       });
 
