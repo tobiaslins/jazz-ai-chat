@@ -30,8 +30,6 @@ export default function RootLayout({
     let cancelled = false;
     let created: JazzClient | null = null;
 
-    installJazzWorkerFetchPatch();
-
     void createJazzClient(clientConfig)
       .then((nextClient) => {
         if (cancelled) {
@@ -71,49 +69,4 @@ export default function RootLayout({
   }
 
   return <JazzProvider client={client}>{children}</JazzProvider>;
-}
-
-function installJazzWorkerFetchPatch() {
-  const globalRef = globalThis as typeof globalThis & {
-    __jazzWorkerPatchInstalled?: boolean;
-    Worker: typeof Worker;
-  };
-
-  if (globalRef.__jazzWorkerPatchInstalled) return;
-  if (typeof window === "undefined" || typeof Worker === "undefined") return;
-
-  const OriginalWorker = Worker;
-
-  class PatchedWorker extends OriginalWorker {
-    constructor(scriptURL: string | URL, options?: WorkerOptions) {
-      const target =
-        typeof scriptURL === "string" ? scriptURL : scriptURL.toString();
-
-      if (target.includes("jazz-worker.js")) {
-        const bootstrap = `
-const __jazzOriginalFetch = self.fetch.bind(self);
-self.fetch = (input, init) => {
-  if (typeof input === "string" && input.startsWith("/")) {
-    input = new URL(input, self.location.origin).toString();
-  }
-  return __jazzOriginalFetch(input, init);
-};
-import(${JSON.stringify(target)});
-`;
-
-        const blobUrl = URL.createObjectURL(
-          new Blob([bootstrap], { type: "text/javascript" })
-        );
-
-        super(blobUrl, { ...(options || {}), type: "module" });
-        queueMicrotask(() => URL.revokeObjectURL(blobUrl));
-        return;
-      }
-
-      super(scriptURL, options);
-    }
-  }
-
-  globalRef.Worker = PatchedWorker as unknown as typeof Worker;
-  globalRef.__jazzWorkerPatchInstalled = true;
 }

@@ -53,13 +53,11 @@ async function generateAndPersistAssistantMessage(
   const client = await getJazzBackendClient();
   const createdAt = new Date().toISOString();
 
-  const initialValues = [
+  const assistantId = client.create("messages", [
     { type: "Text", value: "assistant" },
     { type: "Text", value: "" },
     { type: "Text", value: createdAt },
-  ];
-
-  const assistantId = client.create("messages", initialValues);
+  ]);
 
   try {
     const result = streamText({

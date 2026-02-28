@@ -19,8 +19,6 @@ export function RenderChat() {
   const db = useDb();
   const messages = useAll(app.messages.orderBy("created_at", "asc")) ?? [];
 
-  console.log(messages);
-
   const [value, setValue] = useState("");
   const [sending, setSending] = useState(false);
 

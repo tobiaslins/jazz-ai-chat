@@ -4,11 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "jazz:server": "jazz-tools server 759301e8-cc0c-5b12-bd6f-81892d359dc0 --port 1625 --data-dir ./.jazz-data",
+    "fix:jazz-bin": "chmod +x node_modules/jazz-tools/bin/native/jazz-tools-* 2>/dev/null || true",
+    "jazz:server": "pnpm fix:jazz-bin && jazz-tools server 759301e8-cc0c-5b12-bd6f-81892d359dc0 --port 1625 --data-dir ./.jazz-data",
     "dev:local": "sh -c 'pnpm jazz:server & JAZZ_PID=$!; trap \"kill $JAZZ_PID\" EXIT; pnpm dev'",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "postinstall": "pnpm fix:jazz-bin"
   },
   "dependencies": {
     "@ai-sdk/gateway": "1.0.0-beta.2",
@@ -35,7 +37,7 @@
     "jazz-react": "^0.14.23",
     "jazz-tools": "2.0.0-alpha.7",
     "lucide-react": "^0.471.0",
-    "next": "16.0.10",
+    "next": "16.1.6",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-hot-toast": "^2.5.1",
@@ -55,6 +57,10 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },
-  "pnpm": {},
-  "packageManager": "pnpm@10.2.1+sha512.398035c7bd696d0ba0b10a688ed558285329d27ea994804a52bad9167d8e3a72bcb993f9699585d3ca25779ac64949ef422757a6c31102c12ab932e5cbe5cc92"
+  "packageManager": "pnpm@10.2.1+sha512.398035c7bd696d0ba0b10a688ed558285329d27ea994804a52bad9167d8e3a72bcb993f9699585d3ca25779ac64949ef422757a6c31102c12ab932e5cbe5cc92",
+  "pnpm": {
+    "patchedDependencies": {
+      "jazz-tools@2.0.0-alpha.7": "patches/jazz-tools@2.0.0-alpha.7.patch"
+    }
+  }
 }
