@@ -4,6 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
+    "jazz:server": "jazz-tools server 759301e8-cc0c-5b12-bd6f-81892d359dc0 --port 1625 --data-dir ./.jazz-data",
+    "dev:local": "sh -c 'pnpm jazz:server & JAZZ_PID=$!; trap \"kill $JAZZ_PID\" EXIT; pnpm dev'",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
@@ -31,7 +33,7 @@
     "framer-motion": "^11.17.0",
     "jazz-nodejs": "^0.14.23",
     "jazz-react": "^0.14.23",
-    "jazz-tools": "^0.14.23",
+    "jazz-tools": "2.0.0-alpha.7",
     "lucide-react": "^0.471.0",
     "next": "16.0.10",
     "react": "^19.2.3",
