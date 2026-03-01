@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbo",
     "fix:jazz-bin": "chmod +x node_modules/jazz-tools/bin/native/jazz-tools-* 2>/dev/null || true",
-    "jazz:server": "pnpm fix:jazz-bin && jazz-tools server 759301e8-cc0c-5b12-bd6f-81892d359dc0 --port 1625 --data-dir ./.jazz-data",
+    "jazz:server": "pnpm fix:jazz-bin && jazz-tools server \"${JAZZ_APP_ID:-019ca880-f1e1-7740-b334-1e8a8b3a2d99}\" --port 1625 --data-dir ./data --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\"",
+    "schema:push": "pnpm fix:jazz-bin && jazz-tools schema:push \"${JAZZ_APP_ID:-019ca880-f1e1-7740-b334-1e8a8b3a2d99}\" --server-url \"${JAZZ_SERVER_URL:-http://127.0.0.1:1625}\" --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\"",
     "dev:local": "sh -c 'pnpm jazz:server & JAZZ_PID=$!; trap \"kill $JAZZ_PID\" EXIT; pnpm dev'",
     "build": "next build",
     "start": "next start",
@@ -35,7 +36,7 @@
     "framer-motion": "^11.17.0",
     "jazz-nodejs": "^0.14.23",
     "jazz-react": "^0.14.23",
-    "jazz-tools": "2.0.0-alpha.7",
+    "jazz-tools": "2.0.0-alpha.9",
     "lucide-react": "^0.471.0",
     "next": "16.1.6",
     "react": "^19.2.3",
@@ -57,10 +58,5 @@
     "tailwindcss": "^3.4.1",
     "typescript": "^5"
   },
-  "packageManager": "pnpm@10.2.1+sha512.398035c7bd696d0ba0b10a688ed558285329d27ea994804a52bad9167d8e3a72bcb993f9699585d3ca25779ac64949ef422757a6c31102c12ab932e5cbe5cc92",
-  "pnpm": {
-    "patchedDependencies": {
-      "jazz-tools@2.0.0-alpha.7": "patches/jazz-tools@2.0.0-alpha.7.patch"
-    }
-  }
+  "packageManager": "pnpm@10.2.1+sha512.398035c7bd696d0ba0b10a688ed558285329d27ea994804a52bad9167d8e3a72bcb993f9699585d3ca25779ac64949ef422757a6c31102c12ab932e5cbe5cc92"
 }

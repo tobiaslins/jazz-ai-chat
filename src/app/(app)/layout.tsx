@@ -7,6 +7,27 @@ import {
   type JazzClient,
 } from "jazz-tools/react";
 
+let sharedClientPromise: Promise<JazzClient> | null = null;
+let sharedClientConfigKey: string | null = null;
+
+function getSharedJazzClient(
+  config: Parameters<typeof createJazzClient>[0]
+): Promise<JazzClient> {
+  const key = JSON.stringify(config);
+
+  if (!sharedClientPromise || sharedClientConfigKey !== key) {
+    sharedClientConfigKey = key;
+    sharedClientPromise = createJazzClient(config).catch((error) => {
+      if (sharedClientConfigKey === key) {
+        sharedClientPromise = null;
+      }
+      throw error;
+    });
+  }
+
+  return sharedClientPromise;
+}
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,15 +49,10 @@ export default function RootLayout({
 
   useEffect(() => {
     let cancelled = false;
-    let created: JazzClient | null = null;
 
-    void createJazzClient(clientConfig)
+    void getSharedJazzClient(clientConfig)
       .then((nextClient) => {
-        if (cancelled) {
-          void nextClient.shutdown();
-          return;
-        }
-        created = nextClient;
+        if (cancelled) return;
         setClient(nextClient);
       })
       .catch((err) => {
@@ -46,9 +62,6 @@ export default function RootLayout({
 
     return () => {
       cancelled = true;
-      if (created) {
-        void created.shutdown();
-      }
     };
   }, [clientConfig]);
 
