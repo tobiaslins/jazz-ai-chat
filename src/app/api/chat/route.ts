@@ -5,6 +5,8 @@ import { transformRows, translateQuery } from "jazz-tools/backend";
 import { app } from "../../../../schema/app";
 import { defaultModel } from "@/lib/models";
 import {
+  backendContext,
+  getJazzBackendClient,
   getJazzBackendRequester,
   type BackendRequester,
 } from "@/lib/jazz-backend";
@@ -25,83 +27,106 @@ type MessageRow = {
   created_at: string;
 };
 
+import { deriveLocalPrincipalId } from "jazz-tools/backend";
+
 export async function POST(request: Request) {
-  const requestId = createRequestId();
-  const startedAt = Date.now();
+  // const requestId = createRequestId();
+  // const startedAt = Date.now();
 
-  const body = (await request.json()) as {
-    chatId?: string;
-    latestUserMessage?: string;
-    model?: string;
-  };
+  // const body = (await request.json()) as {
+  //   chatId?: string;
+  //   latestUserMessage?: string;
+  //   model?: string;
+  // };
 
-  const chatId = typeof body.chatId === "string" ? body.chatId.trim() : "";
-  if (!chatId) {
-    return Response.json({ error: "chatId is required." }, { status: 400 });
-  }
+  const jazzBackendClient = await getJazzBackendClient();
 
-  const latestUserMessage =
-    typeof body.latestUserMessage === "string"
-      ? body.latestUserMessage.trim()
-      : "";
 
-  const modelId = (body.model || defaultModel) as GatewayModelId;
-  debugLog(requestId, "request_received", {
-    chatId,
-    hasLatestUserMessage: latestUserMessage.length > 0,
-    latestUserMessageLength: latestUserMessage.length,
-    modelId,
+  const userId = await deriveLocalPrincipalId(
+    backendContext.appId,
+    "anonymous",
+    "next-api-route-assistant",
+  );
+  
+  const scoped = await jazzBackendClient.forSession({
+    user_id: userId,
+    claims: { auth_mode: "local", local_mode: "anonymous" },
   });
+  
+  const rows = await scoped.query(app.messages.where({}));
 
-  try {
-    const requester = await getJazzBackendRequester();
-    await generateAndPersistAssistantMessage(
-      requester,
-      chatId,
-      latestUserMessage,
-      modelId,
-      requestId
-    );
-    debugLog(requestId, "request_completed", {
-      durationMs: Date.now() - startedAt,
-    });
-  } catch (error) {
-    const message =
-      error instanceof Error ? error.message : "Failed to generate assistant response.";
-    const statusCode = findErrorStatusCode(error);
+  console.log(rows);
 
-    debugLog(requestId, "request_failed", {
-      durationMs: Date.now() - startedAt,
-      statusCode,
-      error: summarizeError(error),
-    });
+  return Response.json({ rows });
 
-    if (message.includes("UuidForeignKeyViolation")) {
-      return jsonWithRequestId(
-        { error: "Chat is not synced to server yet. Please retry." },
-        409,
-        requestId
-      );
-    }
 
-    if (statusCode === 429 || message.includes("429")) {
-      return jsonWithRequestId(
-        {
-          error:
-            "Upstream model returned a rate limit (429). Please retry in a few seconds.",
-        },
-        429,
-        requestId
-      );
-    }
+  // const chatId = typeof body.chatId === "string" ? body.chatId.trim() : "";
+  // if (!chatId) {
+  //   return Response.json({ error: "chatId is required." }, { status: 400 });
+  // }
 
-    return jsonWithRequestId({ error: message }, 500, requestId);
-  }
+  // const latestUserMessage =
+  //   typeof body.latestUserMessage === "string"
+  //     ? body.latestUserMessage.trim()
+  //     : "";
 
-  return new Response(null, {
-    status: 202,
-    headers: { "x-chat-request-id": requestId },
-  });
+  // const modelId = (body.model || defaultModel) as GatewayModelId;
+  // debugLog(requestId, "request_received", {
+  //   chatId,
+  //   hasLatestUserMessage: latestUserMessage.length > 0,
+  //   latestUserMessageLength: latestUserMessage.length,
+  //   modelId,
+  // });
+
+  // try {
+  //   const requester = await getJazzBackendRequester();
+  //   await generateAndPersistAssistantMessage(
+  //     requester,
+  //     chatId,
+  //     latestUserMessage,
+  //     modelId,
+  //     requestId
+  //   );
+  //   debugLog(requestId, "request_completed", {
+  //     durationMs: Date.now() - startedAt,
+  //   });
+  // } catch (error) {
+  //   const message =
+  //     error instanceof Error ? error.message : "Failed to generate assistant response.";
+  //   const statusCode = findErrorStatusCode(error);
+
+  //   debugLog(requestId, "request_failed", {
+  //     durationMs: Date.now() - startedAt,
+  //     statusCode,
+  //     error: summarizeError(error),
+  //   });
+
+  //   if (message.includes("UuidForeignKeyViolation")) {
+  //     return jsonWithRequestId(
+  //       { error: "Chat is not synced to server yet. Please retry." },
+  //       409,
+  //       requestId
+  //     );
+  //   }
+
+  //   if (statusCode === 429 || message.includes("429")) {
+  //     return jsonWithRequestId(
+  //       {
+  //         error:
+  //           "Upstream model returned a rate limit (429). Please retry in a few seconds.",
+  //       },
+  //       429,
+  //       requestId
+  //     );
+  //   }
+
+  //   return jsonWithRequestId({ error: message }, 500, requestId);
+  // }
+
+  // return new Response(null, {
+  //   status: 202,
+  //   headers: { "x-chat-request-id": requestId },
+  // });
 }
 
 async function generateAndPersistAssistantMessage(

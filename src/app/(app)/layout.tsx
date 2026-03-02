@@ -14,6 +14,8 @@ const DEFAULT_SERVER_URL =
 let sharedClientPromise: Promise<JazzClient> | null = null;
 let sharedClientConfigKey: string | null = null;
 
+
+
 function getSharedJazzClient(
   config: Parameters<typeof createJazzClient>[0]
 ): Promise<JazzClient> {
@@ -44,10 +46,12 @@ export default function RootLayout({
     () => ({
       appId: process.env.NEXT_PUBLIC_JAZZ_APP_ID || DEFAULT_APP_ID,
       serverUrl: process.env.NEXT_PUBLIC_JAZZ_SERVER_URL || DEFAULT_SERVER_URL,
-      localAuthMode: "anonymous" as const,
+    
       env: process.env.NODE_ENV === "production" ? "prod" : "dev",
       userBranch: "main",
-    }),
+      localAuthMode: "anonymous",
+      localAuthToken: "next-api-route-assistant",
+    } as Parameters<typeof createJazzClient>[0]),
     []
   );
 

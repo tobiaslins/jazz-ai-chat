@@ -16,7 +16,7 @@ export type BackendRequester = {
   update: (objectId: string, updates: Record<string, Value>) => Promise<void>;
 };
 
-const backendContext: AppContext = {
+export const backendContext: AppContext = {
   appId:
     process.env.JAZZ_APP_ID ||
     process.env.NEXT_PUBLIC_JAZZ_APP_ID ||
@@ -29,12 +29,14 @@ const backendContext: AppContext = {
   backendSecret: 'TEST_SECRET',
   env: process.env.NODE_ENV === "production" ? "prod" : "dev",
   userBranch: "main",
+  localAuthMode: "anonymous",
+  localAuthToken: "next-api-route-assistant",
 };
 
 
 let jazzBackendClientPromise: Promise<JazzClient> | null = null;
 
-async function getJazzBackendClient() {
+export async function getJazzBackendClient() {
   console.log("backendContext", backendContext);
 
   if (!jazzBackendClientPromise) {
