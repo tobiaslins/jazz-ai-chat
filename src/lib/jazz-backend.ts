@@ -26,7 +26,7 @@ const backendContext: AppContext = {
     process.env.JAZZ_SERVER_URL ||
     process.env.NEXT_PUBLIC_JAZZ_SERVER_URL ||
     DEFAULT_SERVER_URL,
-  backendSecret: process.env.JAZZ_BACKEND_SECRET || 'TEST_SECRET',
+  backendSecret: 'TEST_SECRET',
   env: process.env.NODE_ENV === "production" ? "prod" : "dev",
   userBranch: "main",
 };
@@ -63,5 +63,7 @@ function wrapClient(client: JazzClient): BackendRequester {
 
 export async function getJazzBackendRequester(): Promise<BackendRequester> {
   const client = await getJazzBackendClient();
+
+
   return wrapClient(client);
 }
