@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAll, useDb } from "jazz-tools/react";
 
 import { app } from "../../../../schema/app";
@@ -33,6 +33,12 @@ export function RenderBenchmark() {
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState("Ready");
   const [lastInsertMs, setLastInsertMs] = useState<number | null>(null);
+  const benchmarkChatQuery = useMemo(
+    () => app.chats.where({ title: "Benchmark chat" }).orderBy("created_at", "asc").limit(1),
+    []
+  );
+  const benchmarkChats = useAll(benchmarkChatQuery) ?? [];
+  const benchmarkChatId = benchmarkChats[0]?.id;
 
   const previewQuery = useMemo(
     () => app.messages.orderBy(order.column, order.direction).limit(PREVIEW_LIMIT),
@@ -42,9 +48,22 @@ export function RenderBenchmark() {
   const allMessages = useAll(app.messages) ?? [];
   const totalCount = allMessages.length;
 
+  useEffect(() => {
+    if (benchmarkChatId) return;
+
+    db.insert(app.chats, {
+      title: "Benchmark chat",
+      created_at: new Date().toISOString(),
+    });
+  }, [benchmarkChatId, db]);
+
   const insertBulk = useCallback(
     async (count: number) => {
       if (busy) return;
+      if (!benchmarkChatId) {
+        setStatus("Waiting for benchmark chat to initialize...");
+        return;
+      }
 
       setBusy(true);
       setStatus(`Inserting ${count.toLocaleString()} messages...`);
@@ -55,6 +74,7 @@ export function RenderBenchmark() {
 
         for (let i = 0; i < count; i++) {
           db.insert(app.messages, {
+            chat: benchmarkChatId,
             role: i % 2 === 0 ? "user" : "assistant",
             content: `Benchmark message ${i + 1} (${baseTs})`,
             created_at: new Date(baseTs + i).toISOString(),
@@ -80,7 +100,7 @@ export function RenderBenchmark() {
         setBusy(false);
       }
     },
-    [busy, db]
+    [benchmarkChatId, busy, db]
   );
 
   const clearAllMessages = useCallback(async () => {

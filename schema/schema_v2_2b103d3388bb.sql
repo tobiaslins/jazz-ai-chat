@@ -4,7 +4,7 @@ CREATE TABLE chats (
 );
 
 CREATE TABLE messages (
-    chat UUID REFERENCES chats NOT NULL,
+    chat_id TEXT NOT NULL,
     role TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at TEXT NOT NULL

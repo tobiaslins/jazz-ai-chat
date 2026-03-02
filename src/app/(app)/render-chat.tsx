@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Send } from "lucide-react";
 import { useAll, useDb } from "jazz-tools/react";
@@ -9,60 +10,98 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 type ChatRole = "user" | "assistant" | "system";
+const CHAT_DEBUG =
+  process.env.NEXT_PUBLIC_CHAT_DEBUG === "1" || process.env.NODE_ENV !== "production";
 
-type ChatRequestMessage = {
-  role: ChatRole;
-  content: string;
-};
-
-export function RenderChat() {
+export function RenderChat({ chatId }: { chatId: string }) {
   const db = useDb();
-  const messages = useAll(app.messages.orderBy("created_at", "asc")) ?? [];
+  const chatQuery = useMemo(() => app.chats.where({ id: chatId }).limit(1), [chatId]);
+  const query = useMemo(
+    () => app.messages.where({ chat: chatId }).orderBy("created_at", "asc"),
+    [chatId]
+  );
+  const chat = useAll(chatQuery)?.[0] ?? null;
+  const messages = useAll(query) ?? [];
 
   const [value, setValue] = useState("");
   const [sending, setSending] = useState(false);
 
-  const history = useMemo<ChatRequestMessage[]>(
-    () =>
-      messages.map((message) => ({
-        role: normalizeRole(message.role),
-        content: message.content,
-      })),
-    [messages]
-  );
-
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const content = value.trim();
-    if (!content || sending) return;
+    console.log("content", content);
+    if (!chat || !content || sending) return;
 
     const now = new Date().toISOString();
-    db.insert(app.messages, {
+    console.log("now", now);
+   const test = await db.insertWithAck(app.messages, {
+      chat: chatId,
       role: "user",
       content,
       created_at: now,
+    },'edge').then(() =>{
+      console.log("inserted with ack");
+    }).catch((error) =>{
+      console.error("error inserting with ack", error);
     });
+    console.log("test", test);
 
     setValue("");
     setSending(true);
 
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          messages: [...history, { role: "user", content }],
-        }),
+      debugLog("submit_started", { chatId, contentLength: content.length });
+      const sendChatRequest = () =>
+        fetch("/api/chat", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            chatId,
+            latestUserMessage: content,
+          }),
+        });
+
+      let response = await sendChatRequest();
+      debugLog("api_response", {
+        attempt: 1,
+        status: response.status,
+        requestId: response.headers.get("x-chat-request-id"),
       });
 
+      // FK race: chat exists locally but is not visible on the server yet.
+      // Force an acknowledged chat update, then retry once.
+      if (response.status === 409) {
+        debugLog("chat_not_synced_retry", { chatId });
+        await syncChatToEdgeWithTimeout(db, chatId, chat.title);
+        response = await sendChatRequest();
+        debugLog("api_response", {
+          attempt: 2,
+          status: response.status,
+          requestId: response.headers.get("x-chat-request-id"),
+        });
+      }
+
       if (!response.ok) {
+        const body = await safeReadResponseBody(response);
+        debugLog("api_error_response", {
+          status: response.status,
+          requestId: response.headers.get("x-chat-request-id"),
+          body,
+        });
         throw new Error(`Chat request failed (${response.status})`);
       }
-    } catch {
-      db.insert(app.messages, {
+    } catch (error) {
+      debugLog("submit_failed", {
+        chatId,
+        error: error instanceof Error ? error.message : String(error),
+      });
+      db.insertWithAck(app.messages, {
+        chat: chatId,
         role: "assistant",
         content: "Sorry, I couldn't generate a response. Please try again.",
         created_at: new Date().toISOString(),
+      },'core').then(() =>{
+        console.log("inserted with ack");
       });
     } finally {
       setSending(false);
@@ -71,12 +110,23 @@ export function RenderChat() {
 
   return (
     <div className="mx-auto flex h-[100dvh] w-full max-w-3xl flex-col bg-white">
-      <header className="border-b px-4 py-3">
+      <header className="flex items-center justify-between border-b px-4 py-3">
         <h1 className="text-sm font-semibold">Jazz2 Minimal AI Chat</h1>
+
+        <div className="flex items-center gap-3">
+          <span className="text-xs text-gray-500">{chatId.slice(0, 8)}</span>
+          <Link href="/chat/new" className="text-xs text-blue-700 hover:underline">
+            New chat
+          </Link>
+        </div>
       </header>
 
       <main className="flex-1 space-y-3 overflow-y-auto p-4">
-        {messages.length === 0 ? (
+        {!chat ? (
+          <p className="text-sm text-gray-500">
+            Chat not found. Create a <Link href="/chat/new" className="text-blue-700 hover:underline">new chat</Link>.
+          </p>
+        ) : messages.length === 0 ? (
           <p className="text-sm text-gray-500">
             Start the conversation by sending a message.
           </p>
@@ -109,9 +159,9 @@ export function RenderChat() {
             value={value}
             onChange={(event) => setValue(event.target.value)}
             placeholder="Type a message..."
-            disabled={sending}
+            disabled={sending || !chat}
           />
-          <Button type="submit" size="icon" disabled={sending || !value.trim()}>
+          <Button type="submit" size="icon" disabled={sending || !chat || !value.trim()}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
@@ -125,4 +175,58 @@ function normalizeRole(role: string): ChatRole {
     return role;
   }
   return "user";
+}
+
+async function safeReadResponseBody(response: Response): Promise<string> {
+  try {
+    return await response.text();
+  } catch {
+    return "<failed to read response body>";
+  }
+}
+
+async function syncChatToEdgeWithTimeout(
+  db: {
+    updateWithAck: (
+      table: typeof app.chats,
+      id: string,
+      values: { title: string },
+      tier: "worker" | "edge" | "core"
+    ) => Promise<unknown>;
+  },
+  chatId: string,
+  title: string
+) {
+  return withTimeout(db.updateWithAck(app.chats, chatId, { title }, "edge"), 3000);
+}
+
+async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(`Timed out after ${timeoutMs}ms`));
+    }, timeoutMs);
+
+    void promise
+      .then((value) => {
+        clearTimeout(timeout);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
+  });
+}
+
+function debugLog(event: string, payload?: unknown) {
+  if (!CHAT_DEBUG) {
+    return;
+  }
+
+  if (typeof payload === "undefined") {
+    console.info(`[chat-ui] ${event}`);
+    return;
+  }
+
+  console.info(`[chat-ui] ${event}`, payload);
 }

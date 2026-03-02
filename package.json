@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev --turbo",
     "fix:jazz-bin": "chmod +x node_modules/jazz-tools/bin/native/jazz-tools-* 2>/dev/null || true",
-    "jazz:server": "pnpm fix:jazz-bin && jazz-tools server \"${JAZZ_APP_ID:-019ca880-f1e1-7740-b334-1e8a8b3a2d99}\" --port 1625 --data-dir ./data --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\"",
-    "schema:push": "pnpm fix:jazz-bin && jazz-tools schema:push \"${JAZZ_APP_ID:-019ca880-f1e1-7740-b334-1e8a8b3a2d99}\" --server-url \"${JAZZ_SERVER_URL:-http://127.0.0.1:1625}\" --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\"",
+    "jazz:server": "pnpm fix:jazz-bin && jazz-tools server \"${JAZZ_APP_ID:-759301e8-cc0c-5b12-bd6f-81892d359dc0}\" --port 1625 --data-dir ./data --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\"",
+    "schema:push": "pnpm fix:jazz-bin && jazz-tools schema:push \"${JAZZ_APP_ID:-759301e8-cc0c-5b12-bd6f-81892d359dc0}\" --server-url \"${JAZZ_SERVER_URL:-http://127.0.0.1:1625}\" --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\"",
     "dev:local": "sh -c 'pnpm jazz:server & JAZZ_PID=$!; trap \"kill $JAZZ_PID\" EXIT; pnpm dev'",
     "build": "next build",
     "start": "next start",
@@ -36,7 +36,7 @@
     "framer-motion": "^11.17.0",
     "jazz-nodejs": "^0.14.23",
     "jazz-react": "^0.14.23",
-    "jazz-tools": "2.0.0-alpha.9",
+    "jazz-tools": "2.0.0-alpha.10",
     "lucide-react": "^0.471.0",
     "next": "16.1.6",
     "react": "^19.2.3",
@@ -49,6 +49,12 @@
     "tailwindcss-animate": "^1.0.7",
     "ws": "8.14.2",
     "zod": "^3.25.56"
+  },
+  "optionalDependencies": {
+    "jazz-napi-darwin-arm64": "npm:@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.10",
+    "jazz-napi-darwin-x64": "npm:@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.10",
+    "jazz-napi-linux-x64-gnu": "npm:@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.10",
+    "jazz-napi-win32-x64-msvc": "npm:@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.10"
   },
   "devDependencies": {
     "@types/node": "^20",
