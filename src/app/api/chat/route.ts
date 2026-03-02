@@ -47,6 +47,8 @@ export async function POST(request: Request) {
     "anonymous",
     "next-api-route-assistant",
   );
+
+  console.log({userId});
   
   const scoped = await jazzBackendClient.forSession({
     user_id: userId,
