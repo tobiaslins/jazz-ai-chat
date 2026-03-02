@@ -45,6 +45,8 @@ export default function RootLayout({
       appId: process.env.NEXT_PUBLIC_JAZZ_APP_ID || DEFAULT_APP_ID,
       serverUrl: process.env.NEXT_PUBLIC_JAZZ_SERVER_URL || DEFAULT_SERVER_URL,
       localAuthMode: "anonymous" as const,
+      env: process.env.NODE_ENV === "production" ? "prod" : "dev",
+      userBranch: "main",
     }),
     []
   );

@@ -26,16 +26,17 @@ const backendContext: AppContext = {
     process.env.JAZZ_SERVER_URL ||
     process.env.NEXT_PUBLIC_JAZZ_SERVER_URL ||
     DEFAULT_SERVER_URL,
-  backendSecret: process.env.JAZZ_BACKEND_SECRET,
-  localAuthMode: "anonymous",
-  localAuthToken: "next-api-route-assistant",
+  backendSecret: process.env.JAZZ_BACKEND_SECRET || 'TEST_SECRET',
   env: process.env.NODE_ENV === "production" ? "prod" : "dev",
   userBranch: "main",
 };
 
+
 let jazzBackendClientPromise: Promise<JazzClient> | null = null;
 
 async function getJazzBackendClient() {
+  console.log("backendContext", backendContext);
+
   if (!jazzBackendClientPromise) {
     jazzBackendClientPromise = JazzClient.connect(backendContext).catch((error) => {
       jazzBackendClientPromise = null;
