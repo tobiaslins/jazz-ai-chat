@@ -29,6 +29,8 @@ type MessageRow = {
 
 import { deriveLocalPrincipalId } from "jazz-tools/backend";
 
+
+
 export async function POST(request: Request) {
   // const requestId = createRequestId();
   // const startedAt = Date.now();
@@ -40,6 +42,8 @@ export async function POST(request: Request) {
   // };
 
   const jazzBackendClient = await getJazzBackendClient();
+
+  const qb = app.messages.where({});
 
 
   const userId = await deriveLocalPrincipalId(
@@ -55,7 +59,9 @@ export async function POST(request: Request) {
     claims: { auth_mode: "local", local_mode: "anonymous" },
   });
   
-  const rows = await scoped.query(app.messages.where({}));
+  const rows = await scoped.query(translateQuery(qb._build(), qb._schema));
+
+  // const rows = await scoped.query(app.messages.where({}));
 
   console.log(rows);
 
