@@ -203,45 +203,14 @@ async function createAssistantPlaceholderWithRetry(
   createdAt: string,
   requestId: string
 ): Promise<string> {
-  const maxAttempts = 4;
-  let attempt = 0;
-  let lastError: unknown;
-
-  while (attempt < maxAttempts) {
-    try {
-      return await client.create("messages", [
-        { type: "Uuid", value: chatId },
-        { type: "Text", value: "assistant" },
-        { type: "Text", value: "" },
-        { type: "Text", value: createdAt },
-      ]);
-    } catch (error) {
-      lastError = error;
-      const message = error instanceof Error ? error.message : String(error);
-      const isForeignKeyRace = message.includes("UuidForeignKeyViolation");
-      debugLog(requestId, "assistant_placeholder_retry", {
-        attempt: attempt + 1,
-        isForeignKeyRace,
-        error: summarizeError(error),
-      });
-
-      if (!isForeignKeyRace || attempt === maxAttempts - 1) {
-        throw error;
-      }
-
-      attempt += 1;
-      await delay(150 * 2 ** attempt);
-    }
-  }
-
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Failed to create assistant placeholder.");
+  return await client.create("messages", [
+    { type: "Uuid", value: chatId },
+    { type: "Text", value: "assistant" },
+    { type: "Text", value: "" },
+    { type: "Text", value: createdAt },
+  ]);
 }
 
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 async function loadChatHistory(
   client: JazzClient,
