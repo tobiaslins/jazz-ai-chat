@@ -119,15 +119,6 @@ async function generateAndPersistAssistantMessage(
 ) {
   console.log("generateAndPersistAssistantMessage", client, chatId, latestUserMessage, modelId, requestId);
 
-  const chatPresence = await getChatPresence(client, chatId).catch((error) => {
-    console.error("error getting chat presence", error);
-    throw error;
-  });
-  debugLog(requestId, "chat_presence", chatPresence);
-
-  if (!chatPresence.existsDeferred) {
-    throw new Error("ChatNotSyncedToEdge");
-  }
 
   const historyFromDb = await loadChatHistory(client, chatId, requestId);
   const messagesForModel = buildHistoryForModel(historyFromDb, latestUserMessage);
@@ -300,40 +291,6 @@ function normalizeRole(role: string): InputMessage["role"] {
   return "user";
 }
 
-async function getChatPresence(client: JazzClient, chatId: string) {
-  console.log("getChatPresence", chatId);
-  const test= await client.query(app.chats.where({ id: chatId }).limit(1), {
-    tier: "edge",
-    localUpdates: "immediate",
-
-  })
-
-  console.log("test", test);
-
-  const [immediateRows, deferredRows, recentDeferredRows] = await Promise.all([
-    client.query(app.chats.where({ id: chatId }).limit(1), {
-      tier: "edge",
-      localUpdates: "immediate",
-    }),
-    client.query(app.chats.where({ id: chatId }).limit(1), {
-      tier: "edge",
-      localUpdates: "deferred",
-    }),
-    client.query(app.chats.orderBy("created_at", "desc").limit(5), {
-      tier: "edge",
-      localUpdates: "deferred",
-    }),
-  ]);
-
-  console.log("getChatPresence", immediateRows, deferredRows, recentDeferredRows);
-
-  return {
-    chatId,
-    existsImmediate: immediateRows.length > 0,
-    existsDeferred: deferredRows.length > 0,
-    recentDeferredChatIds: recentDeferredRows.map((row) => row.id),
-  };
-}
 
 function createRequestId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
