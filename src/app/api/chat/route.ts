@@ -302,7 +302,7 @@ function normalizeRole(role: string): InputMessage["role"] {
 
 async function getChatPresence(client: JazzClient, chatId: string) {
   console.log("getChatPresence", chatId);
-  const test= await client.query(app.chats.where({ id: chatId, owner_id: "123" }).limit(1), {
+  const test= await client.query(app.chats.where({ id: chatId }).limit(1), {
     tier: "edge",
     localUpdates: "immediate",
 
