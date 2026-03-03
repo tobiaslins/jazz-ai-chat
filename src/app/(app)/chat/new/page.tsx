@@ -27,8 +27,8 @@ export default function NewChatPage() {
         created_at: now,
       };
 
-      // Local-first create avoids blocking this page when edge/core sync is slow.
-      const chatId = db.insert(app.chats, chatData);
+      // Local-first create avoids blocking this page when edge/global sync is slow.
+      const chatId = await db.insert(app.chats, chatData);
       debugLog("chat_created_local", { chatId });
 
       if (!cancelled) {
@@ -37,7 +37,7 @@ export default function NewChatPage() {
 
       // Best-effort sync in background. The send flow can retry if this is not done yet.
       void withTimeout(
-        db.updateWithAck(app.chats, chatId, { title: chatData.title }, "edge"),
+        db.update(app.chats, chatId, { title: chatData.title }, { tier: "edge" }),
         3000
       )
         .then(() => {
