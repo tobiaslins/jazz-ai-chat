@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useDb } from "jazz-tools/react";
+import { useDb, useSession } from "jazz-tools/react";
 
 import { app } from "../../../../../schema/app";
 
@@ -11,11 +11,17 @@ const CHAT_DEBUG =
 
 export default function NewChatPage() {
   const db = useDb();
+  const session = useSession();
+  const sessionUserId = session?.user_id ?? null;
   const router = useRouter();
   const createChatPromiseRef = useRef<Promise<{ chatId: string; title: string }> | null>(null);
   const syncStartedRef = useRef(false);
 
   useEffect(() => {
+    if (!sessionUserId) {
+      return;
+    }
+
     let isActive = true;
 
     if (!createChatPromiseRef.current) {
@@ -23,6 +29,7 @@ export default function NewChatPage() {
       const chatData = {
         title: "New chat",
         created_at: now,
+        owner_id: sessionUserId,
       };
 
       // Local-first create avoids blocking this page when edge/global sync is slow.
@@ -67,7 +74,15 @@ export default function NewChatPage() {
     return () => {
       isActive = false;
     };
-  }, [db, router]);
+  }, [db, router, sessionUserId]);
+
+  if (!sessionUserId) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-6 text-sm text-gray-600">
+        Initializing session...
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen items-center justify-center p-6 text-sm text-gray-600">

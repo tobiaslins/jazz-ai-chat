@@ -52,6 +52,7 @@ export async function POST(request: Request) {
 
   try {
     const client = await getJazzBackendClient();
+
     await generateAndPersistAssistantMessage(
       client,
       chatId,
@@ -116,12 +117,8 @@ async function generateAndPersistAssistantMessage(
   modelId: GatewayModelId,
   requestId: string
 ) {
-  const chatPresence = await getChatPresence(client, chatId);
-  debugLog(requestId, "chat_presence", chatPresence);
+  console.log("generateAndPersistAssistantMessage", client, chatId, latestUserMessage, modelId, requestId);
 
-  if (!chatPresence.existsDeferred) {
-    throw new Error("ChatNotSyncedToEdge");
-  }
 
   const historyFromDb = await loadChatHistory(client, chatId, requestId);
   const messagesForModel = buildHistoryForModel(historyFromDb, latestUserMessage);
@@ -206,55 +203,26 @@ async function createAssistantPlaceholderWithRetry(
   createdAt: string,
   requestId: string
 ): Promise<string> {
-  const maxAttempts = 4;
-  let attempt = 0;
-  let lastError: unknown;
-
-  while (attempt < maxAttempts) {
-    try {
-      return await client.create("messages", [
-        { type: "Uuid", value: chatId },
-        { type: "Text", value: "assistant" },
-        { type: "Text", value: "" },
-        { type: "Text", value: createdAt },
-      ]);
-    } catch (error) {
-      lastError = error;
-      const message = error instanceof Error ? error.message : String(error);
-      const isForeignKeyRace = message.includes("UuidForeignKeyViolation");
-      debugLog(requestId, "assistant_placeholder_retry", {
-        attempt: attempt + 1,
-        isForeignKeyRace,
-        error: summarizeError(error),
-      });
-
-      if (!isForeignKeyRace || attempt === maxAttempts - 1) {
-        throw error;
-      }
-
-      attempt += 1;
-      await delay(150 * 2 ** attempt);
-    }
-  }
-
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Failed to create assistant placeholder.");
+  return await client.create("messages", [
+    { type: "Uuid", value: chatId },
+    { type: "Text", value: "assistant" },
+    { type: "Text", value: "" },
+    { type: "Text", value: createdAt },
+  ]);
 }
 
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
 
 async function loadChatHistory(
   client: JazzClient,
   chatId: string,
   requestId: string
 ): Promise<InputMessage[]> {
+  console.log("###### BEFORE ")
   const rows = await client.query(
     app.messages.where({ chat: chatId }).orderBy("created_at", "asc").limit(40),
     { tier: "edge", localUpdates: "deferred" }
   );
+  console.log("###### AFTER QUERY", rows);
   debugLog(requestId, "history_query_result", { chatId, rowCount: rows.length });
 
   const messages = transformRows<MessageRow>(rows, app.wasmSchema, "messages");
@@ -294,29 +262,6 @@ function normalizeRole(role: string): InputMessage["role"] {
   return "user";
 }
 
-async function getChatPresence(client: JazzClient, chatId: string) {
-  const [immediateRows, deferredRows, recentDeferredRows] = await Promise.all([
-    client.query(app.chats.where({ id: chatId }).limit(1), {
-      tier: "edge",
-      localUpdates: "immediate",
-    }),
-    client.query(app.chats.where({ id: chatId }).limit(1), {
-      tier: "edge",
-      localUpdates: "deferred",
-    }),
-    client.query(app.chats.orderBy("created_at", "desc").limit(5), {
-      tier: "edge",
-      localUpdates: "deferred",
-    }),
-  ]);
-
-  return {
-    chatId,
-    existsImmediate: immediateRows.length > 0,
-    existsDeferred: deferredRows.length > 0,
-    recentDeferredChatIds: recentDeferredRows.map((row) => row.id),
-  };
-}
 
 function createRequestId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
