@@ -1,0 +1,2 @@
+ALTER TABLE messages DROP COLUMN chat;
+ALTER TABLE messages ADD COLUMN chat_id TEXT DEFAULT '';
