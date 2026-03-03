@@ -52,6 +52,7 @@ export async function POST(request: Request) {
 
   try {
     const client = await getJazzBackendClient();
+
     await generateAndPersistAssistantMessage(
       client,
       chatId,
@@ -116,7 +117,12 @@ async function generateAndPersistAssistantMessage(
   modelId: GatewayModelId,
   requestId: string
 ) {
-  const chatPresence = await getChatPresence(client, chatId);
+  console.log("generateAndPersistAssistantMessage", client, chatId, latestUserMessage, modelId, requestId);
+
+  const chatPresence = await getChatPresence(client, chatId).catch((error) => {
+    console.error("error getting chat presence", error);
+    throw error;
+  });
   debugLog(requestId, "chat_presence", chatPresence);
 
   if (!chatPresence.existsDeferred) {
@@ -295,6 +301,15 @@ function normalizeRole(role: string): InputMessage["role"] {
 }
 
 async function getChatPresence(client: JazzClient, chatId: string) {
+  console.log("getChatPresence", chatId);
+  const test= await client.query(app.chats.where({ id: chatId, owner_id: "123" }).limit(1), {
+    tier: "edge",
+    localUpdates: "immediate",
+
+  })
+
+  console.log("test", test);
+
   const [immediateRows, deferredRows, recentDeferredRows] = await Promise.all([
     client.query(app.chats.where({ id: chatId }).limit(1), {
       tier: "edge",
@@ -309,6 +324,8 @@ async function getChatPresence(client: JazzClient, chatId: string) {
       localUpdates: "deferred",
     }),
   ]);
+
+  console.log("getChatPresence", immediateRows, deferredRows, recentDeferredRows);
 
   return {
     chatId,

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAll, useDb } from "jazz-tools/react";
+import { useAll, useDb, useSession } from "jazz-tools/react";
 
 import { app } from "../../../../schema/app";
 import { Button } from "@/components/ui/button";
@@ -28,6 +28,8 @@ const ORDER_OPTIONS: OrderOption[] = [
 
 export function RenderBenchmark() {
   const db = useDb();
+  const session = useSession();
+  const sessionUserId = session?.user_id ?? null;
 
   const [order, setOrder] = useState<OrderOption>(ORDER_OPTIONS[0]);
   const [busy, setBusy] = useState(false);
@@ -49,13 +51,15 @@ export function RenderBenchmark() {
   const totalCount = allMessages.length;
 
   useEffect(() => {
+    if (!sessionUserId) return;
     if (benchmarkChatId) return;
 
     db.insert(app.chats, {
       title: "Benchmark chat",
       created_at: new Date().toISOString(),
+      owner_id: sessionUserId,
     });
-  }, [benchmarkChatId, db]);
+  }, [benchmarkChatId, db, sessionUserId]);
 
   const insertBulk = useCallback(
     async (count: number) => {
