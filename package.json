@@ -5,8 +5,8 @@
   "scripts": {
     "dev": "next dev --turbo",
     "fix:jazz-bin": "chmod +x node_modules/jazz-tools/bin/native/jazz-tools-* 2>/dev/null || true",
-    "jazz:server": "pnpm fix:jazz-bin && sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; jazz-tools server \"${JAZZ_APP_ID:-019cb2e1-9061-7173-8787-63c03762f6fe}\" --port 1625 --data-dir ./data --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\" --backend-secret \"${JAZZ_BACKEND_SECRET:-TEST_SECRET}\"'",
-    "schema:push": "pnpm fix:jazz-bin && sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; jazz-tools schema:push \"${JAZZ_APP_ID:-019cb2e1-9061-7173-8787-63c03762f6fe}\" --server-url \"${JAZZ_SERVER_URL:-http://127.0.0.1:1625}\" --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\"'",
+    "jazz:server": "pnpm fix:jazz-bin && sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; jazz-tools server \"${JAZZ_APP_ID:?JAZZ_APP_ID is required}\" --port 1625 --data-dir ./data --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\" --backend-secret \"${JAZZ_BACKEND_SECRET:-TEST_SECRET}\"'",
+    "schema:push": "pnpm fix:jazz-bin && sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; jazz-tools schema:push \"${JAZZ_APP_ID:?JAZZ_APP_ID is required}\" --server-url \"${JAZZ_SERVER_URL:-http://127.0.0.1:1625}\" --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\"'",
     "dev:local": "sh -c 'pnpm jazz:server & JAZZ_PID=$!; trap \"kill $JAZZ_PID\" EXIT; pnpm dev'",
     "build": "next build",
     "start": "next start",

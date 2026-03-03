@@ -7,14 +7,19 @@ import {
   type JazzClient,
 } from "jazz-tools/react";
 
-
 const DEFAULT_SERVER_URL =
   process.env.NODE_ENV === "production" ? undefined : "http://127.0.0.1:1625";
+const REQUIRED_PUBLIC_APP_ID_ENV = "NEXT_PUBLIC_JAZZ_APP_ID";
+const PUBLIC_APP_ID = process.env.NEXT_PUBLIC_JAZZ_APP_ID?.trim();
+
+if (!PUBLIC_APP_ID) {
+  throw new Error(
+    `[jazz-client] Missing ${REQUIRED_PUBLIC_APP_ID_ENV}. Set it in your environment before starting the app.`
+  );
+}
 
 let sharedClientPromise: Promise<JazzClient> | null = null;
 let sharedClientConfigKey: string | null = null;
-
-
 
 function getSharedJazzClient(
   config: Parameters<typeof createJazzClient>[0]
@@ -44,9 +49,8 @@ export default function RootLayout({
 
   const clientConfig = useMemo(
     () => ({
-      appId: process.env.NEXT_PUBLIC_JAZZ_APP_ID || process.env.JAZZ_APP_ID,
+      appId: PUBLIC_APP_ID,
       serverUrl: process.env.NEXT_PUBLIC_JAZZ_SERVER_URL || DEFAULT_SERVER_URL,
-
       env: process.env.NODE_ENV === "production" ? "prod" : "dev",
       userBranch: "main",
       localAuthMode: "anonymous",
@@ -56,8 +60,6 @@ export default function RootLayout({
 
   useEffect(() => {
     let cancelled = false;
-
-    console.log("clientConfig", clientConfig);
 
     void getSharedJazzClient(clientConfig)
       .then((nextClient) => {
