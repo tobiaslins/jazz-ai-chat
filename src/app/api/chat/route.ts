@@ -1,15 +1,10 @@
 import { streamText } from "ai";
 import { gateway, type GatewayModelId } from "@ai-sdk/gateway";
-import { transformRows, translateQuery } from "jazz-tools";
+import { transformRows, type JazzClient } from "jazz-tools";
 
 import { app } from "../../../../schema/app";
 import { defaultModel } from "@/lib/models";
-import {
-  backendContext,
-  getJazzBackendClient,
-  getJazzBackendRequester,
-  type BackendRequester,
-} from "@/lib/jazz-backend";
+import { getJazzBackendClient } from "@/lib/jazz-backend";
 
 const CHAT_DEBUG =
   process.env.JAZZ_CHAT_DEBUG === "1" || process.env.NODE_ENV !== "production";
@@ -27,105 +22,108 @@ type MessageRow = {
   created_at: string;
 };
 
-
-
-
 export async function POST(request: Request) {
-  // const requestId = createRequestId();
-  // const startedAt = Date.now();
+  const requestId = createRequestId();
+  const startedAt = Date.now();
 
-  // const body = (await request.json()) as {
-  //   chatId?: string;
-  //   latestUserMessage?: string;
-  //   model?: string;
-  // };
+  const body = (await request.json()) as {
+    chatId?: string;
+    latestUserMessage?: string;
+    model?: string;
+  };
 
-  const jazzBackendClient = await getJazzBackendClient();
-  const rows = await jazzBackendClient.asBackend().query(app.messages.where({}));
-  console.log(rows);
+  const chatId = typeof body.chatId === "string" ? body.chatId.trim() : "";
+  if (!chatId) {
+    return Response.json({ error: "chatId is required." }, { status: 400 });
+  }
 
-  return Response.json({ rows });
+  const latestUserMessage =
+    typeof body.latestUserMessage === "string"
+      ? body.latestUserMessage.trim()
+      : "";
 
+  const modelId = (body.model || defaultModel) as GatewayModelId;
+  debugLog(requestId, "request_received", {
+    chatId,
+    hasLatestUserMessage: latestUserMessage.length > 0,
+    latestUserMessageLength: latestUserMessage.length,
+    modelId,
+  });
 
-  // const chatId = typeof body.chatId === "string" ? body.chatId.trim() : "";
-  // if (!chatId) {
-  //   return Response.json({ error: "chatId is required." }, { status: 400 });
-  // }
+  try {
+    const client = await getJazzBackendClient();
+    await generateAndPersistAssistantMessage(
+      client,
+      chatId,
+      latestUserMessage,
+      modelId,
+      requestId
+    );
+    debugLog(requestId, "request_completed", {
+      durationMs: Date.now() - startedAt,
+    });
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Failed to generate assistant response.";
+    const statusCode = findErrorStatusCode(error);
 
-  // const latestUserMessage =
-  //   typeof body.latestUserMessage === "string"
-  //     ? body.latestUserMessage.trim()
-  //     : "";
+    debugLog(requestId, "request_failed", {
+      durationMs: Date.now() - startedAt,
+      statusCode,
+      error: summarizeError(error),
+    });
 
-  // const modelId = (body.model || defaultModel) as GatewayModelId;
-  // debugLog(requestId, "request_received", {
-  //   chatId,
-  //   hasLatestUserMessage: latestUserMessage.length > 0,
-  //   latestUserMessageLength: latestUserMessage.length,
-  //   modelId,
-  // });
+    if (message.includes("ChatNotSyncedToEdge")) {
+      return jsonWithRequestId(
+        { error: "Chat is not synced to server yet. Please retry." },
+        409,
+        requestId
+      );
+    }
 
-  // try {
-  //   const requester = await getJazzBackendRequester();
-  //   await generateAndPersistAssistantMessage(
-  //     requester,
-  //     chatId,
-  //     latestUserMessage,
-  //     modelId,
-  //     requestId
-  //   );
-  //   debugLog(requestId, "request_completed", {
-  //     durationMs: Date.now() - startedAt,
-  //   });
-  // } catch (error) {
-  //   const message =
-  //     error instanceof Error ? error.message : "Failed to generate assistant response.";
-  //   const statusCode = findErrorStatusCode(error);
+    if (message.includes("UuidForeignKeyViolation")) {
+      return jsonWithRequestId(
+        { error: "Chat is not synced to server yet. Please retry." },
+        409,
+        requestId
+      );
+    }
 
-  //   debugLog(requestId, "request_failed", {
-  //     durationMs: Date.now() - startedAt,
-  //     statusCode,
-  //     error: summarizeError(error),
-  //   });
+    if (statusCode === 429 || message.includes("429")) {
+      return jsonWithRequestId(
+        {
+          error:
+            "Upstream model returned a rate limit (429). Please retry in a few seconds.",
+        },
+        429,
+        requestId
+      );
+    }
 
-  //   if (message.includes("UuidForeignKeyViolation")) {
-  //     return jsonWithRequestId(
-  //       { error: "Chat is not synced to server yet. Please retry." },
-  //       409,
-  //       requestId
-  //     );
-  //   }
+    return jsonWithRequestId({ error: message }, 500, requestId);
+  }
 
-  //   if (statusCode === 429 || message.includes("429")) {
-  //     return jsonWithRequestId(
-  //       {
-  //         error:
-  //           "Upstream model returned a rate limit (429). Please retry in a few seconds.",
-  //       },
-  //       429,
-  //       requestId
-  //     );
-  //   }
-
-  //   return jsonWithRequestId({ error: message }, 500, requestId);
-  // }
-
-  // return new Response(null, {
-  //   status: 202,
-  //   headers: { "x-chat-request-id": requestId },
-  // });
+  return new Response(null, {
+    status: 202,
+    headers: { "x-chat-request-id": requestId },
+  });
 }
 
 async function generateAndPersistAssistantMessage(
-  requester: BackendRequester,
+  client: JazzClient,
   chatId: string,
   latestUserMessage: string,
   modelId: GatewayModelId,
   requestId: string
 ) {
-  const historyFromDb = await loadChatHistory(requester, chatId, requestId);
+  const chatPresence = await getChatPresence(client, chatId);
+  debugLog(requestId, "chat_presence", chatPresence);
 
+  if (!chatPresence.existsDeferred) {
+    throw new Error("ChatNotSyncedToEdge");
+  }
 
+  const historyFromDb = await loadChatHistory(client, chatId, requestId);
   const messagesForModel = buildHistoryForModel(historyFromDb, latestUserMessage);
   debugLog(requestId, "history_loaded", {
     historyRows: historyFromDb.length,
@@ -139,7 +137,7 @@ async function generateAndPersistAssistantMessage(
 
   const createdAt = new Date().toISOString();
   const assistantId = await createAssistantPlaceholderWithRetry(
-    requester,
+    client,
     chatId,
     createdAt,
     requestId
@@ -169,14 +167,14 @@ async function generateAndPersistAssistantMessage(
 
       const now = Date.now();
       if (now - lastUpdateAt > 100) {
-        await requester.update(assistantId, {
+        await client.update(assistantId, {
           content: { type: "Text", value: text },
         });
         lastUpdateAt = now;
       }
     }
 
-    await requester.update(assistantId, {
+    await client.update(assistantId, {
       content: {
         type: "Text",
         value: text.trim()
@@ -193,7 +191,7 @@ async function generateAndPersistAssistantMessage(
       error: summarizeError(error),
       statusCode: findErrorStatusCode(error),
     });
-    await requester.update(assistantId, {
+    await client.update(assistantId, {
       content: {
         type: "Text",
         value: "Sorry, I couldn't generate a response. Please try again.",
@@ -203,7 +201,7 @@ async function generateAndPersistAssistantMessage(
 }
 
 async function createAssistantPlaceholderWithRetry(
-  requester: BackendRequester,
+  client: JazzClient,
   chatId: string,
   createdAt: string,
   requestId: string
@@ -214,7 +212,7 @@ async function createAssistantPlaceholderWithRetry(
 
   while (attempt < maxAttempts) {
     try {
-      return requester.create("messages", [
+      return await client.create("messages", [
         { type: "Uuid", value: chatId },
         { type: "Text", value: "assistant" },
         { type: "Text", value: "" },
@@ -249,17 +247,17 @@ function delay(ms: number) {
 }
 
 async function loadChatHistory(
-  requester: BackendRequester,
+  client: JazzClient,
   chatId: string,
   requestId: string
 ): Promise<InputMessage[]> {
-  const builder = app.messages.where({ chat: chatId }).orderBy("created_at", "asc").limit(40);
-  const rows = await requester.query(translateQuery(builder._build(), app.wasmSchema));
+  const rows = await client.query(
+    app.messages.where({ chat: chatId }).orderBy("created_at", "asc").limit(40),
+    { tier: "edge", localUpdates: "deferred" }
+  );
   debugLog(requestId, "history_query_result", { chatId, rowCount: rows.length });
 
   const messages = transformRows<MessageRow>(rows, app.wasmSchema, "messages");
-
-  console.log(messages);
 
   return messages
     .map((message) => ({
@@ -294,6 +292,30 @@ function normalizeRole(role: string): InputMessage["role"] {
     return role;
   }
   return "user";
+}
+
+async function getChatPresence(client: JazzClient, chatId: string) {
+  const [immediateRows, deferredRows, recentDeferredRows] = await Promise.all([
+    client.query(app.chats.where({ id: chatId }).limit(1), {
+      tier: "edge",
+      localUpdates: "immediate",
+    }),
+    client.query(app.chats.where({ id: chatId }).limit(1), {
+      tier: "edge",
+      localUpdates: "deferred",
+    }),
+    client.query(app.chats.orderBy("created_at", "desc").limit(5), {
+      tier: "edge",
+      localUpdates: "deferred",
+    }),
+  ]);
+
+  return {
+    chatId,
+    existsImmediate: immediateRows.length > 0,
+    existsDeferred: deferredRows.length > 0,
+    recentDeferredChatIds: recentDeferredRows.map((row) => row.id),
+  };
 }
 
 function createRequestId() {

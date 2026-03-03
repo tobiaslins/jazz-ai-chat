@@ -12,15 +12,13 @@ const CHAT_DEBUG =
 export default function NewChatPage() {
   const db = useDb();
   const router = useRouter();
-  const didCreateRef = useRef(false);
+  const createChatPromiseRef = useRef<Promise<{ chatId: string; title: string }> | null>(null);
+  const syncStartedRef = useRef(false);
 
   useEffect(() => {
-    if (didCreateRef.current) return;
-    didCreateRef.current = true;
+    let isActive = true;
 
-    let cancelled = false;
-
-    void (async () => {
+    if (!createChatPromiseRef.current) {
       const now = new Date().toISOString();
       const chatData = {
         title: "New chat",
@@ -28,31 +26,46 @@ export default function NewChatPage() {
       };
 
       // Local-first create avoids blocking this page when edge/global sync is slow.
-      const chatId = await db.insert(app.chats, chatData);
-      debugLog("chat_created_local", { chatId });
+      createChatPromiseRef.current = db
+        .insert(app.chats, chatData)
+        .then((chatId) => ({ chatId, title: chatData.title }));
+      debugLog("chat_create_started");
+    }
 
-      if (!cancelled) {
-        router.replace(`/chat/${chatId}`);
-      }
+    void createChatPromiseRef.current
+      .then(({ chatId, title }) => {
+        debugLog("chat_created_local", { chatId });
 
-      // Best-effort sync in background. The send flow can retry if this is not done yet.
-      void withTimeout(
-        db.update(app.chats, chatId, { title: chatData.title }, { tier: "edge" }),
-        3000
-      )
-        .then(() => {
-          debugLog("chat_synced_edge", { chatId });
-        })
-        .catch((error) => {
-          debugLog("chat_sync_edge_failed", {
-            chatId,
-            error: error instanceof Error ? error.message : String(error),
-          });
+        if (isActive) {
+          router.replace(`/chat/${chatId}`);
+        }
+
+        if (!syncStartedRef.current) {
+          syncStartedRef.current = true;
+          // Best-effort sync in background. The send flow can retry if this is not done yet.
+          void withTimeout(
+            db.update(app.chats, chatId, { title }, { tier: "edge" }),
+            3000
+          )
+            .then(() => {
+              debugLog("chat_synced_edge", { chatId });
+            })
+            .catch((error) => {
+              debugLog("chat_sync_edge_failed", {
+                chatId,
+                error: error instanceof Error ? error.message : String(error),
+              });
+            });
+        }
+      })
+      .catch((error) => {
+        debugLog("chat_create_failed", {
+          error: error instanceof Error ? error.message : String(error),
         });
-    })();
+      });
 
     return () => {
-      cancelled = true;
+      isActive = false;
     };
   }, [db, router]);
 
