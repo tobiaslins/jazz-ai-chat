@@ -248,10 +248,12 @@ async function loadChatHistory(
   chatId: string,
   requestId: string
 ): Promise<InputMessage[]> {
+  console.log("###### BEFORE ")
   const rows = await client.query(
     app.messages.where({ chat: chatId }).orderBy("created_at", "asc").limit(40),
     { tier: "edge", localUpdates: "deferred" }
   );
+  console.log("###### AFTER QUERY", rows);
   debugLog(requestId, "history_query_result", { chatId, rowCount: rows.length });
 
   const messages = transformRows<MessageRow>(rows, app.wasmSchema, "messages");
