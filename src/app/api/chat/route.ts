@@ -1,6 +1,6 @@
 import { streamText } from "ai";
 import { gateway, type GatewayModelId } from "@ai-sdk/gateway";
-import { transformRows, translateQuery } from "jazz-tools/backend";
+import { transformRows, translateQuery } from "jazz-tools";
 
 import { app } from "../../../../schema/app";
 import { defaultModel } from "@/lib/models";
@@ -27,7 +27,6 @@ type MessageRow = {
   created_at: string;
 };
 
-import { deriveLocalPrincipalId } from "jazz-tools/backend";
 
 
 
@@ -42,27 +41,7 @@ export async function POST(request: Request) {
   // };
 
   const jazzBackendClient = await getJazzBackendClient();
-
-  const qb = app.messages.where({});
-
-
-  const userId = await deriveLocalPrincipalId(
-    backendContext.appId,
-    "anonymous",
-    "next-api-route-assistant",
-  );
-
-  console.log({userId});
-  
-  const scoped = await jazzBackendClient.forSession({
-    user_id: userId,
-    claims: { auth_mode: "local", local_mode: "anonymous" },
-  });
-  
-  const rows = await scoped.query(translateQuery(qb._build(), qb._schema));
-
-  // const rows = await scoped.query(app.messages.where({}));
-
+  const rows = await jazzBackendClient.asBackend().query(app.messages.where({}));
   console.log(rows);
 
   return Response.json({ rows });

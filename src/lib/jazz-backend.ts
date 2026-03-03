@@ -3,7 +3,7 @@ import {
   type AppContext,
   type Value,
   type Row,
-} from "jazz-tools/backend";
+} from "jazz-tools";
 
 import { app } from "../../schema/app";
 
@@ -26,7 +26,7 @@ export const backendContext: AppContext = {
     process.env.JAZZ_SERVER_URL ||
     process.env.NEXT_PUBLIC_JAZZ_SERVER_URL ||
     DEFAULT_SERVER_URL,
-  backendSecret: 'TEST_SECRET',
+  backendSecret: process.env.JAZZ_BACKEND_SECRET || "TEST_SECRET",
   env: process.env.NODE_ENV === "production" ? "prod" : "dev",
   userBranch: "main",
   localAuthMode: "anonymous",

@@ -34,12 +34,12 @@ export function RenderChat({ chatId }: { chatId: string }) {
 
     const now = new Date().toISOString();
     console.log("now", now);
-   const test = await db.insertWithAck(app.messages, {
+   const test = await db.insert(app.messages, {
       chat: chatId,
       role: "user",
       content,
       created_at: now,
-    },'edge').then(() =>{
+    }, { tier: "edge" }).then(() =>{
       console.log("inserted with ack");
     }).catch((error) =>{
       console.error("error inserting with ack", error);
@@ -95,12 +95,12 @@ export function RenderChat({ chatId }: { chatId: string }) {
         chatId,
         error: error instanceof Error ? error.message : String(error),
       });
-      db.insertWithAck(app.messages, {
+      db.insert(app.messages, {
         chat: chatId,
         role: "assistant",
         content: "Sorry, I couldn't generate a response. Please try again.",
         created_at: new Date().toISOString(),
-      },'core').then(() =>{
+      }, { tier: "global" }).then(() =>{
         console.log("inserted with ack");
       });
     } finally {
@@ -187,17 +187,17 @@ async function safeReadResponseBody(response: Response): Promise<string> {
 
 async function syncChatToEdgeWithTimeout(
   db: {
-    updateWithAck: (
+    update: (
       table: typeof app.chats,
       id: string,
       values: { title: string },
-      tier: "worker" | "edge" | "core"
+      options?: { tier?: "worker" | "edge" | "global" }
     ) => Promise<unknown>;
   },
   chatId: string,
   title: string
 ) {
-  return withTimeout(db.updateWithAck(app.chats, chatId, { title }, "edge"), 3000);
+  return withTimeout(db.update(app.chats, chatId, { title }, { tier: "edge" }), 3000);
 }
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
