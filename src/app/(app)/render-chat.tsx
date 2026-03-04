@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Send } from "lucide-react";
-import { useAll, useDb } from "jazz-tools/react";
+import { useAll, useDb, useSession } from "jazz-tools/react";
 
 import { app } from "../../../schema/app";
 import { Button } from "@/components/ui/button";
@@ -15,6 +15,8 @@ const CHAT_DEBUG =
 
 export function RenderChat({ chatId }: { chatId: string }) {
   const db = useDb();
+  const session = useSession();
+  const sessionUserId = session?.user_id ?? null;
   const chatQuery = useMemo(() => app.chats.where({ id: chatId }).limit(1), [chatId]);
   const query = useMemo(
     () => app.messages.where({ chat: chatId }).orderBy("created_at", "asc"),
@@ -58,6 +60,7 @@ export function RenderChat({ chatId }: { chatId: string }) {
           body: JSON.stringify({
             chatId,
             latestUserMessage: content,
+            sessionUserId,
           }),
         });
 

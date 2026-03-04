@@ -134,17 +134,17 @@ importers:
         version: 5.7.3
     optionalDependencies:
       jazz-napi-darwin-arm64:
-        specifier: npm:@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.10
-        version: '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.10'
+        specifier: npm:@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.11
+        version: '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.11'
       jazz-napi-darwin-x64:
-        specifier: npm:@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.10
-        version: '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.10'
+        specifier: npm:@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.11
+        version: '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.11'
       jazz-napi-linux-x64-gnu:
-        specifier: npm:@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.10
-        version: '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.10'
+        specifier: npm:@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.11
+        version: '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.11'
       jazz-napi-win32-x64-msvc:
-        specifier: npm:@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.10
-        version: '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.10'
+        specifier: npm:@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.11
+        version: '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.11'
 
 packages:
 
@@ -355,19 +355,9 @@ packages:
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
 
-  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.10':
-    resolution: {integrity: sha512-4mQuLMy1UdRUMMyqob6x2XkFDbCwItrTFNCCoAi30VgDnQpG9J9UZnhuOGz0VvkgUlsj44O6emHO9X0mNUB+kg==}
-    cpu: [arm64]
-    os: [darwin]
-
   '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.11':
     resolution: {integrity: sha512-Mfrg7DcKMpO4ojAevKrDpU+enGl1vVvFvjTKoS4IUxItvb000Ih2k/GRn5chCaalxDkQGOJtJ3rYNcW5waoaAw==}
     cpu: [arm64]
-    os: [darwin]
-
-  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.10':
-    resolution: {integrity: sha512-6W4upfrPWQNlZWxCIcnENMyRVmqei2CawwAR1rLxdpPgfhALjZ3UtdYIcGiyfQX4fVXC2uX8q28UqozgnV/OKw==}
-    cpu: [x64]
     os: [darwin]
 
   '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.11':
@@ -375,20 +365,10 @@ packages:
     cpu: [x64]
     os: [darwin]
 
-  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.10':
-    resolution: {integrity: sha512-LbOQIWOfBt3U//oUOFDHN15B7Yc/O2LS8SFyWTGnbRTPwUskgAfA9e1FmmOXZMYDdnOY/4qR6fhIusKDxYm3wg==}
-    cpu: [x64]
-    os: [linux]
-
   '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.11':
     resolution: {integrity: sha512-qIX1fjCuqDttDUmxjdtPs6BKkzeYJcHiY/ENO5zhozt1a0NHguHTByiKuiS3DK/gvXuNEYVDi9x4x++8Q2oI2w==}
     cpu: [x64]
     os: [linux]
-
-  '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.10':
-    resolution: {integrity: sha512-D2Pzl0B3bYwe90BhgiEPU+oiO+46xrBkkxXZXh82cv9Xeilo8Vfq0xeR1C2Y6Uhg+it5PpLOzebGAsLhw4enTQ==}
-    cpu: [x64]
-    os: [win32]
 
   '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.11':
     resolution: {integrity: sha512-NdEd4GlSS+/m84eQaQGwtXFZSfeTAqb5iQjPgQLnuyRXLFdLhbOXiFaUkSfBHe0VupLuys29Uc4zjKbxcFEAoA==}
@@ -2664,25 +2644,13 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
-  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.10':
-    optional: true
-
   '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.11':
-    optional: true
-
-  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.10':
     optional: true
 
   '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.11':
     optional: true
 
-  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.10':
-    optional: true
-
   '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.11':
-    optional: true
-
-  '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.10':
     optional: true
 
   '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.11':
