@@ -16,6 +16,7 @@
   "dependencies": {
     "@ai-sdk/gateway": "1.0.0-beta.2",
     "@ai-sdk/openai": "2.0.0-beta.2",
+    "@ai-sdk/provider": "^3.0.8",
     "@radix-ui/react-dialog": "^1.1.4",
     "@radix-ui/react-dropdown-menu": "^2.1.15",
     "@radix-ui/react-label": "^2.1.7",
@@ -34,9 +35,10 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "framer-motion": "^11.17.0",
+    "goober": "^2.1.18",
     "jazz-nodejs": "^0.14.23",
     "jazz-react": "^0.14.23",
-    "jazz-tools": "2.0.0-alpha.11",
+    "jazz-tools": "2.0.0-alpha.12",
     "lucide-react": "^0.471.0",
     "next": "16.1.6",
     "react": "^19.2.3",
@@ -51,10 +53,10 @@
     "zod": "^3.25.56"
   },
   "optionalDependencies": {
-    "jazz-napi-darwin-arm64": "npm:@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.10",
-    "jazz-napi-darwin-x64": "npm:@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.10",
-    "jazz-napi-linux-x64-gnu": "npm:@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.10",
-    "jazz-napi-win32-x64-msvc": "npm:@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.10"
+    "jazz-napi-darwin-arm64": "npm:@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.12",
+    "jazz-napi-darwin-x64": "npm:@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.12",
+    "jazz-napi-linux-x64-gnu": "npm:@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.12",
+    "jazz-napi-win32-x64-msvc": "npm:@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.12"
   },
   "devDependencies": {
     "@types/node": "^20",

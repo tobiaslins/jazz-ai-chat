@@ -1,13 +1,18 @@
 import { streamText } from "ai";
 import { gateway, type GatewayModelId } from "@ai-sdk/gateway";
-import { transformRows, type JazzClient } from "jazz-tools";
+import {
+  transformRows,
+  type JazzClient,
+  type QueryExecutionOptions,
+} from "jazz-tools/backend";
 
 import { app } from "../../../../schema/app";
 import { defaultModel } from "@/lib/models";
-import { getJazzBackendClient } from "@/lib/jazz-backend";
+import { getJazzBackendClient, getJazzBackendContext } from "@/lib/jazz-backend";
 
 const CHAT_DEBUG =
   process.env.JAZZ_CHAT_DEBUG === "1" || process.env.NODE_ENV !== "production";
+const QUERY_TIMEOUT_MS = parsePositiveInt(process.env.JAZZ_QUERY_TIMEOUT_MS, 6000);
 
 type InputMessage = {
   role: "user" | "assistant" | "system";
@@ -22,6 +27,8 @@ type MessageRow = {
   created_at: string;
 };
 
+type QueryInput = Parameters<JazzClient["query"]>[0];
+
 export async function POST(request: Request) {
   const requestId = createRequestId();
   const startedAt = Date.now();
@@ -30,6 +37,7 @@ export async function POST(request: Request) {
     chatId?: string;
     latestUserMessage?: string;
     model?: string;
+    sessionUserId?: string;
   };
 
   const chatId = typeof body.chatId === "string" ? body.chatId.trim() : "";
@@ -43,11 +51,16 @@ export async function POST(request: Request) {
       : "";
 
   const modelId = (body.model || defaultModel) as GatewayModelId;
+  const sessionUserId =
+    typeof body.sessionUserId === "string" && body.sessionUserId.trim()
+      ? body.sessionUserId.trim()
+      : null;
   debugLog(requestId, "request_received", {
     chatId,
     hasLatestUserMessage: latestUserMessage.length > 0,
     latestUserMessageLength: latestUserMessage.length,
     modelId,
+    sessionUserId,
   });
 
   try {
@@ -58,7 +71,8 @@ export async function POST(request: Request) {
       chatId,
       latestUserMessage,
       modelId,
-      requestId
+      requestId,
+      sessionUserId
     );
     debugLog(requestId, "request_completed", {
       durationMs: Date.now() - startedAt,
@@ -115,21 +129,27 @@ async function generateAndPersistAssistantMessage(
   chatId: string,
   latestUserMessage: string,
   modelId: GatewayModelId,
-  requestId: string
+  requestId: string,
+  sessionUserId: string | null
 ) {
   console.log("generateAndPersistAssistantMessage", client, chatId, latestUserMessage, modelId, requestId);
 
-  const chatPresence = await getChatPresence(client, chatId).catch((error) => {
-    console.error("error getting chat presence", error);
-    throw error;
-  });
-  debugLog(requestId, "chat_presence", chatPresence);
-
-  if (!chatPresence.existsDeferred) {
-    throw new Error("ChatNotSyncedToEdge");
-  }
+  // TEMP DEBUG: bypass presence gating so we can verify history-query behavior.
+  // Re-enable getChatPresence() and ChatNotSyncedToEdge guard after tracing.
+  // const chatPresence = await getChatPresence(client, chatId, requestId).catch((error) => {
+  //   console.error("error getting chat presence", error);
+  //   throw error;
+  // });
+  // debugLog(requestId, "chat_presence", chatPresence);
+  //
+  // if (!chatPresence.existsDeferred) {
+  //   throw new Error("ChatNotSyncedToEdge");
+  // }
 
   const historyFromDb = await loadChatHistory(client, chatId, requestId);
+  if (sessionUserId) {
+    await debugCompareSessionVisibility(client, chatId, requestId, sessionUserId);
+  }
   const messagesForModel = buildHistoryForModel(historyFromDb, latestUserMessage);
   debugLog(requestId, "history_loaded", {
     historyRows: historyFromDb.length,
@@ -257,9 +277,12 @@ async function loadChatHistory(
   chatId: string,
   requestId: string
 ): Promise<InputMessage[]> {
-  const rows = await client.query(
+  const rows = await runTimedQuery(
+    client,
     app.messages.where({ chat: chatId }).orderBy("created_at", "asc").limit(40),
-    { tier: "edge", localUpdates: "deferred" }
+    { tier: "edge", localUpdates: "deferred" },
+    requestId,
+    "history_query"
   );
   debugLog(requestId, "history_query_result", { chatId, rowCount: rows.length });
 
@@ -271,6 +294,59 @@ async function loadChatHistory(
       content: message.content.trim(),
     }))
     .filter((message) => message.content.length > 0);
+}
+
+async function debugCompareSessionVisibility(
+  backendClient: JazzClient,
+  chatId: string,
+  requestId: string,
+  sessionUserId: string
+) {
+  const sessionClient = getJazzBackendContext().forSession({
+    user_id: sessionUserId,
+    claims: {},
+  }) as unknown as JazzClient;
+
+  const [backendChatRows, sessionChatRows, backendMessageRows, sessionMessageRows] =
+    await Promise.all([
+      runTimedQuery(
+        backendClient,
+        app.chats.where({ id: chatId }).limit(1),
+        { tier: "edge", localUpdates: "deferred" },
+        requestId,
+        "debug_backend_chat_visibility"
+      ),
+      runTimedQuery(
+        sessionClient,
+        app.chats.where({ id: chatId }).limit(1),
+        { tier: "edge", localUpdates: "deferred" },
+        requestId,
+        "debug_session_chat_visibility"
+      ),
+      runTimedQuery(
+        backendClient,
+        app.messages.where({ chat: chatId }).limit(1),
+        { tier: "edge", localUpdates: "deferred" },
+        requestId,
+        "debug_backend_message_visibility"
+      ),
+      runTimedQuery(
+        sessionClient,
+        app.messages.where({ chat: chatId }).limit(1),
+        { tier: "edge", localUpdates: "deferred" },
+        requestId,
+        "debug_session_message_visibility"
+      ),
+    ]);
+
+  debugLog(requestId, "debug_visibility_comparison", {
+    chatId,
+    sessionUserId,
+    backendChatRows: backendChatRows.length,
+    sessionChatRows: sessionChatRows.length,
+    backendMessageRows: backendMessageRows.length,
+    sessionMessageRows: sessionMessageRows.length,
+  });
 }
 
 function buildHistoryForModel(
@@ -300,32 +376,39 @@ function normalizeRole(role: string): InputMessage["role"] {
   return "user";
 }
 
-async function getChatPresence(client: JazzClient, chatId: string) {
-  console.log("getChatPresence", chatId);
-  const test= await client.query(app.chats.where({ id: chatId }).limit(1), {
-    tier: "edge",
-    localUpdates: "immediate",
-
-  })
-
-  console.log("test", test);
-
-  const [immediateRows, deferredRows, recentDeferredRows] = await Promise.all([
-    client.query(app.chats.where({ id: chatId }).limit(1), {
+async function getChatPresence(client: JazzClient, chatId: string, requestId: string) {
+  const immediateRows = await runTimedQuery(
+    client,
+    app.chats.where({ id: chatId }).limit(1),
+    {
       tier: "edge",
       localUpdates: "immediate",
-    }),
-    client.query(app.chats.where({ id: chatId }).limit(1), {
-      tier: "edge",
-      localUpdates: "deferred",
-    }),
-    client.query(app.chats.orderBy("created_at", "desc").limit(5), {
-      tier: "edge",
-      localUpdates: "deferred",
-    }),
-  ]);
+    },
+    requestId,
+    "chat_presence_immediate"
+  );
 
-  console.log("getChatPresence", immediateRows, deferredRows, recentDeferredRows);
+  const deferredRows = await runTimedQuery(
+    client,
+    app.chats.where({ id: chatId }).limit(1),
+    {
+      tier: "edge",
+      localUpdates: "deferred",
+    },
+    requestId,
+    "chat_presence_deferred"
+  );
+
+  const recentDeferredRows = await runTimedQuery(
+    client,
+    app.chats.orderBy("created_at", "desc").limit(5),
+    {
+      tier: "edge",
+      localUpdates: "deferred",
+    },
+    requestId,
+    "chat_presence_recent_deferred"
+  );
 
   return {
     chatId,
@@ -335,8 +418,127 @@ async function getChatPresence(client: JazzClient, chatId: string) {
   };
 }
 
+async function runTimedQuery(
+  client: JazzClient,
+  query: QueryInput,
+  options: QueryExecutionOptions,
+  requestId: string,
+  label: string
+) {
+  const startedAt = Date.now();
+  const querySummary = summarizeQuery(query);
+  debugLog(requestId, `${label}_start`, {
+    timeoutMs: QUERY_TIMEOUT_MS,
+    options,
+    query: querySummary,
+  });
+
+  try {
+    const rows = await withTimeout(
+      client.query(query, options),
+      QUERY_TIMEOUT_MS,
+      `${label} timed out after ${QUERY_TIMEOUT_MS}ms`
+    );
+
+    debugLog(requestId, `${label}_ok`, {
+      durationMs: Date.now() - startedAt,
+      rowCount: rows.length,
+    });
+    return rows;
+  } catch (error) {
+    debugLog(requestId, `${label}_error`, {
+      durationMs: Date.now() - startedAt,
+      options,
+      query: querySummary,
+      error: summarizeError(error),
+    });
+    throw error;
+  }
+}
+
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  message: string
+): Promise<T> {
+  return new Promise<T>((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error(message));
+    }, timeoutMs);
+
+    void promise
+      .then((value) => {
+        clearTimeout(timeout);
+        resolve(value);
+      })
+      .catch((error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
+  });
+}
+
+function summarizeQuery(query: QueryInput) {
+  const rawQuery = safeBuildQuery(query);
+  if (!rawQuery) {
+    return { kind: typeof query };
+  }
+
+  try {
+    const parsed = JSON.parse(rawQuery) as Record<string, unknown>;
+    const relationIr =
+      typeof parsed.relation_ir === "object" && parsed.relation_ir !== null
+        ? (parsed.relation_ir as Record<string, unknown>)
+        : null;
+
+    return {
+      table: parsed.table ?? relationIr?.table ?? null,
+      conditions: parsed.conditions ?? relationIr?.filters ?? [],
+      orderBy: parsed.orderBy ?? relationIr?.order_by ?? [],
+      limit: parsed.limit ?? relationIr?.limit ?? null,
+      hops: parsed.hops ?? relationIr?.hops ?? [],
+    };
+  } catch {
+    return { rawQuery };
+  }
+}
+
+function safeBuildQuery(query: QueryInput): string | null {
+  if (typeof query === "string") {
+    return query;
+  }
+
+  if (!query || typeof query !== "object") {
+    return null;
+  }
+
+  const withBuilder = query as { _build?: () => string };
+  if (typeof withBuilder._build !== "function") {
+    return null;
+  }
+
+  try {
+    return withBuilder._build();
+  } catch {
+    return null;
+  }
+}
+
 function createRequestId() {
   return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+}
+
+function parsePositiveInt(value: string | undefined, fallback: number) {
+  if (!value) {
+    return fallback;
+  }
+
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+
+  return Math.floor(parsed);
 }
 
 function jsonWithRequestId(body: unknown, status: number, requestId: string) {
