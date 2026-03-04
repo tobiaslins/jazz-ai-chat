@@ -1,5 +1,5 @@
-import { RenderChat } from "./render-chat";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return <RenderChat />;
+  redirect("/chat/new");
 }
