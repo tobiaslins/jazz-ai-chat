@@ -14,6 +14,9 @@ importers:
       '@ai-sdk/openai':
         specifier: 2.0.0-beta.2
         version: 2.0.0-beta.2(zod@3.25.56)
+      '@ai-sdk/provider':
+        specifier: ^3.0.8
+        version: 3.0.8
       '@radix-ui/react-dialog':
         specifier: ^1.1.4
         version: 1.1.4(@types/react-dom@19.0.2(@types/react@19.0.4))(@types/react@19.0.4)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -68,6 +71,9 @@ importers:
       framer-motion:
         specifier: ^11.17.0
         version: 11.17.0(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
+      goober:
+        specifier: ^2.1.18
+        version: 2.1.18(csstype@3.1.3)
       jazz-nodejs:
         specifier: ^0.14.23
         version: 0.14.23
@@ -75,8 +81,8 @@ importers:
         specifier: ^0.14.23
         version: 0.14.23(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       jazz-tools:
-        specifier: 2.0.0-alpha.11
-        version: 2.0.0-alpha.11(react@19.2.3)
+        specifier: 2.0.0-alpha.14
+        version: 2.0.0-alpha.14(react@19.2.3)
       lucide-react:
         specifier: ^0.471.0
         version: 0.471.0(react@19.2.3)
@@ -134,17 +140,17 @@ importers:
         version: 5.7.3
     optionalDependencies:
       jazz-napi-darwin-arm64:
-        specifier: npm:@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.11
-        version: '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.11'
+        specifier: npm:@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.14
+        version: '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.14'
       jazz-napi-darwin-x64:
-        specifier: npm:@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.11
-        version: '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.11'
+        specifier: npm:@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.14
+        version: '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.14'
       jazz-napi-linux-x64-gnu:
-        specifier: npm:@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.11
-        version: '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.11'
+        specifier: npm:@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.14
+        version: '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.14'
       jazz-napi-win32-x64-msvc:
-        specifier: npm:@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.11
-        version: '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.11'
+        specifier: npm:@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.14
+        version: '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.14'
 
 packages:
 
@@ -168,6 +174,10 @@ packages:
 
   '@ai-sdk/provider@2.0.0-beta.1':
     resolution: {integrity: sha512-Z8SPncMtS3RsoXITmT7NVwrAq6M44dmw0DoUOYJqNNtCu8iMWuxB8Nxsoqpa0uEEy9R1V1ZThJAXTYgjTUxl3w==}
+    engines: {node: '>=18'}
+
+  '@ai-sdk/provider@3.0.8':
+    resolution: {integrity: sha512-oGMAgGoQdBXbZqNG0Ze56CHjDZ1IDYOwGYxYjO5KLSlz5HiNQ9udIXsPZ61VWaHGZ5XW/jyjmr6t2xz2jGVwbQ==}
     engines: {node: '>=18'}
 
   '@alloc/quick-lru@5.2.0':
@@ -355,23 +365,23 @@ packages:
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
 
-  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.11':
-    resolution: {integrity: sha512-Mfrg7DcKMpO4ojAevKrDpU+enGl1vVvFvjTKoS4IUxItvb000Ih2k/GRn5chCaalxDkQGOJtJ3rYNcW5waoaAw==}
+  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.14':
+    resolution: {integrity: sha512-jMhsoRT8i1uh/pjPd6vNvfSjxwVjKn8QiA5hCVZgNEfDU6l68BvnCeUribq63jPFPBD41rEQ04IR3b+x8AkWaA==}
     cpu: [arm64]
     os: [darwin]
 
-  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.11':
-    resolution: {integrity: sha512-yNueLD1WnZZjbt5+bYUeuHPBEL+ZOE8C3joa8o1RGlt4mz+ElJwLelxSV0KlPcfGJBzYJELsYFHTAdlncyoTvA==}
+  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.14':
+    resolution: {integrity: sha512-DmqFicACXbRPUaT43AgmIPpcVq3iRPmLf5ndirnLVXT7ekNRoBz9+0J/JKbo5qQ8y9AXGHPIKmPEOA0HYdnSYQ==}
     cpu: [x64]
     os: [darwin]
 
-  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.11':
-    resolution: {integrity: sha512-qIX1fjCuqDttDUmxjdtPs6BKkzeYJcHiY/ENO5zhozt1a0NHguHTByiKuiS3DK/gvXuNEYVDi9x4x++8Q2oI2w==}
+  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.14':
+    resolution: {integrity: sha512-2yppLWpQFfaWauk5AWhO6AGD+JLZAzsW1F2yom6yB3HTt8V9AeA9zTMzjtTVMNZypDDGJYIT2Pm2JYTZNPSAjQ==}
     cpu: [x64]
     os: [linux]
 
-  '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.11':
-    resolution: {integrity: sha512-NdEd4GlSS+/m84eQaQGwtXFZSfeTAqb5iQjPgQLnuyRXLFdLhbOXiFaUkSfBHe0VupLuys29Uc4zjKbxcFEAoA==}
+  '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.14':
+    resolution: {integrity: sha512-4IVDC84Kcphgs3/BNl+OOnBttGD+0OywJjgxTtK6Vhe8ftS+MiHmADjou0lp7lVBSbrp5sHGq37uKy13JhPaMQ==}
     cpu: [x64]
     os: [win32]
 
@@ -1722,8 +1732,8 @@ packages:
   glur@1.1.2:
     resolution: {integrity: sha512-l+8esYHTKOx2G/Aao4lEQ0bnHWg4fWtJbVoZZT9Knxi01pB8C80BR85nONLFwkkQoFRCmXY+BUcGZN3yZ2QsRA==}
 
-  goober@2.1.16:
-    resolution: {integrity: sha512-erjk19y1U33+XAMe1VTvIONHYoSqE4iS7BYUZfHaqeohLmnC0FdxEh7rQU+6MZ4OajItzjZFSRtVANrQwNq6/g==}
+  goober@2.1.18:
+    resolution: {integrity: sha512-2vFqsaDVIT9Gz7N6kAL++pLpp41l3PfDuusHcjnGLfR6+huZkl6ziX+zgVC3ZxpqWhzH6pyDdGrCeDhMIvwaxw==}
     peerDependencies:
       csstype: ^3.0.10
 
@@ -1828,8 +1838,8 @@ packages:
   jazz-crypto-rs@0.0.7:
     resolution: {integrity: sha512-Pzs8Zu1zgKVURkBVvqqF1B2r78FaSZdwPbmeCWx0Nb3nibzPuB/kSKEO7LJsKnb3P5HO0v+lTIJ53mGC5H1urQ==}
 
-  jazz-napi@2.0.0-alpha.11:
-    resolution: {integrity: sha512-tc1xJkF/HKmJcoJrlUl8zgwU9f+DwOfHxXKiOGvWyc1UhgtEDXQfRodFOVzCHtHM1gp19WvZ7TOD/YUHdGgW5Q==}
+  jazz-napi@2.0.0-alpha.14:
+    resolution: {integrity: sha512-GA3sD8TELxEKYCm7BhifuHBw+QTD9fW8Z6sJ/O3bfW1MmTG3yjHeiG1J/Nka7sIHy5bHH6oRL/OH8YKeYjgNlQ==}
 
   jazz-nodejs@0.14.23:
     resolution: {integrity: sha512-tg/Pu0FyNIlLLW66uZE6ITPnSYqoC2XAuN1hwMYQOFHscxk3JSGcGz8FLAXzZrk3Yl3hSZ+yHwCpetbopjWaxQ==}
@@ -1848,8 +1858,8 @@ packages:
   jazz-tools@0.14.23:
     resolution: {integrity: sha512-OcPGi7GvkGJbgO1ewahYb1cRI6CEtyQHH7jVbOGoi0n1HYroPpBEAjaCsGknymLotdrMZkWHddOmd04QVR2RHw==}
 
-  jazz-tools@2.0.0-alpha.11:
-    resolution: {integrity: sha512-6LYfDykKngng7cyD+e+JJBxlVrTfgCrv2sO2/9lR+ZOnN2pscN/WjstqfN/YvzAzJD3h9nKwdfQPs4KD6s7b0A==}
+  jazz-tools@2.0.0-alpha.14:
+    resolution: {integrity: sha512-OA+29U8dXHLDvEzIfiwVOBeLJPdquOikE3VKvXrOS8RSTwdgdN+9cOngfVPpMK6zr3/TorkKKYpaTHbbxRcMEw==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
@@ -1861,8 +1871,8 @@ packages:
       svelte:
         optional: true
 
-  jazz-wasm@2.0.0-alpha.11:
-    resolution: {integrity: sha512-PsuKgYt1HNBNwNXsq8bA2j3twQ/nMUUh3Dx4EdRQwWc9s1B++Dt3rKOx+p+60A7bBT8quDM4kK9DDimz8LYbRg==}
+  jazz-wasm@2.0.0-alpha.14:
+    resolution: {integrity: sha512-ACZo2S6fEnJRYbfoHLxEX4NCF09GHrQuZ0/cLL0s+5Rkng97bnnCcLKo6/AcuDbFyC+zrcI/IplgVXFqDm9P5g==}
 
   jiti@1.21.7:
     resolution: {integrity: sha512-/imKNG4EbWNrVjoNC/1H5/9GFy+tqjGBHCaSsN+P2RnPqjsLmv6UD3Ej+Kj8nBWaRAwyk7kK5ZUc+OEatnTR3A==}
@@ -2535,6 +2545,10 @@ snapshots:
     dependencies:
       json-schema: 0.4.0
 
+  '@ai-sdk/provider@3.0.8':
+    dependencies:
+      json-schema: 0.4.0
+
   '@alloc/quick-lru@5.2.0': {}
 
   '@babel/runtime@7.27.6': {}
@@ -2644,16 +2658,16 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
-  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.11':
+  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.14':
     optional: true
 
-  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.11':
+  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.14':
     optional: true
 
-  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.11':
+  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.14':
     optional: true
 
-  '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.11':
+  '@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.14':
     optional: true
 
   '@img/colour@1.0.0':
@@ -3821,7 +3835,7 @@ snapshots:
 
   glur@1.1.2: {}
 
-  goober@2.1.16(csstype@3.1.3):
+  goober@2.1.18(csstype@3.1.3):
     dependencies:
       csstype: 3.1.3
 
@@ -3944,12 +3958,12 @@ snapshots:
 
   jazz-crypto-rs@0.0.7: {}
 
-  jazz-napi@2.0.0-alpha.11:
+  jazz-napi@2.0.0-alpha.14:
     optionalDependencies:
-      '@garden-co/jazz-napi-darwin-arm64': 2.0.0-alpha.11
-      '@garden-co/jazz-napi-darwin-x64': 2.0.0-alpha.11
-      '@garden-co/jazz-napi-linux-x64-gnu': 2.0.0-alpha.11
-      '@garden-co/jazz-napi-win32-x64-msvc': 2.0.0-alpha.11
+      '@garden-co/jazz-napi-darwin-arm64': 2.0.0-alpha.14
+      '@garden-co/jazz-napi-darwin-x64': 2.0.0-alpha.14
+      '@garden-co/jazz-napi-linux-x64-gnu': 2.0.0-alpha.14
+      '@garden-co/jazz-napi-win32-x64-msvc': 2.0.0-alpha.14
     optional: true
 
   jazz-nodejs@0.14.23:
@@ -3983,18 +3997,18 @@ snapshots:
       fast-myers-diff: 3.2.0
       zod: 3.25.28
 
-  jazz-tools@2.0.0-alpha.11(react@19.2.3):
+  jazz-tools@2.0.0-alpha.14(react@19.2.3):
     dependencies:
       '@standard-schema/spec': 1.1.0
-      jazz-wasm: 2.0.0-alpha.11
+      jazz-wasm: 2.0.0-alpha.14
       json-schema-to-ts: 3.1.1
       pluralize-esm: 9.0.5
       tsx: 4.21.0
     optionalDependencies:
-      jazz-napi: 2.0.0-alpha.11
+      jazz-napi: 2.0.0-alpha.14
       react: 19.2.3
 
-  jazz-wasm@2.0.0-alpha.11: {}
+  jazz-wasm@2.0.0-alpha.14: {}
 
   jiti@1.21.7: {}
 
@@ -4427,7 +4441,7 @@ snapshots:
   react-hot-toast@2.5.1(react-dom@19.2.3(react@19.2.3))(react@19.2.3):
     dependencies:
       csstype: 3.1.3
-      goober: 2.1.16(csstype@3.1.3)
+      goober: 2.1.18(csstype@3.1.3)
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
 

@@ -21,7 +21,10 @@ installSyncFetchTracing();
 const backendContext = createJazzContext({
   appId: APP_ID,
   app,
-  dataPath: process.env.JAZZ_BACKEND_DATA_PATH || DEFAULT_BACKEND_DATA_PATH,
+  driver: {
+    type:'persistent',
+    dataPath: process.env.JAZZ_BACKEND_DATA_PATH || DEFAULT_BACKEND_DATA_PATH,
+  },
   serverUrl:
     process.env.JAZZ_SERVER_URL ||
     process.env.NEXT_PUBLIC_JAZZ_SERVER_URL ||
