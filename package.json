@@ -4,14 +4,13 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
-    "fix:jazz-bin": "chmod +x node_modules/jazz-tools/bin/native/jazz-tools-* 2>/dev/null || true",
-    "jazz:server": "pnpm fix:jazz-bin && sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; jazz-tools server \"${JAZZ_APP_ID:?JAZZ_APP_ID is required}\" --port 1625 --data-dir ./data --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\" --backend-secret \"${JAZZ_BACKEND_SECRET:-TEST_SECRET}\"'",
-    "schema:push": "pnpm fix:jazz-bin && sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; jazz-tools schema:push \"${JAZZ_APP_ID:?JAZZ_APP_ID is required}\" --server-url \"${JAZZ_SERVER_URL:-http://127.0.0.1:1625}\" --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\"'",
+    "test": "sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; echo \"${JAZZ_APP_ID}\" \"${JAZZ_ADMIN_SECRET}\" \"${JAZZ_BACKEND_SECRET}\" \"${JAZZ_SERVER_URL}\"'",
+    "jazz:server": "sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; jazz-tools server \"${JAZZ_APP_ID:?JAZZ_APP_ID is required}\" --port 1625 --data-dir ./data --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\" --backend-secret \"${JAZZ_BACKEND_SECRET:-TEST_SECRET}\"'",
+    "schema:push": "sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; jazz-tools schema:push \"${JAZZ_APP_ID:?JAZZ_APP_ID is required}\" --server-url \"${JAZZ_SERVER_URL:-http://127.0.0.1:1625}\" --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\"'",
     "dev:local": "sh -c 'pnpm jazz:server & JAZZ_PID=$!; trap \"kill $JAZZ_PID\" EXIT; pnpm dev'",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "postinstall": "pnpm fix:jazz-bin"
+    "lint": "next lint"
   },
   "dependencies": {
     "@ai-sdk/gateway": "1.0.0-beta.2",
@@ -38,7 +37,7 @@
     "goober": "^2.1.18",
     "jazz-nodejs": "^0.14.23",
     "jazz-react": "^0.14.23",
-    "jazz-tools": "2.0.0-alpha.14",
+    "jazz-tools": "2.0.0-alpha.16",
     "lucide-react": "^0.471.0",
     "next": "16.1.6",
     "react": "^19.2.3",
@@ -53,10 +52,10 @@
     "zod": "^3.25.56"
   },
   "optionalDependencies": {
-    "jazz-napi-darwin-arm64": "npm:@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.14",
-    "jazz-napi-darwin-x64": "npm:@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.14",
-    "jazz-napi-linux-x64-gnu": "npm:@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.14",
-    "jazz-napi-win32-x64-msvc": "npm:@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.14"
+    "jazz-napi-darwin-arm64": "npm:@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.16",
+    "jazz-napi-darwin-x64": "npm:@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.16",
+    "jazz-napi-linux-x64-gnu": "npm:@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.16",
+    "jazz-napi-win32-x64-msvc": "npm:@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.16"
   },
   "devDependencies": {
     "@types/node": "^20",

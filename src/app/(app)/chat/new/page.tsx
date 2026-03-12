@@ -33,9 +33,12 @@ export default function NewChatPage() {
       };
 
       // Local-first create avoids blocking this page when edge/global sync is slow.
-      createChatPromiseRef.current = db
-        .insert(app.chats, chatData)
-        .then((chatId) => ({ chatId, title: chatData.title }));
+      createChatPromiseRef.current =db
+        .insertDurable(app.chats, chatData, { tier: "edge" })
+        .then((chat) => {
+          console.log("chat", chat);
+          return { chatId: chat.id, title: chatData.title }
+        });
       debugLog("chat_create_started");
     }
 
@@ -51,7 +54,7 @@ export default function NewChatPage() {
           syncStartedRef.current = true;
           // Best-effort sync in background. The send flow can retry if this is not done yet.
           void withTimeout(
-            db.update(app.chats, chatId, { title }, { tier: "edge" }),
+            db.updateDurable(app.chats, chatId, { title }, { tier: "edge" }),
             3000
           )
             .then(() => {

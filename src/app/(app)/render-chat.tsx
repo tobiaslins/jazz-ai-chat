@@ -36,7 +36,7 @@ export function RenderChat({ chatId }: { chatId: string }) {
 
     const now = new Date().toISOString();
     console.log("now", now);
-   const test = await db.insert(app.messages, {
+   const test = await db.insertDurable(app.messages, {
       chat: chatId,
       role: "user",
       content,
@@ -98,7 +98,7 @@ export function RenderChat({ chatId }: { chatId: string }) {
         chatId,
         error: error instanceof Error ? error.message : String(error),
       });
-      db.insert(app.messages, {
+      db.insertDurable(app.messages, {
         chat: chatId,
         role: "assistant",
         content: "Sorry, I couldn't generate a response. Please try again.",
