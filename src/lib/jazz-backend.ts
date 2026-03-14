@@ -32,10 +32,9 @@ const backendContext = createJazzContext({
   backendSecret: process.env.JAZZ_BACKEND_SECRET || "TEST_SECRET",
   env: process.env.NODE_ENV === "production" ? "prod" : "dev",
   userBranch: "main",
-  tier: "worker",
-  localAuthMode: "anonymous",
-  localAuthToken: "next-api-route-assistant",
 });
+
+
 
 let jazzBackendClient: JazzClient | null = null;
 

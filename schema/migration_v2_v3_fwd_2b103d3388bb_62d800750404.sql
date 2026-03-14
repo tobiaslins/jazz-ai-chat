@@ -1,2 +1,0 @@
-ALTER TABLE messages DROP COLUMN chat_id;
-ALTER TABLE messages ADD COLUMN chat UUID DEFAULT NULL;

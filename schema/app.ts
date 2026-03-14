@@ -2,6 +2,13 @@
 import type { WasmSchema, QueryBuilder } from "jazz-tools";
 export type JsonValue = string | number | boolean | null | { [key: string]: JsonValue } | JsonValue[];
 
+export type PermissionIntrospectionColumn = "$canRead" | "$canEdit" | "$canDelete";
+export interface PermissionIntrospectionColumns {
+  $canRead: boolean | null;
+  $canEdit: boolean | null;
+  $canDelete: boolean | null;
+}
+
 export interface Chat {
   id: string;
   title: string;
@@ -35,6 +42,9 @@ export interface ChatWhereInput {
   title?: string | { eq?: string; ne?: string; contains?: string };
   created_at?: string | { eq?: string; ne?: string; contains?: string };
   owner_id?: string | { eq?: string; ne?: string; contains?: string };
+  $canRead?: boolean;
+  $canEdit?: boolean;
+  $canDelete?: boolean;
 }
 
 export interface MessageWhereInput {
@@ -43,15 +53,51 @@ export interface MessageWhereInput {
   role?: string | { eq?: string; ne?: string; contains?: string };
   content?: string | { eq?: string; ne?: string; contains?: string };
   created_at?: string | { eq?: string; ne?: string; contains?: string };
+  $canRead?: boolean;
+  $canEdit?: boolean;
+  $canDelete?: boolean;
 }
 
+type AnyChatQueryBuilder<T = any> = { readonly _table: "chats" } & QueryBuilder<T>;
+type AnyMessageQueryBuilder<T = any> = { readonly _table: "messages" } & QueryBuilder<T>;
+
 export interface ChatInclude {
-  messagesViaChat?: true | MessageInclude | MessageQueryBuilder;
+  messagesViaChat?: true | MessageInclude | AnyMessageQueryBuilder<any>;
 }
 
 export interface MessageInclude {
-  chat?: true | ChatInclude | ChatQueryBuilder;
+  chat?: true | ChatInclude | AnyChatQueryBuilder<any>;
 }
+
+export type ChatIncludedRelations<I extends ChatInclude = {}> = {
+  [K in keyof I]-?:
+    K extends "messagesViaChat"
+      ? NonNullable<I["messagesViaChat"]> extends infer RelationInclude
+        ? RelationInclude extends true
+          ? Message[]
+          : RelationInclude extends AnyMessageQueryBuilder<infer QueryRow>
+            ? QueryRow[]
+            : RelationInclude extends MessageInclude
+              ? MessageWithIncludes<RelationInclude>[]
+              : never
+        : never
+    : never;
+};
+
+export type MessageIncludedRelations<I extends MessageInclude = {}> = {
+  [K in keyof I]-?:
+    K extends "chat"
+      ? NonNullable<I["chat"]> extends infer RelationInclude
+        ? RelationInclude extends true
+          ? Chat
+          : RelationInclude extends AnyChatQueryBuilder<infer QueryRow>
+            ? QueryRow
+            : RelationInclude extends ChatInclude
+              ? ChatWithIncludes<RelationInclude>
+              : never
+        : never
+    : never;
+};
 
 export interface ChatRelations {
   messagesViaChat: Message[];
@@ -61,29 +107,23 @@ export interface MessageRelations {
   chat: Chat;
 }
 
-export type ChatWithIncludes<I extends ChatInclude = {}> = Chat & {
-  messagesViaChat?: NonNullable<I["messagesViaChat"]> extends infer RelationInclude
-    ? RelationInclude extends true
-      ? Message[]
-      : RelationInclude extends MessageQueryBuilder<infer QueryInclude extends MessageInclude>
-        ? MessageWithIncludes<QueryInclude>[]
-        : RelationInclude extends MessageInclude
-          ? MessageWithIncludes<RelationInclude>[]
-          : never
-    : never;
-};
+export type ChatWithIncludes<I extends ChatInclude = {}> = Omit<Chat, Extract<keyof I, keyof Chat>> & ChatIncludedRelations<I>;
 
-export type MessageWithIncludes<I extends MessageInclude = {}> = Message & {
-  chat?: NonNullable<I["chat"]> extends infer RelationInclude
-    ? RelationInclude extends true
-      ? Chat
-      : RelationInclude extends ChatQueryBuilder<infer QueryInclude extends ChatInclude>
-        ? ChatWithIncludes<QueryInclude>
-        : RelationInclude extends ChatInclude
-          ? ChatWithIncludes<RelationInclude>
-          : never
-    : never;
-};
+export type MessageWithIncludes<I extends MessageInclude = {}> = Omit<Message, Extract<keyof I, keyof Message>> & MessageIncludedRelations<I>;
+
+export type ChatSelectableColumn = keyof Chat | PermissionIntrospectionColumn | "*";
+export type ChatOrderableColumn = keyof Chat | PermissionIntrospectionColumn;
+
+export type ChatSelected<S extends ChatSelectableColumn = keyof Chat> = "*" extends S ? Chat : Pick<Chat, Extract<S | "id", keyof Chat>> & Pick<PermissionIntrospectionColumns, Extract<S, PermissionIntrospectionColumn>>;
+
+export type ChatSelectedWithIncludes<I extends ChatInclude = {}, S extends ChatSelectableColumn = keyof Chat> = Omit<ChatSelected<S>, Extract<keyof I, keyof ChatSelected<S>>> & ChatIncludedRelations<I>;
+
+export type MessageSelectableColumn = keyof Message | PermissionIntrospectionColumn | "*";
+export type MessageOrderableColumn = keyof Message | PermissionIntrospectionColumn;
+
+export type MessageSelected<S extends MessageSelectableColumn = keyof Message> = "*" extends S ? Message : Pick<Message, Extract<S | "id", keyof Message>> & Pick<PermissionIntrospectionColumns, Extract<S, PermissionIntrospectionColumn>>;
+
+export type MessageSelectedWithIncludes<I extends MessageInclude = {}, S extends MessageSelectableColumn = keyof Message> = Omit<MessageSelected<S>, Extract<keyof I, keyof MessageSelected<S>>> & MessageIncludedRelations<I>;
 
 export const wasmSchema: WasmSchema = {
   "chats": {
@@ -109,7 +149,72 @@ export const wasmSchema: WasmSchema = {
         },
         "nullable": false
       }
-    ]
+    ],
+    "policies": {
+      "select": {
+        "using": {
+          "type": "Cmp",
+          "column": "owner_id",
+          "op": "Eq",
+          "value": {
+            "type": "SessionRef",
+            "path": [
+              "user_id"
+            ]
+          }
+        }
+      },
+      "insert": {
+        "with_check": {
+          "type": "Cmp",
+          "column": "owner_id",
+          "op": "Eq",
+          "value": {
+            "type": "SessionRef",
+            "path": [
+              "user_id"
+            ]
+          }
+        }
+      },
+      "update": {
+        "using": {
+          "type": "Cmp",
+          "column": "owner_id",
+          "op": "Eq",
+          "value": {
+            "type": "SessionRef",
+            "path": [
+              "user_id"
+            ]
+          }
+        },
+        "with_check": {
+          "type": "Cmp",
+          "column": "owner_id",
+          "op": "Eq",
+          "value": {
+            "type": "SessionRef",
+            "path": [
+              "user_id"
+            ]
+          }
+        }
+      },
+      "delete": {
+        "using": {
+          "type": "Cmp",
+          "column": "owner_id",
+          "op": "Eq",
+          "value": {
+            "type": "SessionRef",
+            "path": [
+              "user_id"
+            ]
+          }
+        }
+      }
+    }
   },
   "messages": {
     "columns": [
@@ -142,17 +247,53 @@ export const wasmSchema: WasmSchema = {
         },
         "nullable": false
       }
-    ]
+    ],
+    "policies": {
+      "select": {
+        "using": {
+          "type": "Inherits",
+          "operation": "Select",
+          "via_column": "chat"
+        }
+      },
+      "insert": {
+        "with_check": {
+          "type": "Inherits",
+          "operation": "Insert",
+          "via_column": "chat"
+        }
+      },
+      "update": {
+        "using": {
+          "type": "Inherits",
+          "operation": "Update",
+          "via_column": "chat"
+        },
+        "with_check": {
+          "type": "Inherits",
+          "operation": "Update",
+          "via_column": "chat"
+        }
+      },
+      "delete": {
+        "using": {
+          "type": "Inherits",
+          "operation": "Delete",
+          "via_column": "chat"
+        }
+      }
+    }
   }
 };
 
-export class ChatQueryBuilder<I extends ChatInclude = {}> implements QueryBuilder<ChatWithIncludes<I>> {
+export class ChatQueryBuilder<I extends ChatInclude = {}, S extends ChatSelectableColumn = keyof Chat> implements QueryBuilder<ChatSelectedWithIncludes<I, S>> {
   readonly _table = "chats";
   readonly _schema: WasmSchema = wasmSchema;
-  declare readonly _rowType: ChatWithIncludes<I>;
-  declare readonly _initType: ChatInit;
+  readonly _rowType!: ChatSelectedWithIncludes<I, S>;
+  readonly _initType!: ChatInit;
   private _conditions: Array<{ column: string; op: string; value: unknown }> = [];
   private _includes: Partial<ChatInclude> = {};
+  private _selectColumns?: string[];
   private _orderBys: Array<[string, "asc" | "desc"]> = [];
   private _limitVal?: number;
   private _offsetVal?: number;
@@ -165,7 +306,7 @@ export class ChatQueryBuilder<I extends ChatInclude = {}> implements QueryBuilde
     step_hops: string[];
   };
 
-  where(conditions: ChatWhereInput): ChatQueryBuilder<I> {
+  where(conditions: ChatWhereInput): ChatQueryBuilder<I, S> {
     const clone = this._clone();
     for (const [key, value] of Object.entries(conditions)) {
       if (value === undefined) continue;
@@ -182,31 +323,37 @@ export class ChatQueryBuilder<I extends ChatInclude = {}> implements QueryBuilde
     return clone;
   }
 
-  include<NewI extends ChatInclude>(relations: NewI): ChatQueryBuilder<I & NewI> {
-    const clone = this._clone<I & NewI>();
+  select<NewS extends ChatSelectableColumn>(...columns: [NewS, ...NewS[]]): ChatQueryBuilder<I, NewS> {
+    const clone = this._clone<I, NewS>();
+    clone._selectColumns = [...columns] as string[];
+    return clone;
+  }
+
+  include<NewI extends ChatInclude>(relations: NewI): ChatQueryBuilder<I & NewI, S> {
+    const clone = this._clone<I & NewI, S>();
     clone._includes = { ...this._includes, ...relations };
     return clone;
   }
 
-  orderBy(column: keyof Chat, direction: "asc" | "desc" = "asc"): ChatQueryBuilder<I> {
+  orderBy(column: ChatOrderableColumn, direction: "asc" | "desc" = "asc"): ChatQueryBuilder<I, S> {
     const clone = this._clone();
     clone._orderBys.push([column as string, direction]);
     return clone;
   }
 
-  limit(n: number): ChatQueryBuilder<I> {
+  limit(n: number): ChatQueryBuilder<I, S> {
     const clone = this._clone();
     clone._limitVal = n;
     return clone;
   }
 
-  offset(n: number): ChatQueryBuilder<I> {
+  offset(n: number): ChatQueryBuilder<I, S> {
     const clone = this._clone();
     clone._offsetVal = n;
     return clone;
   }
 
-  hopTo(relation: "messagesViaChat"): ChatQueryBuilder<I> {
+  hopTo(relation: "messagesViaChat"): ChatQueryBuilder<I, S> {
     const clone = this._clone();
     clone._hops.push(relation);
     return clone;
@@ -216,7 +363,7 @@ export class ChatQueryBuilder<I extends ChatInclude = {}> implements QueryBuilde
     start: ChatWhereInput;
     step: (ctx: { current: string }) => QueryBuilder<unknown>;
     maxDepth?: number;
-  }): ChatQueryBuilder<I> {
+  }): ChatQueryBuilder<I, S> {
     if (options.start === undefined) {
       throw new Error("gather(...) requires start where conditions.");
     }
@@ -294,6 +441,7 @@ export class ChatQueryBuilder<I extends ChatInclude = {}> implements QueryBuilde
       table: this._table,
       conditions: this._conditions,
       includes: this._includes,
+      select: this._selectColumns,
       orderBy: this._orderBys,
       limit: this._limitVal,
       offset: this._offsetVal,
@@ -302,10 +450,15 @@ export class ChatQueryBuilder<I extends ChatInclude = {}> implements QueryBuilde
     });
   }
 
-  private _clone<CloneI extends ChatInclude = I>(): ChatQueryBuilder<CloneI> {
-    const clone = new ChatQueryBuilder<CloneI>();
+  toJSON(): unknown {
+    return JSON.parse(this._build());
+  }
+
+  private _clone<CloneI extends ChatInclude = I, CloneS extends ChatSelectableColumn = S>(): ChatQueryBuilder<CloneI, CloneS> {
+    const clone = new ChatQueryBuilder<CloneI, CloneS>();
     clone._conditions = [...this._conditions];
     clone._includes = { ...this._includes };
+    clone._selectColumns = this._selectColumns ? [...this._selectColumns] : undefined;
     clone._orderBys = [...this._orderBys];
     clone._limitVal = this._limitVal;
     clone._offsetVal = this._offsetVal;
@@ -321,13 +474,14 @@ export class ChatQueryBuilder<I extends ChatInclude = {}> implements QueryBuilde
   }
 }
 
-export class MessageQueryBuilder<I extends MessageInclude = {}> implements QueryBuilder<MessageWithIncludes<I>> {
+export class MessageQueryBuilder<I extends MessageInclude = {}, S extends MessageSelectableColumn = keyof Message> implements QueryBuilder<MessageSelectedWithIncludes<I, S>> {
   readonly _table = "messages";
   readonly _schema: WasmSchema = wasmSchema;
-  declare readonly _rowType: MessageWithIncludes<I>;
-  declare readonly _initType: MessageInit;
+  readonly _rowType!: MessageSelectedWithIncludes<I, S>;
+  readonly _initType!: MessageInit;
   private _conditions: Array<{ column: string; op: string; value: unknown }> = [];
   private _includes: Partial<MessageInclude> = {};
+  private _selectColumns?: string[];
   private _orderBys: Array<[string, "asc" | "desc"]> = [];
   private _limitVal?: number;
   private _offsetVal?: number;
@@ -340,7 +494,7 @@ export class MessageQueryBuilder<I extends MessageInclude = {}> implements Query
     step_hops: string[];
   };
 
-  where(conditions: MessageWhereInput): MessageQueryBuilder<I> {
+  where(conditions: MessageWhereInput): MessageQueryBuilder<I, S> {
     const clone = this._clone();
     for (const [key, value] of Object.entries(conditions)) {
       if (value === undefined) continue;
@@ -357,31 +511,37 @@ export class MessageQueryBuilder<I extends MessageInclude = {}> implements Query
     return clone;
   }
 
-  include<NewI extends MessageInclude>(relations: NewI): MessageQueryBuilder<I & NewI> {
-    const clone = this._clone<I & NewI>();
+  select<NewS extends MessageSelectableColumn>(...columns: [NewS, ...NewS[]]): MessageQueryBuilder<I, NewS> {
+    const clone = this._clone<I, NewS>();
+    clone._selectColumns = [...columns] as string[];
+    return clone;
+  }
+
+  include<NewI extends MessageInclude>(relations: NewI): MessageQueryBuilder<I & NewI, S> {
+    const clone = this._clone<I & NewI, S>();
     clone._includes = { ...this._includes, ...relations };
     return clone;
   }
 
-  orderBy(column: keyof Message, direction: "asc" | "desc" = "asc"): MessageQueryBuilder<I> {
+  orderBy(column: MessageOrderableColumn, direction: "asc" | "desc" = "asc"): MessageQueryBuilder<I, S> {
     const clone = this._clone();
     clone._orderBys.push([column as string, direction]);
     return clone;
   }
 
-  limit(n: number): MessageQueryBuilder<I> {
+  limit(n: number): MessageQueryBuilder<I, S> {
     const clone = this._clone();
     clone._limitVal = n;
     return clone;
   }
 
-  offset(n: number): MessageQueryBuilder<I> {
+  offset(n: number): MessageQueryBuilder<I, S> {
     const clone = this._clone();
     clone._offsetVal = n;
     return clone;
   }
 
-  hopTo(relation: "chat"): MessageQueryBuilder<I> {
+  hopTo(relation: "chat"): MessageQueryBuilder<I, S> {
     const clone = this._clone();
     clone._hops.push(relation);
     return clone;
@@ -391,7 +551,7 @@ export class MessageQueryBuilder<I extends MessageInclude = {}> implements Query
     start: MessageWhereInput;
     step: (ctx: { current: string }) => QueryBuilder<unknown>;
     maxDepth?: number;
-  }): MessageQueryBuilder<I> {
+  }): MessageQueryBuilder<I, S> {
     if (options.start === undefined) {
       throw new Error("gather(...) requires start where conditions.");
     }
@@ -469,6 +629,7 @@ export class MessageQueryBuilder<I extends MessageInclude = {}> implements Query
       table: this._table,
       conditions: this._conditions,
       includes: this._includes,
+      select: this._selectColumns,
       orderBy: this._orderBys,
       limit: this._limitVal,
       offset: this._offsetVal,
@@ -477,10 +638,15 @@ export class MessageQueryBuilder<I extends MessageInclude = {}> implements Query
     });
   }
 
-  private _clone<CloneI extends MessageInclude = I>(): MessageQueryBuilder<CloneI> {
-    const clone = new MessageQueryBuilder<CloneI>();
+  toJSON(): unknown {
+    return JSON.parse(this._build());
+  }
+
+  private _clone<CloneI extends MessageInclude = I, CloneS extends MessageSelectableColumn = S>(): MessageQueryBuilder<CloneI, CloneS> {
+    const clone = new MessageQueryBuilder<CloneI, CloneS>();
     clone._conditions = [...this._conditions];
     clone._includes = { ...this._includes };
+    clone._selectColumns = this._selectColumns ? [...this._selectColumns] : undefined;
     clone._orderBys = [...this._orderBys];
     clone._limitVal = this._limitVal;
     clone._offsetVal = this._offsetVal;

@@ -64,7 +64,9 @@ export async function POST(request: Request) {
   });
 
   try {
+    console.log("before client")
     const client = await getJazzBackendClient();
+    console.log("after client")
 
     await generateAndPersistAssistantMessage(
       client,
@@ -238,12 +240,13 @@ async function createAssistantPlaceholderWithRetry(
 
   while (attempt < maxAttempts) {
     try {
-      return await client.create("messages", [
+      const row = client.create("messages", [
         { type: "Uuid", value: chatId },
         { type: "Text", value: "assistant" },
         { type: "Text", value: "" },
         { type: "Text", value: createdAt },
       ]);
+      return row.id;
     } catch (error) {
       lastError = error;
       const message = error instanceof Error ? error.message : String(error);

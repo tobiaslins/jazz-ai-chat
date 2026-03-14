@@ -1,6 +1,6 @@
 import { definePermissions } from "jazz-tools/permissions";
 
-import { app } from "./app.js";
+import { app } from "./app";
 
 export default definePermissions(app, ({ policy, session, allowedTo }) => {
   policy.chats.allowRead.where({ owner_id: session.user_id });

@@ -1,1 +1,0 @@
-ALTER TABLE chats ADD COLUMN owner_id TEXT DEFAULT '';
