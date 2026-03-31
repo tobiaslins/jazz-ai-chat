@@ -1,12 +1,11 @@
 import { createJazzContext, type JazzClient } from "jazz-tools/backend";
 
-import { app } from "../../schema/app";
+import { app } from "../../schema1/app";
 
 const DEFAULT_SERVER_URL = "http://127.0.0.1:1625";
 const DEFAULT_BACKEND_DATA_PATH = `./data/backend-runtime-${process.pid}`;
 const REQUIRED_APP_ID_ENV = "JAZZ_APP_ID";
-const SYNC_TRACE_ENABLED =
-  process.env.JAZZ_SYNC_TRACE === "1" || process.env.NODE_ENV !== "production";
+const SYNC_TRACE_ENABLED = process.env.JAZZ_SYNC_TRACE === "1";
 const APP_ID = process.env.JAZZ_APP_ID?.trim();
 
 if (!APP_ID) {

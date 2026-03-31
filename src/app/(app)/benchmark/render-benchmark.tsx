@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAll, useDb, useSession } from "jazz-tools/react";
 
-import { app } from "../../../../schema/app";
+import { app } from "../../../../schema1/app";
 import { Button } from "@/components/ui/button";
 
 type OrderColumn = "created_at" | "role" | "content";

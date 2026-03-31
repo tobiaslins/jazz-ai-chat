@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useDb, useSession } from "jazz-tools/react";
 
-import { app } from "../../../../../schema/app";
+import { app } from "../../../../../schema1/app";
 
 const CHAT_DEBUG =
   process.env.NEXT_PUBLIC_CHAT_DEBUG === "1" || process.env.NODE_ENV !== "production";

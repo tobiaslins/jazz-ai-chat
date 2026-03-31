@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { Send } from "lucide-react";
 import { useAll, useDb, useSession } from "jazz-tools/react";
 
-import { app } from "../../../schema/app";
+import { app } from '../../../schema'
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 

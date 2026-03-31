@@ -6,12 +6,12 @@ import {
   type QueryExecutionOptions,
 } from "jazz-tools/backend";
 
-import { app } from "../../../../schema/app";
+import { app } from "../../../../schema1/app";
 import { defaultModel } from "@/lib/models";
 import { getJazzBackendClient, getJazzBackendContext } from "@/lib/jazz-backend";
 
 const CHAT_DEBUG =
-  process.env.JAZZ_CHAT_DEBUG === "1" || process.env.NODE_ENV !== "production";
+  process.env.JAZZ_CHAT_DEBUG === "1";
 const QUERY_TIMEOUT_MS = parsePositiveInt(process.env.JAZZ_QUERY_TIMEOUT_MS, 6000);
 
 type InputMessage = {
@@ -64,9 +64,7 @@ export async function POST(request: Request) {
   });
 
   try {
-    console.log("before client")
     const client = await getJazzBackendClient();
-    console.log("after client")
 
     await generateAndPersistAssistantMessage(
       client,
@@ -134,7 +132,12 @@ async function generateAndPersistAssistantMessage(
   requestId: string,
   sessionUserId: string | null
 ) {
-  console.log("generateAndPersistAssistantMessage", client, chatId, latestUserMessage, modelId, requestId);
+  debugLog(requestId, "generation_started", {
+    chatId,
+    hasLatestUserMessage: latestUserMessage.length > 0,
+    modelId,
+    sessionUserId,
+  });
 
   // TEMP DEBUG: bypass presence gating so we can verify history-query behavior.
   // Re-enable getChatPresence() and ChatNotSyncedToEdge guard after tracing.
