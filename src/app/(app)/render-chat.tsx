@@ -5,7 +5,7 @@ import { useMemo, useState } from "react";
 import { Send } from "lucide-react";
 import { useAll, useDb, useSession } from "jazz-tools/react";
 
-import { app } from '../../../schema'
+import { app } from "../../../schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
@@ -31,22 +31,19 @@ export function RenderChat({ chatId }: { chatId: string }) {
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const content = value.trim();
-    console.log("content", content);
     if (!chat || !content || sending) return;
 
     const now = new Date().toISOString();
-    console.log("now", now);
-   const test = await db.insertDurable(app.messages, {
+    await db.insertDurable(
+      app.messages,
+      {
       chat: chatId,
       role: "user",
       content,
       created_at: now,
-    }, { tier: "edge" }).then(() =>{
-      console.log("inserted with ack");
-    }).catch((error) =>{
-      console.error("error inserting with ack", error);
-    });
-    console.log("test", test);
+      },
+      { tier: "edge" }
+    );
 
     setValue("");
     setSending(true);
@@ -103,9 +100,7 @@ export function RenderChat({ chatId }: { chatId: string }) {
         role: "assistant",
         content: "Sorry, I couldn't generate a response. Please try again.",
         created_at: new Date().toISOString(),
-      }, { tier: "global" }).then(() =>{
-        console.log("inserted with ack");
-      });
+      }, { tier: "global" });
     } finally {
       setSending(false);
     }
@@ -190,7 +185,7 @@ async function safeReadResponseBody(response: Response): Promise<string> {
 
 async function syncChatToEdgeWithTimeout(
   db: {
-    update: (
+    updateDurable: (
       table: typeof app.chats,
       id: string,
       values: { title: string },
@@ -200,7 +195,7 @@ async function syncChatToEdgeWithTimeout(
   chatId: string,
   title: string
 ) {
-  return withTimeout(db.update(app.chats, chatId, { title }, { tier: "edge" }), 3000);
+  return withTimeout(db.updateDurable(app.chats, chatId, { title }, { tier: "edge" }), 3000);
 }
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {

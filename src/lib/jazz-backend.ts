@@ -1,6 +1,7 @@
-import { createJazzContext, type JazzClient } from "jazz-tools/backend";
+import { createJazzContext, type Db } from "jazz-tools/backend";
 
-import { app } from "../../schema1/app";
+import { app } from "../../schema";
+import permissions from "../../permissions";
 
 const DEFAULT_SERVER_URL = "http://127.0.0.1:1625";
 const DEFAULT_BACKEND_DATA_PATH = `./data/backend-runtime-${process.pid}`;
@@ -20,8 +21,9 @@ installSyncFetchTracing();
 const backendContext = createJazzContext({
   appId: APP_ID,
   app,
+  permissions,
   driver: {
-    type:'persistent',
+    type: "persistent",
     dataPath: process.env.JAZZ_BACKEND_DATA_PATH || DEFAULT_BACKEND_DATA_PATH,
   },
   serverUrl:
@@ -33,16 +35,14 @@ const backendContext = createJazzContext({
   userBranch: "main",
 });
 
+let jazzBackendDb: Db | null = null;
 
-
-let jazzBackendClient: JazzClient | null = null;
-
-export async function getJazzBackendClient() {
-  if (!jazzBackendClient) {
-    jazzBackendClient = backendContext.asBackend();
+export async function getJazzBackendDb() {
+  if (!jazzBackendDb) {
+    jazzBackendDb = backendContext.asBackend();
   }
 
-  return jazzBackendClient;
+  return jazzBackendDb;
 }
 
 export function getJazzBackendContext() {
