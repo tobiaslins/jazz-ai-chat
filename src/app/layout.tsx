@@ -1,9 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { Toaster } from "react-hot-toast";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
+import { AppToaster } from "@/components/app-toaster";
+import { AppTelemetry } from "@/components/app-telemetry";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -31,9 +30,8 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         {children}
-        <Toaster />
-        <Analytics />
-        <SpeedInsights />
+        <AppToaster />
+        <AppTelemetry />
       </body>
     </html>
   );

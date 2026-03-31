@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useDb, useSession } from "jazz-tools/react";
 
-import { app } from "../../../../../schema1/app";
+import { app } from "../../../../../schema";
 
 const CHAT_DEBUG =
   process.env.NEXT_PUBLIC_CHAT_DEBUG === "1" || process.env.NODE_ENV !== "production";
@@ -34,10 +34,10 @@ export default function NewChatPage() {
 
       // Local-first create avoids blocking this page when edge/global sync is slow.
       createChatPromiseRef.current = db
-        .insertDurable(app.chats, chatData, {tier: 'edge'})
+        .insertDurable(app.chats, chatData, { tier: "edge" })
         .then((chat) => {
           console.log("chat", chat);
-          return { chatId: chat.id, title: chatData.title }
+          return { chatId: chat.id, title: chatData.title };
         });
       debugLog("chat_create_started");
     }

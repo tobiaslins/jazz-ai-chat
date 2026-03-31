@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAll, useDb, useSession } from "jazz-tools/react";
 
-import { app } from "../../../../schema1/app";
+import { app } from "../../../../schema";
 import { Button } from "@/components/ui/button";
 
 type OrderColumn = "created_at" | "role" | "content";
@@ -117,7 +117,7 @@ export function RenderBenchmark() {
       const rows = await db.all(app.messages);
 
       for (let i = 0; i < rows.length; i++) {
-        db.deleteFrom(app.messages, rows[i].id);
+        db.delete(app.messages, rows[i].id);
 
         if ((i + 1) % INSERT_CHUNK_SIZE === 0) {
           await new Promise((resolve) => setTimeout(resolve, 0));

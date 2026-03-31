@@ -1,14 +1,10 @@
 import { streamText } from "ai";
 import { gateway, type GatewayModelId } from "@ai-sdk/gateway";
-import {
-  transformRows,
-  type JazzClient,
-  type QueryExecutionOptions,
-} from "jazz-tools/backend";
+import type { Db, QueryOptions } from "jazz-tools/backend";
 
-import { app } from "../../../../schema1/app";
+import { app } from "../../../../schema";
 import { defaultModel } from "@/lib/models";
-import { getJazzBackendClient, getJazzBackendContext } from "@/lib/jazz-backend";
+import { getJazzBackendDb, getJazzBackendContext } from "@/lib/jazz-backend";
 
 const CHAT_DEBUG =
   process.env.JAZZ_CHAT_DEBUG === "1";
@@ -27,7 +23,7 @@ type MessageRow = {
   created_at: string;
 };
 
-type QueryInput = Parameters<JazzClient["query"]>[0];
+type QueryInput = { _build?: () => string } | string;
 
 export async function POST(request: Request) {
   const requestId = createRequestId();
@@ -64,10 +60,10 @@ export async function POST(request: Request) {
   });
 
   try {
-    const client = await getJazzBackendClient();
+    const db = getJazzBackendDb();
 
     await generateAndPersistAssistantMessage(
-      client,
+      db,
       chatId,
       latestUserMessage,
       modelId,
@@ -125,7 +121,7 @@ export async function POST(request: Request) {
 }
 
 async function generateAndPersistAssistantMessage(
-  client: JazzClient,
+  db: Db,
   chatId: string,
   latestUserMessage: string,
   modelId: GatewayModelId,
@@ -151,9 +147,9 @@ async function generateAndPersistAssistantMessage(
   //   throw new Error("ChatNotSyncedToEdge");
   // }
 
-  const historyFromDb = await loadChatHistory(client, chatId, requestId);
+  const historyFromDb = await loadChatHistory(db, chatId, requestId);
   if (sessionUserId) {
-    await debugCompareSessionVisibility(client, chatId, requestId, sessionUserId);
+    await debugCompareSessionVisibility(db, chatId, requestId, sessionUserId);
   }
   const messagesForModel = buildHistoryForModel(historyFromDb, latestUserMessage);
   debugLog(requestId, "history_loaded", {
@@ -168,7 +164,7 @@ async function generateAndPersistAssistantMessage(
 
   const createdAt = new Date().toISOString();
   const assistantId = await createAssistantPlaceholderWithRetry(
-    client,
+    db,
     chatId,
     createdAt,
     requestId
@@ -198,21 +194,21 @@ async function generateAndPersistAssistantMessage(
 
       const now = Date.now();
       if (now - lastUpdateAt > 100) {
-        await client.update(assistantId, {
-          content: { type: "Text", value: text },
-        });
+        db.update(app.messages, assistantId, { content: text });
         lastUpdateAt = now;
       }
     }
 
-    await client.update(assistantId, {
-      content: {
-        type: "Text",
-        value: text.trim()
+    await db.updateDurable(
+      app.messages,
+      assistantId,
+      {
+        content: text.trim()
           ? text
           : "Sorry, I couldn't generate a response. Please try again.",
       },
-    });
+      { tier: "edge" }
+    );
     debugLog(requestId, "assistant_stream_completed", {
       chunkCount,
       totalChars: text.length,
@@ -222,17 +218,19 @@ async function generateAndPersistAssistantMessage(
       error: summarizeError(error),
       statusCode: findErrorStatusCode(error),
     });
-    await client.update(assistantId, {
-      content: {
-        type: "Text",
-        value: "Sorry, I couldn't generate a response. Please try again.",
+    await db.updateDurable(
+      app.messages,
+      assistantId,
+      {
+        content: "Sorry, I couldn't generate a response. Please try again.",
       },
-    });
+      { tier: "edge" }
+    );
   }
 }
 
 async function createAssistantPlaceholderWithRetry(
-  client: JazzClient,
+  db: Db,
   chatId: string,
   createdAt: string,
   requestId: string
@@ -243,12 +241,16 @@ async function createAssistantPlaceholderWithRetry(
 
   while (attempt < maxAttempts) {
     try {
-      const row = client.create("messages", [
-        { type: "Uuid", value: chatId },
-        { type: "Text", value: "assistant" },
-        { type: "Text", value: "" },
-        { type: "Text", value: createdAt },
-      ]);
+      const row = await db.insertDurable(
+        app.messages,
+        {
+          chat: chatId,
+          role: "assistant",
+          content: "",
+          created_at: createdAt,
+        },
+        { tier: "edge" }
+      );
       return row.id;
     } catch (error) {
       lastError = error;
@@ -279,22 +281,25 @@ function delay(ms: number) {
 }
 
 async function loadChatHistory(
-  client: JazzClient,
+  db: Db,
   chatId: string,
   requestId: string
 ): Promise<InputMessage[]> {
+  const historyQuery = app.messages
+    .where({ chat: chatId })
+    .orderBy("created_at", "asc")
+    .limit(40);
+  const options = { tier: "edge", localUpdates: "deferred" } as const;
   const rows = await runTimedQuery(
-    client,
-    app.messages.where({ chat: chatId }).orderBy("created_at", "asc").limit(40),
-    { tier: "edge", localUpdates: "deferred" },
+    () => db.all(historyQuery, options),
+    historyQuery,
+    options,
     requestId,
     "history_query"
   );
   debugLog(requestId, "history_query_result", { chatId, rowCount: rows.length });
 
-  const messages = transformRows<MessageRow>(rows, app.wasmSchema, "messages");
-
-  return messages
+  return rows
     .map((message) => ({
       role: normalizeRole(message.role),
       content: message.content.trim(),
@@ -303,43 +308,46 @@ async function loadChatHistory(
 }
 
 async function debugCompareSessionVisibility(
-  backendClient: JazzClient,
+  backendDb: Db,
   chatId: string,
   requestId: string,
   sessionUserId: string
 ) {
-  const sessionClient = getJazzBackendContext().forSession({
+  const sessionDb = getJazzBackendContext().forSession({
     user_id: sessionUserId,
     claims: {},
-  }) as unknown as JazzClient;
+  });
+  const chatQuery = app.chats.where({ id: chatId }).limit(1);
+  const messageQuery = app.messages.where({ chat: chatId }).limit(1);
+  const options = { tier: "edge", localUpdates: "deferred" } as const;
 
   const [backendChatRows, sessionChatRows, backendMessageRows, sessionMessageRows] =
     await Promise.all([
       runTimedQuery(
-        backendClient,
-        app.chats.where({ id: chatId }).limit(1),
-        { tier: "edge", localUpdates: "deferred" },
+        () => backendDb.all(chatQuery, options),
+        chatQuery,
+        options,
         requestId,
         "debug_backend_chat_visibility"
       ),
       runTimedQuery(
-        sessionClient,
-        app.chats.where({ id: chatId }).limit(1),
-        { tier: "edge", localUpdates: "deferred" },
+        () => sessionDb.all(chatQuery, options),
+        chatQuery,
+        options,
         requestId,
         "debug_session_chat_visibility"
       ),
       runTimedQuery(
-        backendClient,
-        app.messages.where({ chat: chatId }).limit(1),
-        { tier: "edge", localUpdates: "deferred" },
+        () => backendDb.all(messageQuery, options),
+        messageQuery,
+        options,
         requestId,
         "debug_backend_message_visibility"
       ),
       runTimedQuery(
-        sessionClient,
-        app.messages.where({ chat: chatId }).limit(1),
-        { tier: "edge", localUpdates: "deferred" },
+        () => sessionDb.all(messageQuery, options),
+        messageQuery,
+        options,
         requestId,
         "debug_session_message_visibility"
       ),
@@ -382,36 +390,38 @@ function normalizeRole(role: string): InputMessage["role"] {
   return "user";
 }
 
-async function getChatPresence(client: JazzClient, chatId: string, requestId: string) {
+async function getChatPresence(db: Db, chatId: string, requestId: string) {
+  const chatQuery = app.chats.where({ id: chatId }).limit(1);
+  const recentQuery = app.chats.orderBy("created_at", "desc").limit(5);
+  const immediateOptions = {
+    tier: "edge",
+    localUpdates: "immediate",
+  } as const;
+  const deferredOptions = {
+    tier: "edge",
+    localUpdates: "deferred",
+  } as const;
+
   const immediateRows = await runTimedQuery(
-    client,
-    app.chats.where({ id: chatId }).limit(1),
-    {
-      tier: "edge",
-      localUpdates: "immediate",
-    },
+    () => db.all(chatQuery, immediateOptions),
+    chatQuery,
+    immediateOptions,
     requestId,
     "chat_presence_immediate"
   );
 
   const deferredRows = await runTimedQuery(
-    client,
-    app.chats.where({ id: chatId }).limit(1),
-    {
-      tier: "edge",
-      localUpdates: "deferred",
-    },
+    () => db.all(chatQuery, deferredOptions),
+    chatQuery,
+    deferredOptions,
     requestId,
     "chat_presence_deferred"
   );
 
   const recentDeferredRows = await runTimedQuery(
-    client,
-    app.chats.orderBy("created_at", "desc").limit(5),
-    {
-      tier: "edge",
-      localUpdates: "deferred",
-    },
+    () => db.all(recentQuery, deferredOptions),
+    recentQuery,
+    deferredOptions,
     requestId,
     "chat_presence_recent_deferred"
   );
@@ -424,13 +434,13 @@ async function getChatPresence(client: JazzClient, chatId: string, requestId: st
   };
 }
 
-async function runTimedQuery(
-  client: JazzClient,
+async function runTimedQuery<TRow>(
+  execute: () => Promise<TRow[]>,
   query: QueryInput,
-  options: QueryExecutionOptions,
+  options: QueryOptions,
   requestId: string,
   label: string
-) {
+): Promise<TRow[]> {
   const startedAt = Date.now();
   const querySummary = summarizeQuery(query);
   debugLog(requestId, `${label}_start`, {
@@ -441,7 +451,7 @@ async function runTimedQuery(
 
   try {
     const rows = await withTimeout(
-      client.query(query, options),
+      execute(),
       QUERY_TIMEOUT_MS,
       `${label} timed out after ${QUERY_TIMEOUT_MS}ms`
     );
