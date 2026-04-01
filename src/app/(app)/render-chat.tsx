@@ -31,7 +31,6 @@ export function RenderChat({ chatId }: { chatId: string }) {
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const content = value.trim();
-    console.log("content", content);
     if (!chat || !content || sending) return;
 
     const now = new Date().toISOString();
@@ -102,9 +101,7 @@ export function RenderChat({ chatId }: { chatId: string }) {
         role: "assistant",
         content: "Sorry, I couldn't generate a response. Please try again.",
         created_at: new Date().toISOString(),
-      }, { tier: "global" }).then(() =>{
-        console.log("inserted with ack");
-      });
+      }, { tier: "global" });
     } finally {
       setSending(false);
     }

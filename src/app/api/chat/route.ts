@@ -1,10 +1,10 @@
 import { streamText } from "ai";
 import { gateway, type GatewayModelId } from "@ai-sdk/gateway";
-import type { Db, QueryOptions } from "jazz-tools/backend";
+import type { Db, QueryBuilder, QueryOptions } from "jazz-tools/backend";
 
 import { app } from "../../../../schema";
 import { defaultModel } from "@/lib/models";
-import { getJazzBackendDb, getJazzBackendContext } from "@/lib/jazz-backend";
+import { getJazzBackendContext, getJazzBackendDb } from "@/lib/jazz-backend";
 
 const CHAT_DEBUG =
   process.env.JAZZ_CHAT_DEBUG === "1";
@@ -17,13 +17,13 @@ type InputMessage = {
 
 type MessageRow = {
   id: string;
-  chat: string;
+  chat: string | null;
   role: string;
   content: string;
   created_at: string;
 };
 
-type QueryInput = { _build?: () => string } | string;
+type QueryInput = QueryBuilder<unknown> | string;
 
 export async function POST(request: Request) {
   const requestId = createRequestId();
@@ -60,7 +60,7 @@ export async function POST(request: Request) {
   });
 
   try {
-    const db = getJazzBackendDb();
+    const db = await getJazzBackendDb();
 
     await generateAndPersistAssistantMessage(
       db,
@@ -199,16 +199,11 @@ async function generateAndPersistAssistantMessage(
       }
     }
 
-    await db.updateDurable(
-      app.messages,
-      assistantId,
-      {
-        content: text.trim()
-          ? text
-          : "Sorry, I couldn't generate a response. Please try again.",
-      },
-      { tier: "edge" }
-    );
+    db.update(app.messages, assistantId, {
+      content: text.trim()
+        ? text
+        : "Sorry, I couldn't generate a response. Please try again.",
+    });
     debugLog(requestId, "assistant_stream_completed", {
       chunkCount,
       totalChars: text.length,
@@ -218,14 +213,9 @@ async function generateAndPersistAssistantMessage(
       error: summarizeError(error),
       statusCode: findErrorStatusCode(error),
     });
-    await db.updateDurable(
-      app.messages,
-      assistantId,
-      {
-        content: "Sorry, I couldn't generate a response. Please try again.",
-      },
-      { tier: "edge" }
-    );
+    db.update(app.messages, assistantId, {
+      content: "Sorry, I couldn't generate a response. Please try again.",
+    });
   }
 }
 
@@ -241,16 +231,12 @@ async function createAssistantPlaceholderWithRetry(
 
   while (attempt < maxAttempts) {
     try {
-      const row = await db.insertDurable(
-        app.messages,
-        {
-          chat: chatId,
-          role: "assistant",
-          content: "",
-          created_at: createdAt,
-        },
-        { tier: "edge" }
-      );
+      const row = db.insert(app.messages, {
+        chat: chatId,
+        role: "assistant",
+        content: "",
+        created_at: createdAt,
+      });
       return row.id;
     } catch (error) {
       lastError = error;
@@ -285,21 +271,16 @@ async function loadChatHistory(
   chatId: string,
   requestId: string
 ): Promise<InputMessage[]> {
-  const historyQuery = app.messages
-    .where({ chat: chatId })
-    .orderBy("created_at", "asc")
-    .limit(40);
-  const options = { tier: "edge", localUpdates: "deferred" } as const;
-  const rows = await runTimedQuery(
-    () => db.all(historyQuery, options),
-    historyQuery,
-    options,
+  const messages = await runTimedQuery<MessageRow>(
+    db,
+    app.messages.where({ chat: chatId }).orderBy("created_at", "asc").limit(40),
+    { tier: "edge", localUpdates: "deferred" },
     requestId,
     "history_query"
   );
-  debugLog(requestId, "history_query_result", { chatId, rowCount: rows.length });
+  debugLog(requestId, "history_query_result", { chatId, rowCount: messages.length });
 
-  return rows
+  return messages
     .map((message) => ({
       role: normalizeRole(message.role),
       content: message.content.trim(),
@@ -317,37 +298,34 @@ async function debugCompareSessionVisibility(
     user_id: sessionUserId,
     claims: {},
   });
-  const chatQuery = app.chats.where({ id: chatId }).limit(1);
-  const messageQuery = app.messages.where({ chat: chatId }).limit(1);
-  const options = { tier: "edge", localUpdates: "deferred" } as const;
 
   const [backendChatRows, sessionChatRows, backendMessageRows, sessionMessageRows] =
     await Promise.all([
       runTimedQuery(
-        () => backendDb.all(chatQuery, options),
-        chatQuery,
-        options,
+        backendDb,
+        app.chats.where({ id: chatId }).limit(1),
+        { tier: "edge", localUpdates: "deferred" },
         requestId,
         "debug_backend_chat_visibility"
       ),
       runTimedQuery(
-        () => sessionDb.all(chatQuery, options),
-        chatQuery,
-        options,
+        sessionDb,
+        app.chats.where({ id: chatId }).limit(1),
+        { tier: "edge", localUpdates: "deferred" },
         requestId,
         "debug_session_chat_visibility"
       ),
       runTimedQuery(
-        () => backendDb.all(messageQuery, options),
-        messageQuery,
-        options,
+        backendDb,
+        app.messages.where({ chat: chatId }).limit(1),
+        { tier: "edge", localUpdates: "deferred" },
         requestId,
         "debug_backend_message_visibility"
       ),
       runTimedQuery(
-        () => sessionDb.all(messageQuery, options),
-        messageQuery,
-        options,
+        sessionDb,
+        app.messages.where({ chat: chatId }).limit(1),
+        { tier: "edge", localUpdates: "deferred" },
         requestId,
         "debug_session_message_visibility"
       ),
@@ -391,37 +369,35 @@ function normalizeRole(role: string): InputMessage["role"] {
 }
 
 async function getChatPresence(db: Db, chatId: string, requestId: string) {
-  const chatQuery = app.chats.where({ id: chatId }).limit(1);
-  const recentQuery = app.chats.orderBy("created_at", "desc").limit(5);
-  const immediateOptions = {
-    tier: "edge",
-    localUpdates: "immediate",
-  } as const;
-  const deferredOptions = {
-    tier: "edge",
-    localUpdates: "deferred",
-  } as const;
-
   const immediateRows = await runTimedQuery(
-    () => db.all(chatQuery, immediateOptions),
-    chatQuery,
-    immediateOptions,
+    db,
+    app.chats.where({ id: chatId }).limit(1),
+    {
+      tier: "edge",
+      localUpdates: "immediate",
+    },
     requestId,
     "chat_presence_immediate"
   );
 
   const deferredRows = await runTimedQuery(
-    () => db.all(chatQuery, deferredOptions),
-    chatQuery,
-    deferredOptions,
+    db,
+    app.chats.where({ id: chatId }).limit(1),
+    {
+      tier: "edge",
+      localUpdates: "deferred",
+    },
     requestId,
     "chat_presence_deferred"
   );
 
   const recentDeferredRows = await runTimedQuery(
-    () => db.all(recentQuery, deferredOptions),
-    recentQuery,
-    deferredOptions,
+    db,
+    app.chats.orderBy("created_at", "desc").limit(5),
+    {
+      tier: "edge",
+      localUpdates: "deferred",
+    },
     requestId,
     "chat_presence_recent_deferred"
   );
@@ -434,13 +410,13 @@ async function getChatPresence(db: Db, chatId: string, requestId: string) {
   };
 }
 
-async function runTimedQuery<TRow>(
-  execute: () => Promise<TRow[]>,
-  query: QueryInput,
+async function runTimedQuery<T>(
+  db: Db,
+  query: QueryBuilder<T>,
   options: QueryOptions,
   requestId: string,
   label: string
-): Promise<TRow[]> {
+): Promise<T[]> {
   const startedAt = Date.now();
   const querySummary = summarizeQuery(query);
   debugLog(requestId, `${label}_start`, {
@@ -451,7 +427,7 @@ async function runTimedQuery<TRow>(
 
   try {
     const rows = await withTimeout(
-      execute(),
+      db.all(query, options),
       QUERY_TIMEOUT_MS,
       `${label} timed out after ${QUERY_TIMEOUT_MS}ms`
     );

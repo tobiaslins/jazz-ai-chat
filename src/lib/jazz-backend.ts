@@ -1,7 +1,7 @@
 import { createJazzContext, type Db } from "jazz-tools/backend";
 
-import permissions from "../../permissions";
 import { app } from "../../schema";
+import permissions from "../../permissions";
 
 const DEFAULT_SERVER_URL = "http://127.0.0.1:1625";
 const DEFAULT_BACKEND_DATA_PATH = `./data/backend-runtime-${process.pid}`;
@@ -37,7 +37,7 @@ const backendContext = createJazzContext({
 
 let jazzBackendDb: Db | null = null;
 
-export function getJazzBackendDb() {
+export async function getJazzBackendDb() {
   if (!jazzBackendDb) {
     jazzBackendDb = backendContext.asBackend();
   }
