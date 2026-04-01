@@ -34,21 +34,22 @@ export function RenderChat({ chatId }: { chatId: string }) {
     if (!chat || !content || sending) return;
 
     const now = new Date().toISOString();
-    await db.insertDurable(
-      app.messages,
-      {
-      chat: chatId,
-      role: "user",
-      content,
-      created_at: now,
-      },
-      { tier: "edge" }
-    );
-
-    setValue("");
-    setSending(true);
+    console.log("now", now);
 
     try {
+      await db.insertDurable(
+        app.messages,
+        {
+          chat: chatId,
+          role: "user",
+          content,
+          created_at: now,
+        },
+        { tier: "edge" }
+      );
+
+      setValue("");
+      setSending(true);
       debugLog("submit_started", { chatId, contentLength: content.length });
       const sendChatRequest = () =>
         fetch("/api/chat", {
@@ -190,12 +191,15 @@ async function syncChatToEdgeWithTimeout(
       id: string,
       values: { title: string },
       options?: { tier?: "worker" | "edge" | "global" }
-    ) => Promise<unknown>;
+    ) => Promise<void>;
   },
   chatId: string,
   title: string
 ) {
-  return withTimeout(db.updateDurable(app.chats, chatId, { title }, { tier: "edge" }), 3000);
+  return withTimeout(
+    db.updateDurable(app.chats, chatId, { title }, { tier: "edge" }),
+    3000
+  );
 }
 
 async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {

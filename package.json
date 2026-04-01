@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev --turbo",
+    "dev": "next dev --webpack",
     "test": "sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; echo \"${JAZZ_APP_ID}\" \"${JAZZ_ADMIN_SECRET}\" \"${JAZZ_BACKEND_SECRET}\" \"${JAZZ_SERVER_URL}\"'",
     "jazz:server": "sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; jazz-tools server \"${JAZZ_APP_ID:?JAZZ_APP_ID is required}\" --port 1625 --data-dir ./data --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\" --backend-secret \"${JAZZ_BACKEND_SECRET:-TEST_SECRET}\"'",
-    "schema:push": "sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; jazz-tools permissions push \"${JAZZ_APP_ID:?JAZZ_APP_ID is required}\" --server-url \"${JAZZ_SERVER_URL:-http://127.0.0.1:1625}\" --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\"'",
+    "schema:publish": "sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; node --experimental-strip-types ./scripts/publish-schema.mjs'",
+    "permissions:push": "sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; node --experimental-strip-types ./scripts/push-permissions.mjs'",
+    "schema:push": "pnpm schema:publish && pnpm permissions:push",
     "dev:local": "sh -c 'pnpm jazz:server & JAZZ_PID=$!; trap \"kill $JAZZ_PID\" EXIT; pnpm dev'",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "next lint"
   },

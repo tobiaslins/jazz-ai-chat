@@ -34,10 +34,10 @@ export default function NewChatPage() {
 
       // Local-first create avoids blocking this page when edge/global sync is slow.
       createChatPromiseRef.current = db
-        .insertDurable(app.chats, chatData, {tier: 'edge'})
+        .insertDurable(app.chats, chatData, { tier: "edge" })
         .then((chat) => {
           console.log("chat", chat);
-          return { chatId: chat.id, title: chatData.title }
+          return { chatId: chat.id, title: chatData.title };
         });
       debugLog("chat_create_started");
     }

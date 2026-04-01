@@ -2,15 +2,15 @@ import { schema as s } from "jazz-tools";
 
 const schema = {
   chats: s.table({
-    title: s.string(),
     created_at: s.string(),
-    owner_id: s.string()
+    owner_id: s.string(),
+    title: s.string(),
   }),
   messages: s.table({
-    role: s.string(),
+    chat: s.ref("chats"),
     content: s.string(),
-    chat: s.ref("chats").optional(),
-    created_at: s.string()
+    created_at: s.string(),
+    role: s.string(),
   }),
 };
 

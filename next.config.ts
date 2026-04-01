@@ -1,5 +1,11 @@
 import type { NextConfig } from "next";
-import webpack from "webpack";
+
+const webpack = require("webpack") as {
+  NormalModuleReplacementPlugin: new (
+    resourceRegExp: RegExp,
+    newResource: (resource: { request: string }) => void
+  ) => unknown;
+};
 
 const nextConfig: NextConfig = {
   serverExternalPackages: [
