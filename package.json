@@ -37,7 +37,7 @@
     "cmdk": "^1.1.1",
     "framer-motion": "^11.17.0",
     "goober": "^2.1.18",
-    "jazz-tools": "2.0.0-alpha.24",
+    "jazz-tools": "2.0.0-alpha.27",
     "lucide-react": "^0.471.0",
     "next": "16.1.6",
     "react": "^19.2.3",
@@ -50,12 +50,6 @@
     "tailwindcss-animate": "^1.0.7",
     "ws": "8.14.2",
     "zod": "^3.25.56"
-  },
-  "optionalDependencies": {
-    "jazz-napi-darwin-arm64": "npm:@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.24",
-    "jazz-napi-darwin-x64": "npm:@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.24",
-    "jazz-napi-linux-x64-gnu": "npm:@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.24",
-    "jazz-napi-win32-x64-msvc": "npm:@garden-co/jazz-napi-win32-x64-msvc@2.0.0-alpha.24"
   },
   "devDependencies": {
     "@types/node": "^20",

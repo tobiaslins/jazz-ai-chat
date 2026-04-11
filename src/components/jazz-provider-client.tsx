@@ -2,94 +2,32 @@
 
 import { useEffect, useState } from "react";
 import {
-  JazzClientProvider,
+  JazzProvider,
   createJazzClient,
   type JazzClient,
 } from "jazz-tools/react";
+import { APP_ID, jazzClientConfig } from "@/lib/jazz-client-config";
 
-const DEFAULT_SERVER_URL =
-  process.env.NODE_ENV === "production" ? undefined : "http://127.0.0.1:1625";
-const REQUIRED_PUBLIC_APP_ID_ENV = "NEXT_PUBLIC_JAZZ_APP_ID";
-const PUBLIC_APP_ID = process.env.NEXT_PUBLIC_JAZZ_APP_ID?.trim();
 const STORAGE_CORRUPTION_MARKERS = [
   "opfs-btree: corrupt data",
   "no valid superblock found in non-empty file",
 ];
-
-if (!PUBLIC_APP_ID) {
-  throw new Error(
-    `[jazz-client] Missing ${REQUIRED_PUBLIC_APP_ID_ENV}. Set it in your environment before starting the app.`
-  );
-}
-
-const APP_ID = PUBLIC_APP_ID;
-
-const clientConfig = {
-  appId: APP_ID,
-  serverUrl: process.env.NEXT_PUBLIC_JAZZ_SERVER_URL || DEFAULT_SERVER_URL,
-  env: process.env.NODE_ENV === "production" ? "prod" : "dev",
-  userBranch: "main",
-  localAuthMode: "anonymous" as const,
-};
 
 export default function JazzProviderClient({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [client, setClient] = useState<JazzClient | null>(null);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    let active = true;
-    let resolvedClient: JazzClient | null = null;
-
-    void initializeJazzClient()
-      .then((nextClient) => {
-        resolvedClient = nextClient;
-        if (active) {
-          setClient(nextClient);
-          return;
-        }
-
-        void nextClient.shutdown();
-      })
-      .catch((nextError) => {
-        if (!active) {
-          return;
-        }
-
-        setError(asError(nextError));
-      });
-
-    return () => {
-      active = false;
-      if (resolvedClient) {
-        void resolvedClient.shutdown();
-      }
-    };
-  }, []);
-
-  if (error) {
-    throw error;
-  }
-
-  if (!client) {
-    return (
-      <div className="flex min-h-screen items-center justify-center p-6 text-sm text-gray-600">
-        Initializing Jazz...
-      </div>
-    );
-  }
-
+ 
+ 
   return (
-    <JazzClientProvider client={client}>{children}</JazzClientProvider>
+    <JazzProvider config={jazzClientConfig}>{children}</JazzProvider>
   );
 }
 
 async function initializeJazzClient() {
   try {
-    return await createJazzClient(clientConfig);
+    return await createJazzClient(jazzClientConfig);
   } catch (error) {
     if (!isRecoverableStorageError(error)) {
       throw error;
@@ -99,7 +37,7 @@ async function initializeJazzClient() {
       "[jazz-client] Detected corrupted OPFS storage. Clearing local Jazz browser storage and retrying once."
     );
     await clearJazzOpfsStorage(APP_ID);
-    return await createJazzClient(clientConfig);
+    return await createJazzClient(jazzClientConfig);
   }
 }
 
