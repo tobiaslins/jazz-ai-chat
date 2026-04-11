@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useDb, useSession } from "jazz-tools/react";
+import { useDb, useSession } from "@/lib/jazz-react-client";
 
 import { app } from "../../../../schema";
 

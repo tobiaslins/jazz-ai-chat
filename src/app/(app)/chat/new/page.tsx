@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useDb, useSession } from "jazz-tools/react";
+import { useDb, useSession } from "@/lib/jazz-react-client";
 
 import { app } from "../../../../../schema";
 
@@ -36,7 +36,6 @@ export default function NewChatPage() {
       createChatPromiseRef.current = db
         .insertDurable(app.chats, chatData, { tier: "edge" })
         .then((chat) => {
-          console.log("chat", chat);
           return { chatId: chat.id, title: chatData.title };
         });
       debugLog("chat_create_started");

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Copy, MousePointer2 } from "lucide-react";
-import { useAll, useDb } from "jazz-tools/react";
+import { useAll, useDb } from "@/lib/jazz-react-client";
 
 import { app } from "../../../schema";
 import { Button } from "@/components/ui/button";

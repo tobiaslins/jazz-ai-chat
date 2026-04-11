@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Send } from "lucide-react";
-import { useAll, useDb, useSession } from "jazz-tools/react";
+import { useAll, useDb, useSession } from "@/lib/jazz-react-client";
 
 import { app } from "../../../schema";
 import { Button } from "@/components/ui/button";

@@ -17,6 +17,7 @@
 /.next/
 /out/
 /.jazz-data/
+/public/jazz-runtime/
 
 # production
 /build

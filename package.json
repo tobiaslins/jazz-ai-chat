@@ -3,6 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "jazz:runtime": "node ./scripts/sync-jazz-runtime.mjs",
+    "predev": "pnpm jazz:runtime",
+    "prebuild": "pnpm jazz:runtime",
+    "prestart": "pnpm jazz:runtime",
     "dev": "next dev",
     "test": "sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; echo \"${JAZZ_APP_ID}\" \"${JAZZ_ADMIN_SECRET}\" \"${JAZZ_BACKEND_SECRET}\" \"${JAZZ_SERVER_URL}\"'",
     "jazz:server": "sh -c 'set -a; [ -f ./.env.local ] && . ./.env.local; set +a; jazz-tools server \"${JAZZ_APP_ID:?JAZZ_APP_ID is required}\" --port 1625 --data-dir ./data --admin-secret \"${JAZZ_ADMIN_SECRET:-TEST_SECRET}\" --backend-secret \"${JAZZ_BACKEND_SECRET:-TEST_SECRET}\"'",

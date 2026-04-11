@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAll, useDb, useSession } from "jazz-tools/react";
+import { useAll, useDb, useSession } from "@/lib/jazz-react-client";
 
 import { app } from "../../../../schema";
 import { Button } from "@/components/ui/button";

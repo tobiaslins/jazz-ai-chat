@@ -19,6 +19,10 @@ export const jazzClientConfig = {
   env: process.env.NODE_ENV === "production" ? "prod" : "dev",
   userBranch: "main",
   localAuthMode: "anonymous" as const,
+  runtimeSources: {
+    workerUrl: "/jazz-runtime/worker/jazz-worker.js",
+    wasmUrl: "/jazz-runtime/pkg/jazz_wasm_bg.wasm",
+  },
 };
 
 

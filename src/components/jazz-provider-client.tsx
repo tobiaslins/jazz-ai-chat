@@ -1,11 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import {
-  JazzProvider,
-  createJazzClient,
-  type JazzClient,
-} from "jazz-tools/react";
+import { JazzProvider, createJazzClient } from "@/lib/jazz-react-client";
 import { APP_ID, jazzClientConfig } from "@/lib/jazz-client-config";
 
 const STORAGE_CORRUPTION_MARKERS = [
@@ -18,7 +13,6 @@ export default function JazzProviderClient({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
- 
  
   return (
     <JazzProvider config={jazzClientConfig}>{children}</JazzProvider>

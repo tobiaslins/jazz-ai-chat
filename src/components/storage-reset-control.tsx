@@ -2,7 +2,7 @@
 
 import { RotateCcw } from "lucide-react";
 import { useState } from "react";
-import { useDb } from "jazz-tools/react";
+import { useDb } from "@/lib/jazz-react-client";
 import toast from "react-hot-toast";
 
 import { APP_ID, clearJazzBrowserIdentityStorage } from "@/lib/jazz-client-config";
