@@ -5,9 +5,10 @@ import { use, type ReactNode } from "react";
 import {
   createJazzClient as createJazzClientFromPackage,
 } from "jazz-tools/react";
+import { BrowserAuthSecretStore } from "jazz-tools";
 import type { QueryBuilder, QueryOptions } from "jazz-tools/react-core";
 
-export const createJazzClient = createJazzClientFromPackage;
+import { getJazzAuthSecretStorageKey } from "@/lib/jazz-client-config";
 
 type JazzClient = Awaited<ReturnType<typeof createJazzClientFromPackage>>;
 type DbConfig = Parameters<typeof createJazzClientFromPackage>[0];
@@ -32,7 +33,7 @@ type JazzContextValue = {
 
 type CachedClientEntry = {
   configKey: string;
-  createJazzClient: typeof createJazzClientFromPackage;
+  createJazzClient: typeof createJazzClient;
   initPromise: Promise<JazzClient>;
   refs: number;
   releaseTimer: ReturnType<typeof setTimeout> | null;
@@ -55,10 +56,15 @@ const SUSPEND_FOREVER: Promise<never> = new Promise(() => {});
 
 let cachedClientEntry: CachedClientEntry | null = null;
 
+export async function createJazzClient(config: DbConfig) {
+  const resolvedConfig = await resolveJazzClientConfig(config);
+  return createJazzClientFromPackage(resolvedConfig);
+}
+
 function acquireClient(
   configKey: string,
   config: DbConfig,
-  createClient: typeof createJazzClientFromPackage
+  createClient: typeof createJazzClient
 ): Promise<JazzClient> {
   if (
     cachedClientEntry?.configKey !== configKey ||
@@ -80,6 +86,23 @@ function acquireClient(
   }
 
   return cachedClientEntry.initPromise;
+}
+
+async function resolveJazzClientConfig(config: DbConfig): Promise<DbConfig> {
+  if (config.auth || config.jwtToken || typeof window === "undefined") {
+    return config;
+  }
+
+  const localFirstSecret = await new BrowserAuthSecretStore({
+    key: getJazzAuthSecretStorageKey(config.appId),
+  }).getOrCreateSecret();
+
+  return {
+    ...config,
+    auth: {
+      localFirstSecret,
+    },
+  };
 }
 
 function releaseClient(configKey: string) {
@@ -126,7 +149,7 @@ export function JazzProvider({ config, fallback, children }: JazzProviderProps) 
 
   React.useEffect(() => {
     let active = true;
-    const pendingClient = acquireClient(configKey, config, createJazzClientFromPackage);
+    const pendingClient = acquireClient(configKey, config, createJazzClient);
 
     void pendingClient.then(
       (resolved) => {

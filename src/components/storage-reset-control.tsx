@@ -64,9 +64,9 @@ export function StorageResetControl() {
         <DialogHeader>
           <DialogTitle>Reset local Jazz state?</DialogTitle>
           <DialogDescription>
-            This clears the browser Jazz database for this app, removes the local anonymous
-            auth token, and reloads into a fresh chat. Close any other tabs for this app first.
-            Already-synced server data is not deleted.
+            This clears the browser Jazz database for this app, removes the local-first
+            identity secret, and reloads into a fresh chat. Close any other tabs for this app
+            first. Already-synced server data is not deleted.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
