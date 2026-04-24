@@ -24,11 +24,6 @@ type MessageRow = {
 };
 
 type QueryInput = QueryBuilder<unknown> | string;
-type AckTier = "local" | "edge" | "global";
-type WriteAckHandle<T = unknown> = {
-  batchId: string;
-  wait(options: { tier: AckTier }): Promise<T>;
-};
 
 export async function POST(request: Request) {
   const requestId = createRequestId();
@@ -152,13 +147,20 @@ async function generateAndPersistAssistantMessage(
   //   throw new Error("ChatNotSyncedToEdge");
   // }
 
+  const historyLoadStart = Date.now();
   const historyFromDb = await loadChatHistory(db, chatId, requestId);
+  const historyLoadMs = Date.now() - historyLoadStart;
+  console.info(
+    `[api/chat][${requestId}] jazz_history_loaded rows=${historyFromDb.length} durationMs=${historyLoadMs}`
+  );
+
   if (sessionUserId) {
     await debugCompareSessionVisibility(db, chatId, requestId, sessionUserId);
   }
   const messagesForModel = buildHistoryForModel(historyFromDb, latestUserMessage);
   debugLog(requestId, "history_loaded", {
     historyRows: historyFromDb.length,
+    historyLoadMs,
     messagesForModel: messagesForModel.length,
   });
 
@@ -199,26 +201,29 @@ async function generateAndPersistAssistantMessage(
 
       const now = Date.now();
       if (now - lastUpdateAt > 100) {
-        traceWriteAck(
-          requestId,
-          "assistant_stream_progress_update",
-          db.update(app.messages, assistantId, { content: text }),
-          { ackTier: "edge", sampleRate: 0.1 }
+        const updateStart = Date.now();
+        await db
+          .update(app.messages, assistantId, { content: text })
+          .wait({ tier: "edge" });
+        console.info(
+          `[api/chat][${requestId}] jazz_update_progress durationMs=${Date.now() - updateStart} chars=${text.length}`
         );
         lastUpdateAt = now;
       }
     }
 
-    traceWriteAck(
-      requestId,
-      "assistant_stream_final_update",
-      db.update(app.messages, assistantId, {
+    const finalUpdateStart = Date.now();
+    await db
+      .update(app.messages, assistantId, {
         content: text.trim()
           ? text
           : "Sorry, I couldn't generate a response. Please try again.",
-      }),
-      { ackTier: "edge" }
+      })
+      .wait({ tier: "edge" });
+    console.info(
+      `[api/chat][${requestId}] jazz_update_final durationMs=${Date.now() - finalUpdateStart} chars=${text.length}`
     );
+
     debugLog(requestId, "assistant_stream_completed", {
       chunkCount,
       totalChars: text.length,
@@ -228,13 +233,14 @@ async function generateAndPersistAssistantMessage(
       error: summarizeError(error),
       statusCode: findErrorStatusCode(error),
     });
-    traceWriteAck(
-      requestId,
-      "assistant_stream_failure_update",
-      db.update(app.messages, assistantId, {
+    const failureUpdateStart = Date.now();
+    await db
+      .update(app.messages, assistantId, {
         content: "Sorry, I couldn't generate a response. Please try again.",
-      }),
-      { ackTier: "edge" }
+      })
+      .wait({ tier: "edge" });
+    console.info(
+      `[api/chat][${requestId}] jazz_update_failure durationMs=${Date.now() - failureUpdateStart}`
     );
   }
 }
@@ -245,49 +251,19 @@ async function createAssistantPlaceholderWithRetry(
   createdAt: string,
   requestId: string
 ): Promise<string> {
-  const maxAttempts = 4;
-  let attempt = 0;
-  let lastError: unknown;
-
-  while (attempt < maxAttempts) {
-    try {
-      const row = db.insert(app.messages, {
-        chat: chatId,
-        role: "assistant",
-        content: "",
-        created_at: createdAt,
-        done: false
-      });
-      traceWriteAck(requestId, "assistant_placeholder_insert", row, {
-        ackTier: "edge",
-      });
-      return row.value.id;
-    } catch (error) {
-      lastError = error;
-      const message = error instanceof Error ? error.message : String(error);
-      const isForeignKeyRace = message.includes("UuidForeignKeyViolation");
-      debugLog(requestId, "assistant_placeholder_retry", {
-        attempt: attempt + 1,
-        isForeignKeyRace,
-        error: summarizeError(error),
-      });
-
-      if (!isForeignKeyRace || attempt === maxAttempts - 1) {
-        throw error;
-      }
-
-      attempt += 1;
-      await delay(150 * 2 ** attempt);
-    }
-  }
-
-  throw lastError instanceof Error
-    ? lastError
-    : new Error("Failed to create assistant placeholder.");
-}
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+  const insertStart = Date.now();
+  const row = db.insert(app.messages, {
+    chat: chatId,
+    role: "assistant",
+    content: "",
+    created_at: createdAt,
+    done: false,
+  });
+  await row.wait({ tier: "edge" });
+  console.info(
+    `[api/chat][${requestId}] jazz_insert_placeholder durationMs=${Date.now() - insertStart} id=${row.value.id}`
+  );
+  return row.value.id;
 }
 
 async function loadChatHistory(
@@ -475,47 +451,6 @@ async function runTimedQuery<T>(
     });
     throw error;
   }
-}
-
-function traceWriteAck<T>(
-  requestId: string,
-  label: string,
-  handle: WriteAckHandle<T>,
-  options?: {
-    ackTier?: AckTier;
-    sampleRate?: number;
-  }
-) {
-  const ackTier = options?.ackTier ?? "edge";
-  const sampleRate = options?.sampleRate ?? 1;
-
-  if (sampleRate < 1 && Math.random() > sampleRate) {
-    return;
-  }
-
-  const startedAt = Date.now();
-  debugLog(requestId, `${label}_queued`, {
-    batchId: handle.batchId,
-    ackTier,
-  });
-
-  void handle
-    .wait({ tier: ackTier })
-    .then(() => {
-      debugLog(requestId, `${label}_ack_ok`, {
-        batchId: handle.batchId,
-        ackTier,
-        durationMs: Date.now() - startedAt,
-      });
-    })
-    .catch((error) => {
-      debugLog(requestId, `${label}_ack_error`, {
-        batchId: handle.batchId,
-        ackTier,
-        durationMs: Date.now() - startedAt,
-        error: summarizeError(error),
-      });
-    });
 }
 
 async function withTimeout<T>(
