@@ -115,7 +115,7 @@ export function RenderCursorRoom({ roomId }: { roomId: string }) {
     const nowIso = new Date().toISOString();
 
     void db
-      .insertDurable(
+      .insert(
         app.cursor_presences,
         {
           room: roomId,
@@ -126,8 +126,7 @@ export function RenderCursorRoom({ roomId }: { roomId: string }) {
           x: latestPointRef.current.x,
           y: latestPointRef.current.y,
         },
-        { tier: "edge" }
-      )
+      ).wait( { tier: "edge" })
       .then((presence) => {
         if (cancelled) {
           return;
@@ -169,12 +168,12 @@ export function RenderCursorRoom({ roomId }: { roomId: string }) {
     }
 
     void db
-      .updateDurable(
+      .update(
         app.cursor_presences,
         myPresence.id,
         { color: identity.color, label: identity.label },
-        { tier: "edge" }
-      )
+        
+      ).wait({ tier: "edge" })
       .catch((error) => {
         debugLog("presence_identity_sync_failed", {
           roomId,
@@ -545,7 +544,7 @@ async function flushPresence(
   pendingFlushRef.current = false;
 
   try {
-    await db.updateDurable(
+    await db.update(
       app.cursor_presences,
       presenceId,
       {
@@ -553,8 +552,7 @@ async function flushPresence(
         x: latestPointRef.current.x,
         y: latestPointRef.current.y,
       },
-      { tier: "edge" }
-    );
+    ).wait({ tier: "edge" });
   } catch (error) {
     debugLog("presence_update_failed", {
       presenceId,
