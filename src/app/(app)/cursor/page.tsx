@@ -33,7 +33,7 @@ export default function NewCursorPage() {
       };
 
       createRoomPromiseRef.current = db
-        .insertDurable(app.cursor_rooms, roomData, { tier: "edge" })
+        .insert(app.cursor_rooms, roomData).wait( { tier: "edge" })
         .then((room) => ({ roomId: room.id, title: roomData.title }));
       debugLog("cursor_room_create_started");
     }
@@ -49,7 +49,7 @@ export default function NewCursorPage() {
         if (!syncStartedRef.current) {
           syncStartedRef.current = true;
           void withTimeout(
-            db.updateDurable(app.cursor_rooms, roomId, { title }, { tier: "edge" }),
+            db.update(app.cursor_rooms, roomId, { title }).wait( { tier: "edge" }),
             3000
           )
             .then(() => {

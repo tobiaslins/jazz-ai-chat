@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useDb, useSession } from "@/lib/jazz-react-client";
 
@@ -14,8 +14,11 @@ export default function NewChatPage() {
   const session = useSession();
   const sessionUserId = session?.user_id ?? null;
   const router = useRouter();
-  const createChatPromiseRef = useRef<Promise<{ chatId: string; title: string }> | null>(null);
-  const syncStartedRef = useRef(false);
+  const createChatPromiseRef = useRef<
+    Promise<{ chatId: string; title: string }>
+    | null
+  >(null);
+  const [createError, setCreateError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!sessionUserId) {
@@ -32,45 +35,33 @@ export default function NewChatPage() {
         owner_id: sessionUserId,
       };
 
-      // Local-first create avoids blocking this page when edge/global sync is slow.
-      createChatPromiseRef.current = db
-        .insertDurable(app.chats, chatData, { tier: "edge" })
-        .then((chat) => {
-          return { chatId: chat.id, title: chatData.title };
-        });
+      const insertedChat = db.insert(app.chats, chatData);
+      createChatPromiseRef.current = withTimeout(
+        insertedChat.wait({ tier: "edge" }),
+        10000
+      ).then((chat) => ({
+        chatId: chat.id,
+        title: chatData.title,
+      }));
       debugLog("chat_create_started");
     }
 
     void createChatPromiseRef.current
-      .then(({ chatId, title }) => {
-        debugLog("chat_created_local", { chatId });
+      .then(({ chatId }) => {
+        debugLog("chat_created_edge", { chatId });
 
         if (isActive) {
           router.replace(`/chat/${chatId}`);
         }
-
-        if (!syncStartedRef.current) {
-          syncStartedRef.current = true;
-          // Best-effort sync in background. The send flow can retry if this is not done yet.
-          void withTimeout(
-            db.updateDurable(app.chats, chatId, { title }, { tier: "edge" }),
-            3000
-          )
-            .then(() => {
-              debugLog("chat_synced_edge", { chatId });
-            })
-            .catch((error) => {
-              debugLog("chat_sync_edge_failed", {
-                chatId,
-                error: error instanceof Error ? error.message : String(error),
-              });
-            });
-        }
       })
       .catch((error) => {
+        const message = error instanceof Error ? error.message : String(error);
         debugLog("chat_create_failed", {
-          error: error instanceof Error ? error.message : String(error),
+          error: message,
         });
+        if (isActive) {
+          setCreateError(message);
+        }
       });
 
     return () => {
@@ -82,6 +73,14 @@ export default function NewChatPage() {
     return (
       <div className="flex min-h-screen items-center justify-center p-6 text-sm text-gray-600">
         Initializing session...
+      </div>
+    );
+  }
+
+  if (createError) {
+    return (
+      <div className="flex min-h-screen items-center justify-center p-6 text-sm text-red-700">
+        Failed to create chat: {createError}
       </div>
     );
   }

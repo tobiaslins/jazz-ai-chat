@@ -25,7 +25,7 @@ const schema = {
     content: s.string(),
     created_at: s.string(),
     role: s.string(),
-    done: s.boolean().default(false),
+    done: s.boolean(),
   }),
 };
 

@@ -3,15 +3,29 @@ import { createJazzContext, type Db } from "jazz-tools/backend";
 import { app } from "../../schema";
 import permissions from "../../permissions";
 
-const DEFAULT_SERVER_URL = "http://127.0.0.1:1625";
+const DEFAULT_SERVER_URL = "https://v2.sync.jazz.tools/";
 const DEFAULT_BACKEND_DATA_PATH = `./data/backend-runtime-${process.pid}`;
 const REQUIRED_APP_ID_ENV = "JAZZ_APP_ID";
+const REQUIRED_BACKEND_SECRET_ENV = "JAZZ_BACKEND_SECRET";
 const SYNC_TRACE_ENABLED = process.env.JAZZ_SYNC_TRACE === "1";
 const APP_ID = process.env.JAZZ_APP_ID?.trim();
+const SERVER_URL =
+  process.env.JAZZ_SERVER_URL ||
+  process.env.NEXT_PUBLIC_JAZZ_SERVER_URL ||
+  DEFAULT_SERVER_URL;
+const BACKEND_SECRET =
+  process.env.JAZZ_BACKEND_SECRET?.trim() ||
+  (isLocalJazzServerUrl(SERVER_URL) ? "TEST_SECRET" : undefined);
 
 if (!APP_ID) {
   throw new Error(
     `[jazz-backend] Missing ${REQUIRED_APP_ID_ENV}. Set it in your environment before starting the app.`
+  );
+}
+
+if (!BACKEND_SECRET) {
+  throw new Error(
+    `[jazz-backend] Missing ${REQUIRED_BACKEND_SECRET_ENV}. Set it to your Jazz Cloud backend secret before starting the app.`
   );
 }
 
@@ -26,11 +40,8 @@ const backendContext = createJazzContext({
     type: "persistent",
     dataPath: process.env.JAZZ_BACKEND_DATA_PATH || DEFAULT_BACKEND_DATA_PATH,
   },
-  serverUrl:
-    process.env.JAZZ_SERVER_URL ||
-    process.env.NEXT_PUBLIC_JAZZ_SERVER_URL ||
-    DEFAULT_SERVER_URL,
-  backendSecret: process.env.JAZZ_BACKEND_SECRET || "TEST_SECRET",
+  serverUrl: SERVER_URL,
+  backendSecret: BACKEND_SECRET,
   env: process.env.NODE_ENV === "production" ? "prod" : "dev",
   userBranch: "main",
 });
@@ -97,4 +108,8 @@ async function safeReadResponseBody(response: Response) {
   } catch {
     return "<failed to read response body>";
   }
+}
+
+function isLocalJazzServerUrl(url: string) {
+  return url.startsWith("http://127.0.0.1:") || url.startsWith("http://localhost:");
 }

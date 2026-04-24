@@ -89,7 +89,7 @@ function acquireClient(
 }
 
 async function resolveJazzClientConfig(config: DbConfig): Promise<DbConfig> {
-  if (config.auth || config.jwtToken || typeof window === "undefined") {
+  if (config.secret || config.jwtToken || typeof window === "undefined") {
     return config;
   }
 
@@ -99,9 +99,7 @@ async function resolveJazzClientConfig(config: DbConfig): Promise<DbConfig> {
 
   return {
     ...config,
-    auth: {
-      localFirstSecret,
-    },
+    secret: localFirstSecret,
   };
 }
 

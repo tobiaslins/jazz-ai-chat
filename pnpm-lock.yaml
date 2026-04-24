@@ -75,8 +75,8 @@ importers:
         specifier: ^2.1.18
         version: 2.1.18(csstype@3.1.3)
       jazz-tools:
-        specifier: 2.0.0-alpha.28
-        version: 2.0.0-alpha.28(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.3))(react@19.2.3)
+        specifier: 2.0.0-alpha.39
+        version: 2.0.0-alpha.39(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.3))(react@19.2.3)
       lucide-react:
         specifier: ^0.471.0
         version: 0.471.0(react@19.2.3)
@@ -496,18 +496,18 @@ packages:
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
 
-  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.28':
-    resolution: {integrity: sha512-s0/g63wuF/Wfaf4C/UnaVJNn9EM/mHQvW21S47lPGDzUdU6eE2UbS3SZxx5ObAq46fPDOKXNP/owkBxCJv1daQ==}
+  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.39':
+    resolution: {integrity: sha512-iixvqUz+HLTjM5sZ+9QXmHAlRYzBj6UI769aZyGktpBsP4TRA25+mWjqjl4W6LfXBJqI3YmmudIH91hv3kpXJA==}
     cpu: [arm64]
     os: [darwin]
 
-  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.28':
-    resolution: {integrity: sha512-U/g3eBuZYmNrtxPvnE/RhWwc1i3hXEMKRU+yzRVziBRsMXA3NoJ8X9ANJqxRFHcj8/Ly+NfP1IM2VmZ7lWAKLw==}
+  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.39':
+    resolution: {integrity: sha512-4etSLkpyuvl9S4DkBV3dQjCTtT9jLiBRZZDXb6A3qUb8Osf1n8tD3KL42cEUrxUCtH/053uVc9VI0zETmz9b6Q==}
     cpu: [x64]
     os: [darwin]
 
-  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.28':
-    resolution: {integrity: sha512-94j5noTvMUx/d9/8MBx6MUvKeTgrQEF04P9Rt1ggkWqPsp0LI9YNLal14UzrLYe+MYVisVeVpUbBHuelNRqvmg==}
+  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.39':
+    resolution: {integrity: sha512-7UQncT3QgqOK0/pEF78xlommMAoYlMcw1RDcS6rN83JIQsQN22x3N+y7cB70iyumc8RS6ychIVz0QeH38jfAyA==}
     cpu: [x64]
     os: [linux]
 
@@ -2367,28 +2367,31 @@ packages:
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
 
-  jazz-napi@2.0.0-alpha.28:
-    resolution: {integrity: sha512-LYJOO5VoQ9IqCoGddp/qrphvoi3oAu57+KsFl2gjSaII92b/W8PNLkO7mexSiDyPEpqgvG33IwP1+9uf1cA0HA==}
+  jazz-napi@2.0.0-alpha.39:
+    resolution: {integrity: sha512-Al3WFFEu5I9oTjDnxAqg695DttuEK8xZAI4JtcqzEo6ldgFqRLJJr62u5//hlHMeUMV7+s4gxgLBvSXB55oDkA==}
 
-  jazz-rn@2.0.0-alpha.28:
-    resolution: {integrity: sha512-DCht27K8zgLoDiVQ7CJS7KnoA42xK14KfgI18G2VUdQDCXHqCFxy3yJuIZ8z48Xi4PUX0Mi9fRaBPHQZ2ZoFew==}
+  jazz-rn@2.0.0-alpha.39:
+    resolution: {integrity: sha512-pCq1ZnvBzO3pEtkCMArYqbbxVnmNl3I2mIz2eIjKcqHJ9+LRiXbXfYvHlD9hCntKlkjAoesHE9xaPCb55NNG4A==}
     peerDependencies:
       react: '*'
       react-native: '*'
 
-  jazz-tools@2.0.0-alpha.28:
-    resolution: {integrity: sha512-t0DRdvGdZj3qWdcUV6dsoen4aEIGWVt79L6sfVp5d6K09Vc2zu9EOBn2LNTjeJuhtPvmwtG/Wkj6yk6az00QUA==}
+  jazz-tools@2.0.0-alpha.39:
+    resolution: {integrity: sha512-7I5twCIZgZX2NioQssArfUvgz7MDvYxa8adOMTtSHjiiegXQPzL1WVlv4dhb0Fw89dbitpOriKrHvjK42fYEMQ==}
     engines: {node: '>=20'}
     hasBin: true
     peerDependencies:
+      better-auth: ^1.5.5
       expo: '>=54'
       expo-crypto: '>=14.0.0'
       expo-secure-store: '>=14.0.0'
-      react: ^18 || ^19
+      react: '>=19'
       react-native: '>=0.76'
       svelte: ^5.0.0
       vue: ^3.5.0
     peerDependenciesMeta:
+      better-auth:
+        optional: true
       expo:
         optional: true
       expo-crypto:
@@ -2404,8 +2407,8 @@ packages:
       vue:
         optional: true
 
-  jazz-wasm@2.0.0-alpha.28:
-    resolution: {integrity: sha512-uaNu6rxLL3nkTwB0IOKokySi/GW59bnNMqNUpA5BL9ZvZp/EW0TagCVHTS/EFc0Fdn+Mb5mC9GcCkjhGM+uFzg==}
+  jazz-wasm@2.0.0-alpha.39:
+    resolution: {integrity: sha512-bZUQCjsK1PDJW3JURYDk0n8n6HzCGply5+U49D79eyM/FXKBY/NEC7VLHJhh00DDiZxQ0KytjZ0AwvVh4bg6Ag==}
 
   jest-environment-node@29.7.0:
     resolution: {integrity: sha512-DOSwCRqXirTOyheM+4d5YZOrWcdu0LNZ87ewUoywbcb2XR4wKgqiG8vNeYwhjFMbEkfju7wx2GYH0P2gevGvFw==}
@@ -3789,13 +3792,13 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
-  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.28':
+  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.39':
     optional: true
 
-  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.28':
+  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.39':
     optional: true
 
-  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.28':
+  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.39':
     optional: true
 
   '@img/colour@1.0.0':
@@ -5539,36 +5542,36 @@ snapshots:
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
 
-  jazz-napi@2.0.0-alpha.28:
+  jazz-napi@2.0.0-alpha.39:
     optionalDependencies:
-      '@garden-co/jazz-napi-darwin-arm64': 2.0.0-alpha.28
-      '@garden-co/jazz-napi-darwin-x64': 2.0.0-alpha.28
-      '@garden-co/jazz-napi-linux-x64-gnu': 2.0.0-alpha.28
+      '@garden-co/jazz-napi-darwin-arm64': 2.0.0-alpha.39
+      '@garden-co/jazz-napi-darwin-x64': 2.0.0-alpha.39
+      '@garden-co/jazz-napi-linux-x64-gnu': 2.0.0-alpha.39
     optional: true
 
-  jazz-rn@2.0.0-alpha.28(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.3))(react@19.2.3):
+  jazz-rn@2.0.0-alpha.39(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.3))(react@19.2.3):
     dependencies:
       react: 19.2.3
       react-native: 0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.3)
       uniffi-bindgen-react-native: 0.30.0-1
 
-  jazz-tools@2.0.0-alpha.28(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.3))(react@19.2.3):
+  jazz-tools@2.0.0-alpha.39(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.3))(react@19.2.3):
     dependencies:
       '@scure/bip39': 2.0.1
       '@standard-schema/spec': 1.1.0
       esbuild: 0.27.3
-      jazz-rn: 2.0.0-alpha.28(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.3))(react@19.2.3)
-      jazz-wasm: 2.0.0-alpha.28
+      jazz-rn: 2.0.0-alpha.39(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.3))(react@19.2.3)
+      jazz-wasm: 2.0.0-alpha.39
       jose: 6.2.2
       json-schema-to-ts: 3.1.1
       pluralize-esm: 9.0.5
       web-streams-polyfill: 4.2.0
     optionalDependencies:
-      jazz-napi: 2.0.0-alpha.28
+      jazz-napi: 2.0.0-alpha.39
       react: 19.2.3
       react-native: 0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.3)
 
-  jazz-wasm@2.0.0-alpha.28: {}
+  jazz-wasm@2.0.0-alpha.39: {}
 
   jest-environment-node@29.7.0:
     dependencies:

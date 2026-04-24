@@ -1,5 +1,5 @@
 const DEFAULT_SERVER_URL =
-  process.env.NODE_ENV === "production" ? undefined : "http://127.0.0.1:1625";
+  "https://v2.sync.jazz.tools/";
 const REQUIRED_PUBLIC_APP_ID_ENV = "NEXT_PUBLIC_JAZZ_APP_ID";
 const PUBLIC_APP_ID = process.env.NEXT_PUBLIC_JAZZ_APP_ID?.trim();
 const LOCAL_AUTH_TOKEN_STORAGE_PREFIX = "jazz-tools:local-auth-token:";
