@@ -36,9 +36,8 @@ const backendContext = createJazzContext({
   appId: APP_ID,
   app,
   permissions,
-  driver: {
-    type: "persistent",
-    dataPath: process.env.JAZZ_BACKEND_DATA_PATH || DEFAULT_BACKEND_DATA_PATH,
+  driver:{
+    type: "memory"
   },
   serverUrl: SERVER_URL,
   backendSecret: BACKEND_SECRET,
