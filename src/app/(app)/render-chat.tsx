@@ -32,7 +32,7 @@ export function RenderChat({ chatId }: { chatId: string }) {
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const content = value.trim();
-    if (!chat || !content || sending) return;
+    if (!chat || !content) return;
 
     const now = new Date().toISOString();
     console.log("now", now);
@@ -161,9 +161,9 @@ export function RenderChat({ chatId }: { chatId: string }) {
             value={value}
             onChange={(event) => setValue(event.target.value)}
             placeholder="Type a message..."
-            disabled={sending || !chat}
+            disabled={!chat}
           />
-          <Button type="submit" size="icon" disabled={sending || !chat || !value.trim()}>
+          <Button type="submit" size="icon" disabled={  !chat || !value.trim()}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
