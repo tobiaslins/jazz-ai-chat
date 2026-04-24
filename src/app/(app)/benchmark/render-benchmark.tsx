@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAll, useDb, useSession } from "jazz-tools/react";
+import { useAll, useDb, useSession } from "@/lib/jazz-react-client";
 
 import { app } from "../../../../schema";
 import { Button } from "@/components/ui/button";
@@ -82,6 +82,7 @@ export function RenderBenchmark() {
             role: i % 2 === 0 ? "user" : "assistant",
             content: `Benchmark message ${i + 1} (${baseTs})`,
             created_at: new Date(baseTs + i).toISOString(),
+            done: true
           });
 
           if ((i + 1) % INSERT_CHUNK_SIZE === 0) {

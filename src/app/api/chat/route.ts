@@ -24,6 +24,11 @@ type MessageRow = {
 };
 
 type QueryInput = QueryBuilder<unknown> | string;
+type AckTier = "local" | "edge" | "global";
+type WriteAckHandle<T = unknown> = {
+  batchId: string;
+  wait(options: { tier: AckTier }): Promise<T>;
+};
 
 export async function POST(request: Request) {
   const requestId = createRequestId();
@@ -194,16 +199,26 @@ async function generateAndPersistAssistantMessage(
 
       const now = Date.now();
       if (now - lastUpdateAt > 100) {
-        db.update(app.messages, assistantId, { content: text });
+        traceWriteAck(
+          requestId,
+          "assistant_stream_progress_update",
+          db.update(app.messages, assistantId, { content: text }),
+          { ackTier: "edge", sampleRate: 0.1 }
+        );
         lastUpdateAt = now;
       }
     }
 
-    db.update(app.messages, assistantId, {
-      content: text.trim()
-        ? text
-        : "Sorry, I couldn't generate a response. Please try again.",
-    });
+    traceWriteAck(
+      requestId,
+      "assistant_stream_final_update",
+      db.update(app.messages, assistantId, {
+        content: text.trim()
+          ? text
+          : "Sorry, I couldn't generate a response. Please try again.",
+      }),
+      { ackTier: "edge" }
+    );
     debugLog(requestId, "assistant_stream_completed", {
       chunkCount,
       totalChars: text.length,
@@ -213,9 +228,14 @@ async function generateAndPersistAssistantMessage(
       error: summarizeError(error),
       statusCode: findErrorStatusCode(error),
     });
-    db.update(app.messages, assistantId, {
-      content: "Sorry, I couldn't generate a response. Please try again.",
-    });
+    traceWriteAck(
+      requestId,
+      "assistant_stream_failure_update",
+      db.update(app.messages, assistantId, {
+        content: "Sorry, I couldn't generate a response. Please try again.",
+      }),
+      { ackTier: "edge" }
+    );
   }
 }
 
@@ -236,8 +256,12 @@ async function createAssistantPlaceholderWithRetry(
         role: "assistant",
         content: "",
         created_at: createdAt,
+        done: false
       });
-      return row.id;
+      traceWriteAck(requestId, "assistant_placeholder_insert", row, {
+        ackTier: "edge",
+      });
+      return row.value.id;
     } catch (error) {
       lastError = error;
       const message = error instanceof Error ? error.message : String(error);
@@ -297,6 +321,7 @@ async function debugCompareSessionVisibility(
   const sessionDb = getJazzBackendContext().forSession({
     user_id: sessionUserId,
     claims: {},
+    authMode: "local-first",
   });
 
   const [backendChatRows, sessionChatRows, backendMessageRows, sessionMessageRows] =
@@ -418,9 +443,11 @@ async function runTimedQuery<T>(
   label: string
 ): Promise<T[]> {
   const startedAt = Date.now();
+  const ackTier = options.tier ?? "local";
   const querySummary = summarizeQuery(query);
   debugLog(requestId, `${label}_start`, {
     timeoutMs: QUERY_TIMEOUT_MS,
+    ackTier,
     options,
     query: querySummary,
   });
@@ -432,13 +459,15 @@ async function runTimedQuery<T>(
       `${label} timed out after ${QUERY_TIMEOUT_MS}ms`
     );
 
-    debugLog(requestId, `${label}_ok`, {
+    debugLog(requestId, `${label}_ack_ok`, {
+      ackTier,
       durationMs: Date.now() - startedAt,
       rowCount: rows.length,
     });
     return rows;
   } catch (error) {
-    debugLog(requestId, `${label}_error`, {
+    debugLog(requestId, `${label}_ack_error`, {
+      ackTier,
       durationMs: Date.now() - startedAt,
       options,
       query: querySummary,
@@ -446,6 +475,47 @@ async function runTimedQuery<T>(
     });
     throw error;
   }
+}
+
+function traceWriteAck<T>(
+  requestId: string,
+  label: string,
+  handle: WriteAckHandle<T>,
+  options?: {
+    ackTier?: AckTier;
+    sampleRate?: number;
+  }
+) {
+  const ackTier = options?.ackTier ?? "edge";
+  const sampleRate = options?.sampleRate ?? 1;
+
+  if (sampleRate < 1 && Math.random() > sampleRate) {
+    return;
+  }
+
+  const startedAt = Date.now();
+  debugLog(requestId, `${label}_queued`, {
+    batchId: handle.batchId,
+    ackTier,
+  });
+
+  void handle
+    .wait({ tier: ackTier })
+    .then(() => {
+      debugLog(requestId, `${label}_ack_ok`, {
+        batchId: handle.batchId,
+        ackTier,
+        durationMs: Date.now() - startedAt,
+      });
+    })
+    .catch((error) => {
+      debugLog(requestId, `${label}_ack_error`, {
+        batchId: handle.batchId,
+        ackTier,
+        durationMs: Date.now() - startedAt,
+        error: summarizeError(error),
+      });
+    });
 }
 
 async function withTimeout<T>(

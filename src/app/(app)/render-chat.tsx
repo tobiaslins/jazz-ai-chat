@@ -3,11 +3,12 @@
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { Send } from "lucide-react";
-import { useAll, useDb, useSession } from "jazz-tools/react";
+import { useAll, useDb, useSession } from "@/lib/jazz-react-client";
 
 import { app } from "../../../schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Db } from "jazz-tools";
 
 type ChatRole = "user" | "assistant" | "system";
 const CHAT_DEBUG =
@@ -37,15 +38,16 @@ export function RenderChat({ chatId }: { chatId: string }) {
     console.log("now", now);
 
     try {
-      await db.insertDurable(
+      await db.insert(
         app.messages,
         {
           chat: chatId,
           role: "user",
           content,
           created_at: now,
+          done: false
         },
-        { tier: "edge" }
+        
       );
 
       setValue("");
@@ -96,12 +98,13 @@ export function RenderChat({ chatId }: { chatId: string }) {
         chatId,
         error: error instanceof Error ? error.message : String(error),
       });
-      db.insertDurable(app.messages, {
+      db.insert(app.messages, {
         chat: chatId,
         role: "assistant",
         content: "Sorry, I couldn't generate a response. Please try again.",
         created_at: new Date().toISOString(),
-      }, { tier: "global" });
+        done: true
+      });
     } finally {
       setSending(false);
     }
@@ -185,19 +188,12 @@ async function safeReadResponseBody(response: Response): Promise<string> {
 }
 
 async function syncChatToEdgeWithTimeout(
-  db: {
-    updateDurable: (
-      table: typeof app.chats,
-      id: string,
-      values: { title: string },
-      options?: { tier?: "worker" | "edge" | "global" }
-    ) => Promise<void>;
-  },
+  db: Db,
   chatId: string,
   title: string
 ) {
   return withTimeout(
-    db.updateDurable(app.chats, chatId, { title }, { tier: "edge" }),
+    db.update(app.chats, chatId, { title }).wait({ tier: "edge" }),
     3000
   );
 }
