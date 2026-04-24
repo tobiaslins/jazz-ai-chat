@@ -8,6 +8,7 @@ import { useAll, useDb, useSession } from "@/lib/jazz-react-client";
 import { app } from "../../../schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Db } from "jazz-tools";
 
 type ChatRole = "user" | "assistant" | "system";
 const CHAT_DEBUG =
@@ -187,19 +188,12 @@ async function safeReadResponseBody(response: Response): Promise<string> {
 }
 
 async function syncChatToEdgeWithTimeout(
-  db: {
-    updateDurable: (
-      table: typeof app.chats,
-      id: string,
-      values: { title: string },
-      options?: { tier?: "local" | "edge" | "global" }
-    ) => Promise<void>;
-  },
+  db: Db,
   chatId: string,
   title: string
 ) {
   return withTimeout(
-    db.updateDurable(app.chats, chatId, { title }, { tier: "edge" }),
+    db.update(app.chats, chatId, { title }).wait({ tier: "edge" }),
     3000
   );
 }

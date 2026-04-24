@@ -82,6 +82,7 @@ export function RenderBenchmark() {
             role: i % 2 === 0 ? "user" : "assistant",
             content: `Benchmark message ${i + 1} (${baseTs})`,
             created_at: new Date(baseTs + i).toISOString(),
+            done: true
           });
 
           if ((i + 1) % INSERT_CHUNK_SIZE === 0) {
