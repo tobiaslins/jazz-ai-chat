@@ -6,6 +6,12 @@ const schema = {
     owner_id: s.string(),
     title: s.string(),
   }),
+  chat_shares: s.table({
+    chat: s.ref("chats"),
+    user_id: s.string(),
+    can_edit: s.boolean(),
+    created_at: s.string(),
+  }),
   cursor_rooms: s.table({
     created_at: s.string(),
     owner_id: s.string(),
@@ -33,6 +39,7 @@ type AppSchema = s.Schema<typeof schema>;
 export const app: s.App<AppSchema> = s.defineApp(schema);
 
 export type Chat = s.RowOf<typeof app.chats>;
+export type ChatShare = s.RowOf<typeof app.chat_shares>;
 export type ChatQueryBuilder = typeof app.chats;
 export type CursorRoom = s.RowOf<typeof app.cursor_rooms>;
 export type CursorPresence = s.RowOf<typeof app.cursor_presences>;

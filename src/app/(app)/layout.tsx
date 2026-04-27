@@ -1,7 +1,9 @@
 "use client";
 
 import JazzProviderClient from "@/components/jazz-provider-client";
-import { StorageResetControl } from "@/components/storage-reset-control";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
+import { AppSidebar } from "./app-sidebar";
 
 export default function AppLayout({
   children,
@@ -10,8 +12,10 @@ export default function AppLayout({
 }>) {
   return (
     <JazzProviderClient>
-      <StorageResetControl />
-      {children}
+      <SidebarProvider>
+        <AppSidebar />
+        <SidebarInset>{children}</SidebarInset>
+      </SidebarProvider>
     </JazzProviderClient>
   );
 }

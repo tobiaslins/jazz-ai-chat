@@ -1,0 +1,179 @@
+{
+  "chats": {
+    "columns": [
+      {
+        "name": "created_at",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "owner_id",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "title",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      }
+    ]
+  },
+  "chat_shares": {
+    "columns": [
+      {
+        "name": "chat",
+        "column_type": {
+          "type": "Uuid"
+        },
+        "nullable": false,
+        "references": "chats"
+      },
+      {
+        "name": "user_id",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "can_edit",
+        "column_type": {
+          "type": "Boolean"
+        },
+        "nullable": false
+      },
+      {
+        "name": "created_at",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      }
+    ]
+  },
+  "cursor_rooms": {
+    "columns": [
+      {
+        "name": "created_at",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "owner_id",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "title",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      }
+    ]
+  },
+  "cursor_presences": {
+    "columns": [
+      {
+        "name": "room",
+        "column_type": {
+          "type": "Uuid"
+        },
+        "nullable": false,
+        "references": "cursor_rooms"
+      },
+      {
+        "name": "client_id",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "color",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "label",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "updated_at",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "x",
+        "column_type": {
+          "type": "Integer"
+        },
+        "nullable": false
+      },
+      {
+        "name": "y",
+        "column_type": {
+          "type": "Integer"
+        },
+        "nullable": false
+      }
+    ]
+  },
+  "messages": {
+    "columns": [
+      {
+        "name": "chat",
+        "column_type": {
+          "type": "Uuid"
+        },
+        "nullable": false,
+        "references": "chats"
+      },
+      {
+        "name": "content",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "created_at",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "role",
+        "column_type": {
+          "type": "Text"
+        },
+        "nullable": false
+      },
+      {
+        "name": "done",
+        "column_type": {
+          "type": "Boolean"
+        },
+        "nullable": false
+      }
+    ]
+  }
+}

@@ -1,18 +1,47 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
-import { Send } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Check, Send, X } from "lucide-react";
 import { useAll, useDb, useSession } from "@/lib/jazz-react-client";
 
-import { app } from "../../../schema";
+import { app, type Chat } from "../../../schema";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { SidebarTrigger } from "@/components/ui/sidebar";
+import { ModelSelector } from "@/components/ui/model-selector";
+import { defaultModel, type ModelId } from "@/lib/models";
 import { Db } from "jazz-tools";
+
+import { MessageContent } from "./message-content";
+
+const MODEL_STORAGE_KEY = "jazz-chat:selected-model";
+
+function useSelectedModel() {
+  const [model, setModel] = useState<ModelId>(defaultModel);
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(MODEL_STORAGE_KEY);
+      if (stored) setModel(stored as ModelId);
+    } catch {}
+  }, []);
+
+  const update = (next: ModelId) => {
+    setModel(next);
+    try {
+      window.localStorage.setItem(MODEL_STORAGE_KEY, next);
+    } catch {}
+  };
+
+  return [model, update] as const;
+}
 
 type ChatRole = "user" | "assistant" | "system";
 const CHAT_DEBUG =
   process.env.NEXT_PUBLIC_CHAT_DEBUG === "1" || process.env.NODE_ENV !== "production";
+const DEFAULT_CHAT_TITLE = "New chat";
+const AUTO_TITLE_MAX_LENGTH = 60;
 
 export function RenderChat({ chatId }: { chatId: string }) {
   const db = useDb();
@@ -28,6 +57,7 @@ export function RenderChat({ chatId }: { chatId: string }) {
 
   const [value, setValue] = useState("");
   const [sending, setSending] = useState(false);
+  const [model, setModel] = useSelectedModel();
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -35,7 +65,6 @@ export function RenderChat({ chatId }: { chatId: string }) {
     if (!chat || !content) return;
 
     const now = new Date().toISOString();
-    console.log("now", now);
 
     try {
       await db.insert(
@@ -47,8 +76,15 @@ export function RenderChat({ chatId }: { chatId: string }) {
           created_at: now,
           done: false
         },
-        
       );
+
+      // Auto-title the chat from the first user message.
+      if (!chat.title || chat.title === DEFAULT_CHAT_TITLE) {
+        const autoTitle = buildAutoTitle(content);
+        if (autoTitle) {
+          db.update(app.chats, chatId, { title: autoTitle });
+        }
+      }
 
       setValue("");
       setSending(true);
@@ -61,6 +97,7 @@ export function RenderChat({ chatId }: { chatId: string }) {
             chatId,
             latestUserMessage: content,
             sessionUserId,
+            model,
           }),
         });
 
@@ -111,16 +148,23 @@ export function RenderChat({ chatId }: { chatId: string }) {
   }
 
   return (
-    <div className="mx-auto flex h-[100dvh] w-full max-w-3xl flex-col bg-white">
-      <header className="flex items-center justify-between border-b px-4 py-3">
-        <h1 className="text-sm font-semibold">Jazz2 Minimal AI Chat</h1>
-
-        <div className="flex items-center gap-3">
-          <span className="text-xs text-gray-500">{chatId.slice(0, 8)}</span>
-          <Link href="/chat/new" className="text-xs text-blue-700 hover:underline">
-            New chat
-          </Link>
+    <div className="flex h-[100dvh] w-full flex-col bg-white">
+      <header className="flex items-center gap-2 border-b px-4 py-3">
+        <SidebarTrigger className="-ml-1" />
+        <div className="min-w-0 flex-1">
+          {chat ? (
+            <EditableTitle chat={chat} />
+          ) : (
+            <h1 className="truncate text-sm font-semibold text-gray-500">
+              Chat not found
+            </h1>
+          )}
         </div>
+        <ModelSelector
+          selectedModel={model}
+          setSelectedModel={setModel}
+          singleLine
+        />
       </header>
 
       <main className="flex-1 space-y-3 overflow-y-auto p-4">
@@ -148,7 +192,11 @@ export function RenderChat({ chatId }: { chatId: string }) {
                     : "rounded-bl-sm bg-gray-100 text-gray-900"
                 }`}
               >
-                {message.content}
+                {isUser ? (
+                  <span className="whitespace-pre-wrap">{message.content}</span>
+                ) : (
+                  <MessageContent content={message.content} />
+                )}
               </div>
             </div>
           );
@@ -161,15 +209,102 @@ export function RenderChat({ chatId }: { chatId: string }) {
             value={value}
             onChange={(event) => setValue(event.target.value)}
             placeholder="Type a message..."
-            disabled={!chat}
+            disabled={!chat || sending}
           />
-          <Button type="submit" size="icon" disabled={  !chat || !value.trim()}>
+          <Button type="submit" size="icon" disabled={!chat || sending || !value.trim()}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
       </form>
     </div>
   );
+}
+
+function EditableTitle({ chat }: { chat: Chat }) {
+  const db = useDb();
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState(chat.title);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+
+  useEffect(() => {
+    if (!editing) {
+      setDraft(chat.title);
+    }
+  }, [chat.title, editing]);
+
+  useEffect(() => {
+    if (editing) {
+      inputRef.current?.focus();
+      inputRef.current?.select();
+    }
+  }, [editing]);
+
+  async function save() {
+    const next = draft.trim();
+    if (!next || next === chat.title) {
+      setEditing(false);
+      setDraft(chat.title);
+      return;
+    }
+    try {
+      await db.update(app.chats, chat.id, { title: next });
+    } finally {
+      setEditing(false);
+    }
+  }
+
+  function cancel() {
+    setDraft(chat.title);
+    setEditing(false);
+  }
+
+  if (editing) {
+    return (
+      <div className="flex items-center gap-1">
+        <Input
+          ref={inputRef}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              void save();
+            } else if (event.key === "Escape") {
+              event.preventDefault();
+              cancel();
+            }
+          }}
+          className="h-7 text-sm"
+        />
+        <Button type="button" size="icon" variant="ghost" className="h-7 w-7" onClick={save}>
+          <Check className="h-4 w-4" />
+        </Button>
+        <Button type="button" size="icon" variant="ghost" className="h-7 w-7" onClick={cancel}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={() => setEditing(true)}
+      className="truncate rounded px-1 text-left text-sm font-semibold hover:bg-gray-100"
+      title="Click to rename"
+    >
+      {chat.title?.trim() || "Untitled chat"}
+    </button>
+  );
+}
+
+function buildAutoTitle(content: string): string {
+  const firstLine = content.split("\n").find((line) => line.trim().length > 0) ?? content;
+  const trimmed = firstLine.trim();
+  if (trimmed.length <= AUTO_TITLE_MAX_LENGTH) {
+    return trimmed;
+  }
+  return `${trimmed.slice(0, AUTO_TITLE_MAX_LENGTH).trimEnd()}…`;
 }
 
 function normalizeRole(role: string): ChatRole {
