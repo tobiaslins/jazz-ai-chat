@@ -5,5 +5,6 @@ export default withJazz(
   {},
   {
     server: false,
+    
   },
 );

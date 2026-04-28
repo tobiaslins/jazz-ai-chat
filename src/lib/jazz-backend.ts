@@ -4,7 +4,6 @@ import { app } from "../../schema";
 import permissions from "../../permissions";
 
 const DEFAULT_SERVER_URL = "https://v2.sync.jazz.tools/";
-const DEFAULT_BACKEND_DATA_PATH = `./data/backend-runtime-${process.pid}`;
 const REQUIRED_APP_ID_ENV = "JAZZ_APP_ID";
 const REQUIRED_BACKEND_SECRET_ENV = "JAZZ_BACKEND_SECRET";
 const SYNC_TRACE_ENABLED = process.env.JAZZ_SYNC_TRACE === "1";

@@ -47,11 +47,7 @@ export function AppSidebar() {
   const params = useParams<{ id?: string }>();
   const currentChatId = params?.id ?? null;
 
-  const chatsQuery = useMemo(
-    () => app.chats.orderBy("created_at", "desc").limit(100),
-    []
-  );
-  const chats = useAll(chatsQuery) ?? [];
+  const chats = useAll(app.chats.orderBy("created_at", "desc").limit(100)) ?? [];
 
   const [renameTarget, setRenameTarget] = useState<Chat | null>(null);
   const [shareTarget, setShareTarget] = useState<Chat | null>(null);
@@ -67,6 +63,8 @@ export function AppSidebar() {
   function isOwner(chat: Chat) {
     return sessionUserId !== null && chat.owner_id === sessionUserId;
   }
+
+  console.log(chats)
 
   return (
     <>
