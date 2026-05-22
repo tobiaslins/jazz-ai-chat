@@ -5,6 +5,6 @@ export default withJazz(
   {},
   {
     server: false,
-    
+    adminSecret: process.env.JAZZ_ADMIN_SECRET
   },
 );

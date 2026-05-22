@@ -18,7 +18,8 @@ export const jazzClientConfig = {
   appId: APP_ID,
   serverUrl: process.env.NEXT_PUBLIC_JAZZ_SERVER_URL || DEFAULT_SERVER_URL,
   env: process.env.NODE_ENV === "production" ? "prod" : "dev",
-  userBranch: "main",
+  adminSecret: process.env.JAZZ_ADMIN_SECRET || 'u6sd7BzaWACU-_nlWl8INa1pSCTSOsJl',
+  
   // runtimeSources: {
   //   workerUrl: "/jazz-runtime/worker/jazz-worker.js",
   //   wasmUrl: "/jazz-runtime/pkg/jazz_wasm_bg.wasm",
