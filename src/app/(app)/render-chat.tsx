@@ -56,7 +56,6 @@ export function RenderChat({ chatId }: { chatId: string }) {
   const messages = useAll(query) ?? [];
 
   const [value, setValue] = useState("");
-  const [sending, setSending] = useState(false);
   const [model, setModel] = useSelectedModel();
 
   async function onSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -87,7 +86,6 @@ export function RenderChat({ chatId }: { chatId: string }) {
       }
 
       setValue("");
-      setSending(true);
       debugLog("submit_started", { chatId, contentLength: content.length });
       const sendChatRequest = () =>
         fetch("/api/chat", {
@@ -142,8 +140,6 @@ export function RenderChat({ chatId }: { chatId: string }) {
         created_at: new Date().toISOString(),
         done: true
       });
-    } finally {
-      setSending(false);
     }
   }
 
@@ -209,9 +205,9 @@ export function RenderChat({ chatId }: { chatId: string }) {
             value={value}
             onChange={(event) => setValue(event.target.value)}
             placeholder="Type a message..."
-            disabled={!chat || sending}
+            disabled={!chat}
           />
-          <Button type="submit" size="icon" disabled={!chat || sending || !value.trim()}>
+          <Button type="submit" size="icon" disabled={!chat || !value.trim()}>
             <Send className="h-4 w-4" />
           </Button>
         </div>
