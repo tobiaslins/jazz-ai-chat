@@ -16,7 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "Jazz AI Chat",
-  description: "A AI chat built with Jazz",
+  description: "AI chat built with Jazz",
 };
 
 export default function RootLayout({
