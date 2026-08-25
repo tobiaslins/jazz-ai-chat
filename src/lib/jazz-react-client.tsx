@@ -1,9 +1,15 @@
 "use client";
 
 import * as React from "react";
-import { use, type ReactNode } from "react";
+import { type ReactNode } from "react";
 import {
   createJazzClient as createJazzClientFromPackage,
+  JazzClientProvider as JazzClientProviderFromPackage,
+  useAll as useAllFromPackage,
+  useAllSuspense as useAllSuspenseFromPackage,
+  useDb as useDbFromPackage,
+  useJazzClient as useJazzClientFromPackage,
+  useSession as useSessionFromPackage,
 } from "jazz-tools/react";
 import { BrowserAuthSecretStore } from "jazz-tools";
 import type { QueryBuilder, QueryOptions } from "jazz-tools/react-core";
@@ -12,7 +18,6 @@ import { getJazzAuthSecretStorageKey } from "@/lib/jazz-client-config";
 
 type JazzClient = Awaited<ReturnType<typeof createJazzClientFromPackage>>;
 type DbConfig = Parameters<typeof createJazzClientFromPackage>[0];
-type AuthState = ReturnType<JazzClient["db"]["getAuthState"]>;
 type Session = JazzClient["session"];
 
 type JazzClientProviderProps = {
@@ -26,11 +31,6 @@ type JazzProviderProps = {
   children: ReactNode;
 };
 
-type JazzContextValue = {
-  client: JazzClient;
-  authState: AuthState;
-};
-
 type CachedClientEntry = {
   configKey: string;
   createJazzClient: typeof createJazzClient;
@@ -38,21 +38,6 @@ type CachedClientEntry = {
   refs: number;
   releaseTimer: ReturnType<typeof setTimeout> | null;
 };
-
-type QueryCacheEntry<T> = {
-  state:
-    | { status: "pending"; promise: Promise<T[]> }
-    | { status: "fulfilled"; data: T[] }
-    | { status: "rejected"; error: unknown };
-  subscribe(listener: {
-    onfulfilled(): void;
-    onDelta(): void;
-    onError(): void;
-  }): () => void;
-};
-
-const JazzContext = React.createContext<JazzContextValue | null>(null);
-const SUSPEND_FOREVER: Promise<never> = new Promise(() => {});
 
 let cachedClientEntry: CachedClientEntry | null = null;
 
@@ -97,8 +82,10 @@ async function resolveJazzClientConfig(config: DbConfig): Promise<DbConfig> {
     key: getJazzAuthSecretStorageKey(config.appId),
   }).getOrCreateSecret();
 
+  const { jwtToken: _jwtToken, cookieSession: _cookieSession, ...secretConfig } = config;
+
   return {
-    ...config,
+    ...secretConfig,
     secret: localFirstSecret,
   };
 }
@@ -128,16 +115,11 @@ function releaseClient(configKey: string) {
 }
 
 export function JazzClientProvider({ client, children }: JazzClientProviderProps) {
-  const [authState, setAuthState] = React.useState(() => client.db.getAuthState());
-
-  React.useEffect(() => {
-    setAuthState(client.db.getAuthState());
-    return client.db.onAuthChanged((nextAuthState) => {
-      setAuthState(nextAuthState);
-    });
-  }, [client]);
-
-  return <JazzContext.Provider value={{ client, authState }}>{children}</JazzContext.Provider>;
+  return (
+    <JazzClientProviderFromPackage client={client}>
+      {children}
+    </JazzClientProviderFromPackage>
+  );
 }
 
 export function JazzProvider({ config, fallback, children }: JazzProviderProps) {
@@ -182,99 +164,27 @@ export function JazzProvider({ config, fallback, children }: JazzProviderProps) 
 }
 
 export function useJazzClient(): JazzClient {
-  const ctx = React.useContext(JazzContext);
-  if (!ctx) {
-    throw new Error("useDb must be used within <JazzProvider>");
-  }
-  return ctx.client;
+  return useJazzClientFromPackage() as JazzClient;
 }
 
 export function useDb(): JazzClient["db"] {
-  return useJazzClient().db;
+  return useDbFromPackage();
 }
 
 export function useSession(): Session {
-  return useJazzClient().session ?? null;
-}
-
-function useAllBase<T extends { id: string }>(
-  query?: QueryBuilder<T>,
-  queryOptions?: QueryOptions,
-  options?: { suspense?: boolean }
-): T[] | undefined {
-  const { suspense = false } = options ?? {};
-  const { manager } = useJazzClient();
-
-  const entry = React.useMemo(() => {
-    if (!query) {
-      return null;
-    }
-
-    const typedManager = manager as {
-      makeQueryKey(query: QueryBuilder<T>, options?: QueryOptions): string;
-      getCacheEntry<TItem>(key: string): QueryCacheEntry<TItem>;
-    };
-
-    const key = typedManager.makeQueryKey(query, queryOptions);
-    return typedManager.getCacheEntry<T>(key);
-  }, [manager, query, queryOptions]);
-
-  const dispatch = React.useReducer(
-    (_state: QueryCacheEntry<T>["state"] | undefined, action: QueryCacheEntry<T>["state"]) =>
-      action,
-    entry?.state
-  )[1];
-
-  React.useLayoutEffect(() => {
-    if (!entry) {
-      return;
-    }
-
-    return entry.subscribe({
-      onfulfilled: () => {
-        dispatch(entry.state);
-      },
-      onDelta: () => {
-        dispatch(entry.state);
-      },
-      onError: () => {
-        dispatch(entry.state);
-      },
-    });
-  }, [entry]);
-
-  if (!entry) {
-    if (suspense) {
-      return use(SUSPEND_FOREVER as Promise<T[]>);
-    }
-    return undefined;
-  }
-
-  const state = entry.state;
-
-  if (suspense) {
-    if (state.status === "pending") {
-      return use(state.promise);
-    }
-
-    if (state.status === "rejected") {
-      throw state.error;
-    }
-  }
-
-  return state.status === "fulfilled" ? state.data : undefined;
+  return useSessionFromPackage();
 }
 
 export function useAll<T extends { id: string }>(
   query?: QueryBuilder<T>,
   options?: QueryOptions
 ): T[] | undefined {
-  return useAllBase<T>(query, options, { suspense: false });
+  return useAllFromPackage<T>(query, options).data;
 }
 
 export function useAllSuspense<T extends { id: string }>(
   query?: QueryBuilder<T>,
   options?: QueryOptions
 ): T[] {
-  return useAllBase<T>(query, options, { suspense: true }) as T[];
+  return useAllSuspenseFromPackage<T>(query, options);
 }
