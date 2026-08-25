@@ -75,8 +75,8 @@ importers:
         specifier: ^2.1.18
         version: 2.1.18(csstype@3.1.3)
       jazz-tools:
-        specifier: 2.0.0-alpha.49
-        version: 2.0.0-alpha.49(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.5))(react@19.2.5)
+        specifier: https://pkg.pr.new/garden-co/jazz/jazz-tools@c78fb5f
+        version: https://pkg.pr.new/garden-co/jazz/jazz-tools@c78fb5f(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.5))(react@19.2.5)
       lucide-react:
         specifier: ^0.471.0
         version: 0.471.0(react@19.2.5)
@@ -496,20 +496,25 @@ packages:
   '@floating-ui/utils@0.2.9':
     resolution: {integrity: sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==}
 
-  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.49':
-    resolution: {integrity: sha512-khlOf3razdOPJAUk9C2SG8Iv/CvjeE4bTYBkBDKnys47Y/7XoAuBby0R3+gYPlmni1cdQAp1WSv1Og/pm8lRfw==}
-    cpu: [arm64]
+  '@garden-co/jazz-napi-darwin-arm64@https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-darwin-arm64@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f':
+    resolution: {tarball: https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-darwin-arm64@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f}
+    version: 2.0.0-alpha.53
     os: [darwin]
 
-  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.49':
-    resolution: {integrity: sha512-qffT4B4NhuOuOcxnn52zO/Gl5SbyEFbloiL/ilc2JcXB56alWFgFoiFDdP4H6Qd5pAX6OkChIv6hfSU+NZuPYQ==}
-    cpu: [x64]
+  '@garden-co/jazz-napi-darwin-x64@https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-darwin-x64@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f':
+    resolution: {tarball: https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-darwin-x64@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f}
+    version: 2.0.0-alpha.53
     os: [darwin]
 
-  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.49':
-    resolution: {integrity: sha512-V7mSoExTG5lSlmZpi3e8x/uE8duKLRMkHVS6tAM9HKpYHDoOJiHHXs3WiwgHgYw/29gyr/sSYVVtAYCbE2frdA==}
-    cpu: [x64]
+  '@garden-co/jazz-napi-linux-x64-gnu@https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-linux-x64-gnu@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f':
+    resolution: {tarball: https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-linux-x64-gnu@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f}
+    version: 2.0.0-alpha.53
     os: [linux]
+
+  '@garden-co/jazz-napi-win32-x64-msvc@https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-win32-x64-msvc@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f':
+    resolution: {tarball: https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-win32-x64-msvc@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f}
+    version: 2.0.0-alpha.53
+    os: [win32]
 
   '@img/colour@1.0.0':
     resolution: {integrity: sha512-A5P/LfWGFSl6nsckYtjw9da+19jB8hkJ6ACTGcDfEJ0aE+l2n2El7dsVM7UVHZQ9s2lmYMWlrS21YLy2IR1LUw==}
@@ -2460,21 +2465,24 @@ packages:
   jackspeak@3.4.3:
     resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
 
-  jazz-napi@2.0.0-alpha.49:
-    resolution: {integrity: sha512-dBf8vofeJ6zdrBVZNrAAs0fMnaHSXqE6V9Ul282cmXAshJvrDx4Tztn/HEVCeSel29QicaMGR666TzEBmBgtMg==}
+  jazz-napi@https://pkg.pr.new/garden-co/jazz/jazz-napi@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f:
+    resolution: {tarball: https://pkg.pr.new/garden-co/jazz/jazz-napi@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f}
+    version: 2.0.0-alpha.53
 
-  jazz-tools@2.0.0-alpha.49:
-    resolution: {integrity: sha512-NjER3UPZbZTmIoMHbUmyK87M0E4NHVEkKM5LXWfgD1ocfWwed+teH1PAawDiTsws0noIKy7u3JH7MLS+N5odTQ==}
-    engines: {node: '>=20'}
+  jazz-tools@https://pkg.pr.new/garden-co/jazz/jazz-tools@c78fb5f:
+    resolution: {tarball: https://pkg.pr.new/garden-co/jazz/jazz-tools@c78fb5f}
+    version: 2.0.0-alpha.53
+    engines: {node: '>=22.12'}
     hasBin: true
     peerDependencies:
-      better-auth: ^1.5.5
+      better-auth: 1.6.24
       expo: '>=54'
       expo-crypto: '>=14.0.0'
       expo-secure-store: '>=14.0.0'
-      jazz-rn: 2.0.0-alpha.49
+      jazz-rn: 2.0.0-alpha.53
       react: '>=19'
       react-native: '>=0.76'
+      solid-js: '>=1.9.13'
       svelte: ^5.0.0
       vue: ^3.5.0
     peerDependenciesMeta:
@@ -2492,13 +2500,16 @@ packages:
         optional: true
       react-native:
         optional: true
+      solid-js:
+        optional: true
       svelte:
         optional: true
       vue:
         optional: true
 
-  jazz-wasm@2.0.0-alpha.49:
-    resolution: {integrity: sha512-bQ2k0OdjuWcuQYotr583D1FxHYe1DUk4o7sdgGj5SImSwbdyGtdngN+Jr+6m6VHMQyz7OvYo0ASSF8t5WLmycQ==}
+  jazz-wasm@https://pkg.pr.new/garden-co/jazz/jazz-wasm@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f:
+    resolution: {tarball: https://pkg.pr.new/garden-co/jazz/jazz-wasm@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f}
+    version: 2.0.0-alpha.53
 
   jest-environment-node@29.7.0:
     resolution: {integrity: sha512-DOSwCRqXirTOyheM+4d5YZOrWcdu0LNZ87ewUoywbcb2XR4wKgqiG8vNeYwhjFMbEkfju7wx2GYH0P2gevGvFw==}
@@ -3917,13 +3928,16 @@ snapshots:
 
   '@floating-ui/utils@0.2.9': {}
 
-  '@garden-co/jazz-napi-darwin-arm64@2.0.0-alpha.49':
+  '@garden-co/jazz-napi-darwin-arm64@https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-darwin-arm64@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f':
     optional: true
 
-  '@garden-co/jazz-napi-darwin-x64@2.0.0-alpha.49':
+  '@garden-co/jazz-napi-darwin-x64@https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-darwin-x64@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f':
     optional: true
 
-  '@garden-co/jazz-napi-linux-x64-gnu@2.0.0-alpha.49':
+  '@garden-co/jazz-napi-linux-x64-gnu@https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-linux-x64-gnu@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f':
+    optional: true
+
+  '@garden-co/jazz-napi-win32-x64-msvc@https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-win32-x64-msvc@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f':
     optional: true
 
   '@img/colour@1.0.0':
@@ -5878,15 +5892,17 @@ snapshots:
     optionalDependencies:
       '@pkgjs/parseargs': 0.11.0
 
-  jazz-napi@2.0.0-alpha.49:
+  jazz-napi@https://pkg.pr.new/garden-co/jazz/jazz-napi@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f:
     optionalDependencies:
-      '@garden-co/jazz-napi-darwin-arm64': 2.0.0-alpha.49
-      '@garden-co/jazz-napi-darwin-x64': 2.0.0-alpha.49
-      '@garden-co/jazz-napi-linux-x64-gnu': 2.0.0-alpha.49
+      '@garden-co/jazz-napi-darwin-arm64': https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-darwin-arm64@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f
+      '@garden-co/jazz-napi-darwin-x64': https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-darwin-x64@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f
+      '@garden-co/jazz-napi-linux-x64-gnu': https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-linux-x64-gnu@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f
+      '@garden-co/jazz-napi-win32-x64-msvc': https://pkg.pr.new/garden-co/jazz/@garden-co/jazz-napi-win32-x64-msvc@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f
     optional: true
 
-  jazz-tools@2.0.0-alpha.49(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.5))(react@19.2.5):
+  jazz-tools@https://pkg.pr.new/garden-co/jazz/jazz-tools@c78fb5f(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.5))(react@19.2.5):
     dependencies:
+      '@noble/hashes': 2.0.1
       '@opentelemetry/api': 1.9.1
       '@opentelemetry/exporter-logs-otlp-http': 0.216.0(@opentelemetry/api@1.9.1)
       '@opentelemetry/exporter-trace-otlp-http': 0.216.0(@opentelemetry/api@1.9.1)
@@ -5896,17 +5912,17 @@ snapshots:
       '@scure/bip39': 2.0.1
       '@standard-schema/spec': 1.1.0
       esbuild: 0.27.3
-      jazz-wasm: 2.0.0-alpha.49
+      jazz-wasm: https://pkg.pr.new/garden-co/jazz/jazz-wasm@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f
       jose: 6.2.2
       json-schema-to-ts: 3.1.1
       pluralize-esm: 9.0.5
       web-streams-polyfill: 4.2.0
     optionalDependencies:
-      jazz-napi: 2.0.0-alpha.49
+      jazz-napi: https://pkg.pr.new/garden-co/jazz/jazz-napi@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f
       react: 19.2.5
       react-native: 0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.5)
 
-  jazz-wasm@2.0.0-alpha.49: {}
+  jazz-wasm@https://pkg.pr.new/garden-co/jazz/jazz-wasm@c78fb5f9e6d7de8688ce8cb8f120c49541b95e3f: {}
 
   jest-environment-node@29.7.0:
     dependencies:

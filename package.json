@@ -34,7 +34,7 @@
     "cmdk": "^1.1.1",
     "framer-motion": "^11.17.0",
     "goober": "^2.1.18",
-    "jazz-tools": "2.0.0-alpha.49",
+    "jazz-tools": "https://pkg.pr.new/garden-co/jazz/jazz-tools@c78fb5f",
     "lucide-react": "^0.471.0",
     "next": "16.2.4",
     "react": "^19.2.5",
