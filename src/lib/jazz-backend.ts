@@ -1,4 +1,4 @@
-import { createRequire } from "node:module";
+import path from "node:path";
 
 import type { Db, JazzClient } from "jazz-tools/backend";
 
@@ -90,9 +90,12 @@ function configureJazzNapiBinding() {
     return;
   }
 
-  const require = createRequire(import.meta.url);
-  process.env.NAPI_RS_NATIVE_LIBRARY_PATH = require.resolve(
-    "@garden-co/jazz-napi-linux-x64-gnu"
+  process.env.NAPI_RS_NATIVE_LIBRARY_PATH = path.join(
+    process.cwd(),
+    "node_modules",
+    "@garden-co",
+    "jazz-napi-linux-x64-gnu",
+    "jazz-napi.linux-x64-gnu.node"
   );
 }
 
