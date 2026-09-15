@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { useAll, useDb, useSession } from "@/lib/jazz-react-client";
+import { getSessionUserId, useAll, useDb, useSession } from "@/lib/jazz-react-client";
 
 import { app } from "../../../../schema";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ const ORDER_OPTIONS: OrderOption[] = [
 export function RenderBenchmark() {
   const db = useDb();
   const session = useSession();
-  const sessionUserId = session?.user_id ?? null;
+  const sessionUserId = getSessionUserId(session);
 
   const [order, setOrder] = useState<OrderOption>(ORDER_OPTIONS[0]);
   const [busy, setBusy] = useState(false);

@@ -5,7 +5,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { MoreHorizontal, Pencil, Plus, Share2, Trash2, Users } from "lucide-react";
 
-import { useAll, useDb, useSession } from "@/lib/jazz-react-client";
+import { getSessionUserId, useAll, useDb, useSession } from "@/lib/jazz-react-client";
 import { app, type Chat } from "../../../schema";
 
 import { ShareChatDialog } from "./share-chat-dialog";
@@ -43,7 +43,7 @@ export function AppSidebar() {
   const db = useDb();
   const router = useRouter();
   const session = useSession();
-  const sessionUserId = session?.user_id ?? null;
+  const sessionUserId = getSessionUserId(session);
   const params = useParams<{ id?: string }>();
   const currentChatId = params?.id ?? null;
 

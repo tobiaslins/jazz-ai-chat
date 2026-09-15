@@ -1,4 +1,4 @@
-import { createJazzContext, type Db } from "jazz-tools/backend";
+import { createJazzSession, type Db, type JazzClient } from "jazz-tools/backend";
 
 import { app } from "../../schema";
 import permissions from "../../permissions";
@@ -31,7 +31,7 @@ if (!BACKEND_SECRET) {
 let fetchTracingInstalled = false;
 installSyncFetchTracing();
 
-const backendContext = createJazzContext({
+const backendSessionPromise = createJazzSession({
   appId: APP_ID,
   app,
   permissions,
@@ -39,23 +39,27 @@ const backendContext = createJazzContext({
     type: "memory"
   },
   serverUrl: SERVER_URL,
-  backendSecret: BACKEND_SECRET,
+  initial: { backendSecret: BACKEND_SECRET },
   env: process.env.NODE_ENV === "production" ? "prod" : "dev",
-  userBranch: "main",
 });
 
-let jazzBackendDb: Db | null = null;
+let jazzBackendClient: JazzClient | null = null;
 
-export async function getJazzBackendDb() {
-  if (!jazzBackendDb) {
-    jazzBackendDb = backendContext.asBackend();
+export async function getJazzBackendClient() {
+  if (!jazzBackendClient) {
+    const backendSession = await backendSessionPromise;
+    const snapshot = backendSession.getSnapshot();
+    if (snapshot.status !== "ready" || !snapshot.client) {
+      throw new Error(`Jazz backend session is not ready: ${snapshot.status}`);
+    }
+    jazzBackendClient = snapshot.client;
   }
 
-  return jazzBackendDb;
+  return jazzBackendClient;
 }
 
-export function getJazzBackendContext() {
-  return backendContext;
+export async function getJazzBackendDb(): Promise<Db> {
+  return (await getJazzBackendClient()).db;
 }
 
 function installSyncFetchTracing() {

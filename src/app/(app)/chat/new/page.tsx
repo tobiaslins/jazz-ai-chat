@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import { useDb, useSession } from "@/lib/jazz-react-client";
+import { getSessionUserId, useDb, useSession } from "@/lib/jazz-react-client";
 
 import { app } from "../../../../../schema";
 
@@ -12,7 +12,7 @@ const CHAT_DEBUG =
 export default function NewChatPage() {
   const db = useDb();
   const session = useSession();
-  const sessionUserId = session?.user_id ?? null;
+  const sessionUserId = getSessionUserId(session);
   const router = useRouter();
   const createChatPromiseRef = useRef<
     Promise<{ chatId: string; title: string }>

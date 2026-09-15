@@ -3,6 +3,7 @@
 import * as React from "react";
 import { type ReactNode } from "react";
 import {
+  createAccountManager,
   createJazzClient as createJazzClientFromPackage,
   JazzClientProvider as JazzClientProviderFromPackage,
   useAll as useAllFromPackage,
@@ -10,15 +11,19 @@ import {
   useDb as useDbFromPackage,
   useJazzClient as useJazzClientFromPackage,
   useSession as useSessionFromPackage,
+  type AccountHandle,
 } from "jazz-tools/react";
-import { BrowserAuthSecretStore } from "jazz-tools";
+import { userIdentity } from "jazz-tools";
 import type { QueryBuilder, QueryOptions } from "jazz-tools/react-core";
 
-import { getJazzAuthSecretStorageKey } from "@/lib/jazz-client-config";
-
 type JazzClient = Awaited<ReturnType<typeof createJazzClientFromPackage>>;
-type DbConfig = Parameters<typeof createJazzClientFromPackage>[0];
+type PackageDbConfig = Parameters<typeof createJazzClientFromPackage>[0];
 type Session = JazzClient["session"];
+type DbConfig = Omit<PackageDbConfig, "account"> & {
+  account?: AccountHandle;
+  appId: string;
+  serverUrl: string;
+};
 
 type JazzClientProviderProps = {
   client: JazzClient;
@@ -73,20 +78,25 @@ function acquireClient(
   return cachedClientEntry.initPromise;
 }
 
-async function resolveJazzClientConfig(config: DbConfig): Promise<DbConfig> {
-  if (config.secret || config.jwtToken || typeof window === "undefined") {
-    return config;
+async function resolveJazzClientConfig(config: DbConfig): Promise<PackageDbConfig> {
+  if (config.account) {
+    return {
+      ...config,
+      account: config.account,
+    };
   }
 
-  const localFirstSecret = await new BrowserAuthSecretStore({
-    key: getJazzAuthSecretStorageKey(config.appId),
-  }).getOrCreateSecret();
-
-  const { jwtToken: _jwtToken, cookieSession: _cookieSession, ...secretConfig } = config;
+  const accountManager = await createAccountManager({
+    appId: config.appId,
+    serverUrl: config.serverUrl,
+    env: config.env,
+    runtimeSources: config.runtimeSources,
+  });
+  const account = accountManager.getLoggedIn() ?? accountManager.createLocalFirst();
 
   return {
-    ...secretConfig,
-    secret: localFirstSecret,
+    ...config,
+    account,
   };
 }
 
@@ -173,6 +183,18 @@ export function useDb(): JazzClient["db"] {
 
 export function useSession(): Session {
   return useSessionFromPackage();
+}
+
+export function getSessionUserId(session: Session): string | null {
+  if (!session?.user) {
+    return null;
+  }
+
+  return userIdentity(
+    session.user.identity.issuer,
+    session.user.identity.subject,
+    session.user.account ?? undefined
+  );
 }
 
 export function useAll<T extends { id: string }>(

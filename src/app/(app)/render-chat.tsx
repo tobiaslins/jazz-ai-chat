@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Check, Send, X } from "lucide-react";
-import { useAll, useDb, useSession } from "@/lib/jazz-react-client";
+import { getSessionUserId, useAll, useDb, useSession } from "@/lib/jazz-react-client";
 
 import { app, type Chat } from "../../../schema";
 import { Button } from "@/components/ui/button";
@@ -46,7 +46,7 @@ const AUTO_TITLE_MAX_LENGTH = 60;
 export function RenderChat({ chatId }: { chatId: string }) {
   const db = useDb();
   const session = useSession();
-  const sessionUserId = session?.user_id ?? null;
+  const sessionUserId = getSessionUserId(session);
   const chatQuery = useMemo(() => app.chats.where({ id: chatId }).limit(1), [chatId]);
   const query = useMemo(
     () => app.messages.where({ chat: chatId }).orderBy("created_at", "asc"),
