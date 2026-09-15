@@ -1,4 +1,6 @@
-import { createJazzSession, type Db, type JazzClient } from "jazz-tools/backend";
+import { createRequire } from "node:module";
+
+import type { Db, JazzClient } from "jazz-tools/backend";
 
 import { app } from "../../schema";
 import permissions from "../../permissions";
@@ -28,26 +30,43 @@ if (!BACKEND_SECRET) {
   );
 }
 
+const JAZZ_APP_ID = APP_ID;
+const JAZZ_BACKEND_SECRET = BACKEND_SECRET;
+
 let fetchTracingInstalled = false;
 installSyncFetchTracing();
 
-const backendSessionPromise = createJazzSession({
-  appId: APP_ID,
-  app,
-  permissions,
-  driver:{
-    type: "memory"
-  },
-  serverUrl: SERVER_URL,
-  initial: { backendSecret: BACKEND_SECRET },
-  env: process.env.NODE_ENV === "production" ? "prod" : "dev",
-});
+type JazzBackendModule = typeof import("jazz-tools/backend");
+type BackendSession = Awaited<ReturnType<JazzBackendModule["createJazzSession"]>>;
+
+let backendSessionPromise: Promise<BackendSession> | null = null;
 
 let jazzBackendClient: JazzClient | null = null;
 
+function getBackendSession() {
+  if (!backendSessionPromise) {
+    configureJazzNapiBinding();
+    backendSessionPromise = import("jazz-tools/backend").then(({ createJazzSession }) =>
+      createJazzSession({
+        appId: JAZZ_APP_ID,
+        app,
+        permissions,
+        driver: {
+          type: "memory",
+        },
+        serverUrl: SERVER_URL,
+        initial: { backendSecret: JAZZ_BACKEND_SECRET },
+        env: process.env.NODE_ENV === "production" ? "prod" : "dev",
+      })
+    );
+  }
+
+  return backendSessionPromise;
+}
+
 export async function getJazzBackendClient() {
   if (!jazzBackendClient) {
-    const backendSession = await backendSessionPromise;
+    const backendSession = await getBackendSession();
     const snapshot = backendSession.getSnapshot();
     if (snapshot.status !== "ready" || !snapshot.client) {
       throw new Error(`Jazz backend session is not ready: ${snapshot.status}`);
@@ -60,6 +79,21 @@ export async function getJazzBackendClient() {
 
 export async function getJazzBackendDb(): Promise<Db> {
   return (await getJazzBackendClient()).db;
+}
+
+function configureJazzNapiBinding() {
+  if (
+    process.platform !== "linux" ||
+    process.arch !== "x64" ||
+    process.env.NAPI_RS_NATIVE_LIBRARY_PATH
+  ) {
+    return;
+  }
+
+  const require = createRequire(import.meta.url);
+  process.env.NAPI_RS_NATIVE_LIBRARY_PATH = require.resolve(
+    "@garden-co/jazz-napi-linux-x64-gnu"
+  );
 }
 
 function installSyncFetchTracing() {
