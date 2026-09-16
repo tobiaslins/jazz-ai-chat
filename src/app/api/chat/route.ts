@@ -77,12 +77,13 @@ export async function POST(request: Request) {
     const message =
       error instanceof Error ? error.message : "Failed to generate assistant response.";
     const statusCode = findErrorStatusCode(error);
-
-    debugLog(requestId, "request_failed", {
+    const failure = {
       durationMs: Date.now() - startedAt,
       statusCode,
       error: summarizeError(error),
-    });
+    };
+
+    console.error(`[api/chat][${requestId}] request_failed`, failure);
 
     if (message.includes("ChatNotSyncedToEdge")) {
       return jsonWithRequestId(
