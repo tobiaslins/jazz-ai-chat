@@ -44,19 +44,24 @@ let jazzBackendClient: JazzClient | null = null;
 
 function getBackendSession() {
   if (!backendSessionPromise) {
-    backendSessionPromise = import("jazz-tools/backend").then(({ createJazzSession }) =>
-      createJazzSession({
-        appId: JAZZ_APP_ID,
-        app,
-        permissions,
-        driver: {
-          type: "memory",
-        },
-        serverUrl: SERVER_URL,
-        initial: { backendSecret: JAZZ_BACKEND_SECRET },
-        env: process.env.NODE_ENV === "production" ? "prod" : "dev",
-      })
-    );
+    backendSessionPromise = import("jazz-tools/backend")
+      .then(({ createJazzSession }) =>
+        createJazzSession({
+          appId: JAZZ_APP_ID,
+          app,
+          permissions,
+          driver: {
+            type: "memory",
+          },
+          serverUrl: SERVER_URL,
+          initial: { backendSecret: JAZZ_BACKEND_SECRET },
+          env: process.env.NODE_ENV === "production" ? "prod" : "dev",
+        })
+      )
+      .catch((error) => {
+        backendSessionPromise = null;
+        throw error;
+      });
   }
 
   return backendSessionPromise;
