@@ -5,7 +5,7 @@ import permissions from "../../permissions";
 
 const DEFAULT_SERVER_URL = "https://v2.sync.jazz.tools/";
 const REQUIRED_APP_ID_ENV = "JAZZ_APP_ID";
-const REQUIRED_BACKEND_SECRET_ENV = "JAZZ_BACKEND_SECRET";
+const REQUIRED_BACKEND_SECRET_ENV = "BACKEND_SECRET";
 const SYNC_TRACE_ENABLED = process.env.JAZZ_SYNC_TRACE === "1";
 const APP_ID = process.env.JAZZ_APP_ID?.trim();
 const SERVER_URL =
@@ -13,6 +13,7 @@ const SERVER_URL =
   process.env.NEXT_PUBLIC_JAZZ_SERVER_URL ||
   DEFAULT_SERVER_URL;
 const BACKEND_SECRET =
+  process.env.BACKEND_SECRET?.trim() ||
   process.env.JAZZ_BACKEND_SECRET?.trim() ||
   (isLocalJazzServerUrl(SERVER_URL) ? "TEST_SECRET" : undefined);
 
@@ -24,7 +25,7 @@ if (!APP_ID) {
 
 if (!BACKEND_SECRET) {
   throw new Error(
-    `[jazz-backend] Missing ${REQUIRED_BACKEND_SECRET_ENV}. Set it to your Jazz Cloud backend secret before starting the app.`
+    `[jazz-backend] Missing ${REQUIRED_BACKEND_SECRET_ENV}. Set it (or legacy JAZZ_BACKEND_SECRET) to your Jazz Cloud backend secret before starting the app.`
   );
 }
 
