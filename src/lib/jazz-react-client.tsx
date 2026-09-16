@@ -13,7 +13,6 @@ import {
   useSession as useSessionFromPackage,
   type AccountHandle,
 } from "jazz-tools/react";
-import { userIdentity } from "jazz-tools";
 import type { QueryBuilder, QueryOptions } from "jazz-tools/react-core";
 
 type JazzClient = Awaited<ReturnType<typeof createJazzClientFromPackage>>;
@@ -190,11 +189,7 @@ export function getSessionUserId(session: Session): string | null {
     return null;
   }
 
-  return userIdentity(
-    session.user.identity.issuer,
-    session.user.identity.subject,
-    session.user.account ?? undefined
-  );
+  return session.user.account;
 }
 
 export function useAll<T extends { id: string }>(
