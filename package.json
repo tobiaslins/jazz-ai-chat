@@ -34,7 +34,7 @@
     "cmdk": "^1.1.1",
     "framer-motion": "^11.17.0",
     "goober": "^2.1.18",
-    "jazz-tools": "2.0.0-alpha.54",
+    "jazz-tools": "2.0.0-alpha.55",
     "lucide-react": "^0.471.0",
     "next": "16.2.4",
     "react": "^19.2.5",
@@ -57,7 +57,7 @@
     "typescript": "^5"
   },
   "optionalDependencies": {
-    "@garden-co/jazz-napi-linux-x64-gnu": "2.0.0-alpha.54"
+    "@garden-co/jazz-napi-linux-x64-gnu": "2.0.0-alpha.55"
   },
   "packageManager": "pnpm@10.2.1+sha512.398035c7bd696d0ba0b10a688ed558285329d27ea994804a52bad9167d8e3a72bcb993f9699585d3ca25779ac64949ef422757a6c31102c12ab932e5cbe5cc92"
 }
