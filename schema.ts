@@ -3,18 +3,18 @@ import { schema as s } from "jazz-tools";
 const schema = {
   chats: s.table({
     created_at: s.string(),
-    owner_id: s.string(),
+    owner_id: s.uuid(),
     title: s.string(),
   }),
   chat_shares: s.table({
     chat: s.ref("chats"),
-    user_id: s.string(),
+    user_id: s.uuid(),
     can_edit: s.boolean(),
     created_at: s.string(),
   }),
   cursor_rooms: s.table({
     created_at: s.string(),
-    owner_id: s.string(),
+    owner_id: s.uuid(),
     title: s.string(),
   }),
   cursor_presences: s.table({
