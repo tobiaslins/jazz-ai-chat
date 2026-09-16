@@ -1,3 +1,4 @@
+import { existsSync, readdirSync } from "node:fs";
 import path from "node:path";
 
 import type { Db, JazzClient } from "jazz-tools/backend";
@@ -8,6 +9,9 @@ import permissions from "../../permissions";
 const DEFAULT_SERVER_URL = "https://v2.sync.jazz.tools/";
 const REQUIRED_APP_ID_ENV = "JAZZ_APP_ID";
 const REQUIRED_BACKEND_SECRET_ENV = "JAZZ_BACKEND_SECRET";
+const JAZZ_NAPI_PACKAGE_NAME = "@garden-co/jazz-napi-linux-x64-gnu";
+const JAZZ_NAPI_PACKAGE_DIR = "jazz-napi-linux-x64-gnu";
+const JAZZ_NAPI_BINARY = "jazz-napi.linux-x64-gnu.node";
 const SYNC_TRACE_ENABLED = process.env.JAZZ_SYNC_TRACE === "1";
 const APP_ID = process.env.JAZZ_APP_ID?.trim();
 const SERVER_URL =
@@ -90,13 +94,49 @@ function configureJazzNapiBinding() {
     return;
   }
 
-  process.env.NAPI_RS_NATIVE_LIBRARY_PATH = path.join(
-    process.cwd(),
+  const bindingPath = findJazzNapiBindingPath();
+  if (bindingPath) {
+    process.env.NAPI_RS_NATIVE_LIBRARY_PATH = bindingPath;
+  }
+}
+
+function findJazzNapiBindingPath() {
+  const nodeModulesPath = path.join(process.cwd(), "node_modules");
+  const directPackagePath = path.join(
+    nodeModulesPath,
+    "@garden-co",
+    JAZZ_NAPI_PACKAGE_DIR,
+    JAZZ_NAPI_BINARY
+  );
+  if (existsSync(directPackagePath)) {
+    return directPackagePath;
+  }
+
+  const pnpmStorePath = path.join(nodeModulesPath, ".pnpm");
+  let pnpmPackageNames: string[] = [];
+  try {
+    pnpmPackageNames = readdirSync(pnpmStorePath);
+  } catch {
+    return null;
+  }
+
+  const pnpmPackageName = pnpmPackageNames.find((name) =>
+    name.startsWith(`${JAZZ_NAPI_PACKAGE_NAME.replace("/", "+")}@`)
+  );
+  if (!pnpmPackageName) {
+    return null;
+  }
+
+  const pnpmPackagePath = path.join(
+    pnpmStorePath,
+    pnpmPackageName,
     "node_modules",
     "@garden-co",
-    "jazz-napi-linux-x64-gnu",
-    "jazz-napi.linux-x64-gnu.node"
+    JAZZ_NAPI_PACKAGE_DIR,
+    JAZZ_NAPI_BINARY
   );
+
+  return existsSync(pnpmPackagePath) ? pnpmPackagePath : null;
 }
 
 function installSyncFetchTracing() {
