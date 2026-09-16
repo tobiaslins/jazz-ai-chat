@@ -80,6 +80,9 @@ importers:
       jazz-tools:
         specifier: 2.0.0-alpha.55
         version: 2.0.0-alpha.55(react-native@0.84.1(@babel/core@7.29.0)(@types/react@19.0.4)(bufferutil@4.0.9)(react@19.2.5))(react@19.2.5)
+      jazz-wasm:
+        specifier: 2.0.0-alpha.55
+        version: 2.0.0-alpha.55
       lucide-react:
         specifier: ^0.471.0
         version: 0.471.0(react@19.2.5)
