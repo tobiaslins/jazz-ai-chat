@@ -36,13 +36,12 @@ export default function NewChatPage() {
       };
 
       const insertedChat = db.insert(app.chats, chatData);
-      createChatPromiseRef.current = withTimeout(
-        insertedChat.wait({ tier: "edge" }),
-        10000
-      ).then((chat) => ({
-        chatId: chat.id,
-        title: chatData.title,
-      }));
+      createChatPromiseRef.current = insertedChat
+        .wait({ tier: "edge" })
+        .then((chat) => ({
+          chatId: chat.id,
+          title: chatData.title,
+        }));
       debugLog("chat_create_started");
     }
 
@@ -90,24 +89,6 @@ export default function NewChatPage() {
       Creating chat...
     </div>
   );
-}
-
-async function withTimeout<T>(promise: Promise<T>, timeoutMs: number): Promise<T> {
-  return new Promise<T>((resolve, reject) => {
-    const timeout = setTimeout(() => {
-      reject(new Error(`Timed out after ${timeoutMs}ms`));
-    }, timeoutMs);
-
-    void promise
-      .then((value) => {
-        clearTimeout(timeout);
-        resolve(value);
-      })
-      .catch((error) => {
-        clearTimeout(timeout);
-        reject(error);
-      });
-  });
 }
 
 function debugLog(event: string, payload?: unknown) {
