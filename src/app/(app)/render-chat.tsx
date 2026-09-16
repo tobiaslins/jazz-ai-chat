@@ -66,7 +66,7 @@ export function RenderChat({ chatId }: { chatId: string }) {
     const now = new Date().toISOString();
 
     try {
-      await db.insert(
+      const userMessage = db.insert(
         app.messages,
         {
           chat: chatId,
@@ -76,6 +76,7 @@ export function RenderChat({ chatId }: { chatId: string }) {
           done: false
         },
       );
+      await userMessage.wait({ tier: "edge" });
 
       // Auto-title the chat from the first user message.
       if (!chat.title || chat.title === DEFAULT_CHAT_TITLE) {

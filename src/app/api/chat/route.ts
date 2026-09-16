@@ -155,7 +155,7 @@ async function generateAndPersistAssistantMessage(
     `[api/chat][${requestId}] jazz_history_loaded rows=${historyFromDb.length} durationMs=${historyLoadMs}`
   );
 
-  if (sessionUserId) {
+  if (CHAT_DEBUG && sessionUserId) {
     await debugCompareBackendVisibility(db, chatId, requestId, sessionUserId);
   }
   const messagesForModel = buildHistoryForModel(historyFromDb, latestUserMessage);
