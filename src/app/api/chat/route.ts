@@ -4,7 +4,7 @@ import type { Db, QueryBuilder, QueryOptions } from "jazz-tools/backend";
 
 import { app } from "../../../../schema";
 import { defaultModel } from "@/lib/models";
-import { getJazzBackendContext, getJazzBackendDb } from "@/lib/jazz-backend";
+import { getJazzBackendDb } from "@/lib/jazz-backend";
 
 const CHAT_DEBUG =
   process.env.JAZZ_CHAT_DEBUG === "1";
@@ -155,7 +155,7 @@ async function generateAndPersistAssistantMessage(
   );
 
   if (sessionUserId) {
-    await debugCompareSessionVisibility(db, chatId, requestId, sessionUserId);
+    await debugCompareBackendVisibility(db, chatId, requestId, sessionUserId);
   }
   const messagesForModel = buildHistoryForModel(historyFromDb, latestUserMessage);
   debugLog(requestId, "history_loaded", {
@@ -274,7 +274,7 @@ async function loadChatHistory(
   const messages = await runTimedQuery<MessageRow>(
     db,
     app.messages.where({ chat: chatId }).orderBy("created_at", "asc").limit(40),
-    { tier: "edge", localUpdates: "deferred" },
+    { tier: "edge" },
     requestId,
     "history_query"
   );
@@ -288,57 +288,35 @@ async function loadChatHistory(
     .filter((message) => message.content.length > 0);
 }
 
-async function debugCompareSessionVisibility(
+async function debugCompareBackendVisibility(
   backendDb: Db,
   chatId: string,
   requestId: string,
   sessionUserId: string
 ) {
-  const sessionDb = getJazzBackendContext().forSession({
-    user_id: sessionUserId,
-    claims: {},
-    authMode: "local-first",
-  });
-
-  const [backendChatRows, sessionChatRows, backendMessageRows, sessionMessageRows] =
+  const [backendChatRows, backendMessageRows] =
     await Promise.all([
       runTimedQuery(
         backendDb,
         app.chats.where({ id: chatId }).limit(1),
-        { tier: "edge", localUpdates: "deferred" },
+        { tier: "edge" },
         requestId,
         "debug_backend_chat_visibility"
       ),
       runTimedQuery(
-        sessionDb,
-        app.chats.where({ id: chatId }).limit(1),
-        { tier: "edge", localUpdates: "deferred" },
-        requestId,
-        "debug_session_chat_visibility"
-      ),
-      runTimedQuery(
         backendDb,
         app.messages.where({ chat: chatId }).limit(1),
-        { tier: "edge", localUpdates: "deferred" },
+        { tier: "edge" },
         requestId,
         "debug_backend_message_visibility"
       ),
-      runTimedQuery(
-        sessionDb,
-        app.messages.where({ chat: chatId }).limit(1),
-        { tier: "edge", localUpdates: "deferred" },
-        requestId,
-        "debug_session_message_visibility"
-      ),
     ]);
 
-  debugLog(requestId, "debug_visibility_comparison", {
+  debugLog(requestId, "debug_backend_visibility", {
     chatId,
     sessionUserId,
     backendChatRows: backendChatRows.length,
-    sessionChatRows: sessionChatRows.length,
     backendMessageRows: backendMessageRows.length,
-    sessionMessageRows: sessionMessageRows.length,
   });
 }
 
@@ -375,7 +353,6 @@ async function getChatPresence(db: Db, chatId: string, requestId: string) {
     app.chats.where({ id: chatId }).limit(1),
     {
       tier: "edge",
-      localUpdates: "immediate",
     },
     requestId,
     "chat_presence_immediate"
@@ -386,7 +363,6 @@ async function getChatPresence(db: Db, chatId: string, requestId: string) {
     app.chats.where({ id: chatId }).limit(1),
     {
       tier: "edge",
-      localUpdates: "deferred",
     },
     requestId,
     "chat_presence_deferred"
@@ -397,7 +373,6 @@ async function getChatPresence(db: Db, chatId: string, requestId: string) {
     app.chats.orderBy("created_at", "desc").limit(5),
     {
       tier: "edge",
-      localUpdates: "deferred",
     },
     requestId,
     "chat_presence_recent_deferred"

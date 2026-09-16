@@ -5,10 +5,10 @@ import { app } from "./schema";
 export default definePermissions(app, ({ policy, session, allowedTo, anyOf }) => {
   policy.chats.allowRead.where((chat) =>
     anyOf([
-      { owner_id: session.user_id },
+      { owner_id: session.user },
       policy.chat_shares.exists.where({
         chat: chat.id,
-        user_id: session.user_id,
+        user_id: session.user,
       }),
     ]),
   );
@@ -16,25 +16,25 @@ export default definePermissions(app, ({ policy, session, allowedTo, anyOf }) =>
   policy.chats.allowUpdate
     .whereOld((chat) =>
       anyOf([
-        { owner_id: session.user_id },
+        { owner_id: session.user },
         policy.chat_shares.exists.where({
           chat: chat.id,
-          user_id: session.user_id,
+          user_id: session.user,
           can_edit: true,
         }),
       ]),
     )
     .whereNew((chat) =>
       anyOf([
-        { owner_id: session.user_id },
+        { owner_id: session.user },
         policy.chat_shares.exists.where({
           chat: chat.id,
-          user_id: session.user_id,
+          user_id: session.user,
           can_edit: true,
         }),
       ]),
     );
-  policy.chats.allowDelete.where({ owner_id: session.user_id });
+  policy.chats.allowDelete.where({ owner_id: session.user });
 
   // Only the chat owner can manage shares. `allowedTo.delete("chat")` checks
   // the delete policy of the referenced chat — which is owner-only above.
@@ -45,17 +45,17 @@ export default definePermissions(app, ({ policy, session, allowedTo, anyOf }) =>
   policy.chat_shares.allowDelete.where(allowedTo.delete("chat"));
   policy.chat_shares.allowRead.where((share) =>
     anyOf([
-      { user_id: session.user_id },
+      { user_id: session.user },
       allowedTo.delete("chat"),
     ]),
   );
 
   policy.cursor_rooms.allowRead.always();
-  policy.cursor_rooms.allowInsert.where({ $createdBy: session.user_id });
+  policy.cursor_rooms.allowInsert.where({ $createdBy: session.user });
   policy.cursor_rooms.allowUpdate
-    .whereOld({ $createdBy: session.user_id })
-    .whereNew({ $createdBy: session.user_id });
-  policy.cursor_rooms.allowDelete.where({ $createdBy: session.user_id });
+    .whereOld({ $createdBy: session.user })
+    .whereNew({ $createdBy: session.user });
+  policy.cursor_rooms.allowDelete.where({ $createdBy: session.user });
 
   // Demo route: anyone with the room URL can publish and see cursor state.
   policy.cursor_presences.allowRead.always();

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useDb, useSession } from "@/lib/jazz-react-client";
+import { getSessionUserId, useDb, useSession } from "@/lib/jazz-react-client";
 
 import { app } from "../../../../schema";
 
@@ -12,7 +12,7 @@ const CURSOR_DEBUG =
 export default function NewCursorPage() {
   const db = useDb();
   const session = useSession();
-  const sessionUserId = session?.user_id ?? null;
+  const sessionUserId = getSessionUserId(session);
   const router = useRouter();
   const createRoomPromiseRef = useRef<Promise<{ roomId: string; title: string }> | null>(null);
   const syncStartedRef = useRef(false);
