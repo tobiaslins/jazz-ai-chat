@@ -13,7 +13,6 @@ export default withJazz(
             "./node_modules/.pnpm/jazz-wasm@2.0.0-alpha.55/node_modules/jazz-wasm/pkg/jazz_wasm_bg.wasm",
           ],
         },
-        serverExternalPackages: ["jazz-wasm"],
         turbopack: {
           resolveAlias: {
             "jazz-napi": "./src/lib/jazz-napi-vercel.ts",
